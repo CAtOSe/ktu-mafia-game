@@ -1,6 +1,6 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mafia.Game", "Mafia.Game\Mafia.Game.csproj", "{1EBEFE5D-907E-4764-BB79-FF2DEB138822}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mafia.Server", "Mafia.Server\Mafia.Server.csproj", "{755CE962-0E0F-468B-B98B-67139D9CB31E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -8,9 +8,9 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{1EBEFE5D-907E-4764-BB79-FF2DEB138822}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{1EBEFE5D-907E-4764-BB79-FF2DEB138822}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{1EBEFE5D-907E-4764-BB79-FF2DEB138822}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{1EBEFE5D-907E-4764-BB79-FF2DEB138822}.Release|Any CPU.Build.0 = Release|Any CPU
+		{755CE962-0E0F-468B-B98B-67139D9CB31E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{755CE962-0E0F-468B-B98B-67139D9CB31E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{755CE962-0E0F-468B-B98B-67139D9CB31E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{755CE962-0E0F-468B-B98B-67139D9CB31E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
