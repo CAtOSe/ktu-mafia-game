@@ -1,9 +1,9 @@
-﻿using Mafia.Server.Services;
+﻿using Mafia.Server.Services.SessionHandler;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Mafia.Server.Controllers;
 
-public class GameController : Controller
+public class GameController(ISessionHandler sessionHandler) : Controller
 {
     [Route("/ws")]
     public async Task Get()
@@ -11,7 +11,7 @@ public class GameController : Controller
         if (HttpContext.WebSockets.IsWebSocketRequest)
         {
             using var webSocket = await HttpContext.WebSockets.AcceptWebSocketAsync();
-            await GameService.HandleGameSocket(webSocket);
+            await sessionHandler.HandleConnection(webSocket);
         }
         else
         {

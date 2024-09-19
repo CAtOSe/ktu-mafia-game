@@ -10,7 +10,7 @@ function Login() {
     useEffect(() => {
         if (!lastMessage) return;
         console.log(`received: ${lastMessage.data}`);
-        if (lastMessage.data === 'login') {
+        if (lastMessage.data === 'logged-in') {
             setLoggedIn(true);
         }
     }, [lastMessage]);
