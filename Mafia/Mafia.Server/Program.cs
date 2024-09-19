@@ -1,19 +1,16 @@
+using Mafia.Server.Services.GameService;
+using Mafia.Server.Services.MessageResolver;
+using Mafia.Server.Services.SessionHandler;
+
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
 builder.Services.AddControllers();
 
-var app = builder.Build();
+builder.Services.AddSingleton<IGameService, GameService>();
+builder.Services.AddSingleton<ISessionHandler, SessionHandler>();
+builder.Services.AddSingleton<IMessageResolver, MessageResolver>();
 
-// Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
+var app = builder.Build();
 
 app.UseHttpsRedirection();
 app.UseWebSockets();
