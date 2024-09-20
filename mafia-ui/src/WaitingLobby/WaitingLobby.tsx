@@ -1,29 +1,16 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import Header from '../Header/Header';
 import './WaitingLobby.css';
 
-function WaitingLobby() {
-    const [players, setPlayers] = useState<string[]>([]);
+interface WaitingLobbyProps {
+    players: string[];
+    username: string | null;
+}
+
+function WaitingLobby({ players, username }: WaitingLobbyProps) {
     const [gameStarting, setGameStarting] = useState(false);
     const [timeRemaining, setTimeRemaining] = useState<number | null>(null); // Countdown to start game
     const [countdownInterval, setCountdownInterval] = useState<number  | null>(null); // To store the countdown interval
-
-    useEffect(() => {
-        const mockPlayers = ['Player1 (HOST)', 'Player2', 'Player3', 'Player4'];
-
-        const joinIntervals = mockPlayers.map((player, index) => {
-            return setTimeout(() => {
-                setPlayers(prevPlayers => [...prevPlayers, player]);
-            }, (index + 1) * 1000);
-        });
-
-        return () => {
-            joinIntervals.forEach(clearTimeout);
-            if (countdownInterval) {
-                clearInterval(countdownInterval); // Clear the countdown on unmount
-            }
-        };
-    }, []);
 
     const startCountdown = () => {
         setTimeRemaining(5); // Set initial countdown to 5 seconds
@@ -57,7 +44,7 @@ function WaitingLobby() {
 
     return (
         <div>
-            <Header title = "Waiting Lobby" username="Player1" onLogout={handleLogout} />
+            <Header title = "Waiting Lobby" username={username || "Unknown Player"} onLogout={handleLogout} />
             
             <div className="container"> 
                 <div className="content">
