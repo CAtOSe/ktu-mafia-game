@@ -8,9 +8,22 @@ public class GameService : IGameService
 
     public void AddNewPlayer(Player player)
     {
-        _currentPlayers.Add(player);
+        /*_currentPlayers.Add(player); // OLD one
         player.SendMessage(Messages.LoggedIn);
+        NotifyAllPlayers(player, "new-player");*/
+        
+        // Adding new player to list
+        _currentPlayers.Add(player);
+
+        // Sending message to new player with all player list
+        var allPlayers = string.Join(",", _currentPlayers.Select(p => p.Name));
+        player.SendMessage($"players-list:{allPlayers}");
+
+        // Notifying all other players about new player
         NotifyAllPlayers(player, "new-player");
+
+        // Inform new player, that he successfully logged in
+        player.SendMessage(Messages.LoggedIn);
     }
 
     public void RemovePlayer(Player player)
@@ -25,7 +38,7 @@ public class GameService : IGameService
         {
             if (player != newPlayer)
             {
-                player.SendMessage($"{action}:{newPlayer.Name}"); // Pvz.: "new-player:Player1"
+                player.SendMessage($"{action}:{newPlayer.Name}"); 
             }
         }
     }

@@ -16,7 +16,7 @@ public class Player
     public Player(WebSocket webSocket)
     {
         this.webSocket = webSocket;
-        Name = "Player" + new Random().Next(1000, 9999); // Pvz., sugeneruotas vardas
+        Name = "Player" + new Random().Next(1000, 9999); // Generated name for testing
     }
     public async Task SendMessage(string message)
     {
