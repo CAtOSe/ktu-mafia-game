@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import useWebSocket, { ReadyState } from "react-use-websocket";
 import WaitingLobby from "../WaitingLobby/WaitingLobby";
+import './Login.css';
 
 const socketUrl = 'ws://localhost:5141/ws';
 
@@ -9,6 +10,7 @@ function Login() {
     const [loggedIn, setLoggedIn] = useState(false);
     const [existingPlayers, setExistingPlayers] = useState<string[]>([]);  // Players list before log in
     const [newPlayers, setNewPlayers] = useState<string[]>([]);            // New logged in players
+    const [username, setUsername] = useState('');                          // Save username from input field
 
     useEffect(() => {
         if (!lastMessage) return;
@@ -38,17 +40,27 @@ function Login() {
     const allPlayers = [...existingPlayers, ...newPlayers];
 
     return (
-        <div>
-            {!loggedIn ? (
-                <div>
-                    <h2>Enter Game</h2>
-                    <button onClick={sendLogin}>Login</button>
-                </div>
-            ) : (
-                <WaitingLobby players={allPlayers} username = "Player1" />
-            )}
+        <div className="container">
+            <div className="content">
+                {!loggedIn ? (
+                    <div>
+                        <h2>Enter Game</h2>
+                        <input
+                            type="text"
+                            className="input"
+                            placeholder="Enter username"
+                            value={username}
+                            onChange={(e) => setUsername(e.target.value)}
+                        />
+                        <button className="glow-button" onClick={sendLogin}>Login</button>
+                    </div>
+                ) : (
+                    <WaitingLobby players={allPlayers} username={username} />
+                )}
+            </div>
         </div>
     );
+
 }
 
 export default Login;
