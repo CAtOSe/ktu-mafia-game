@@ -42,4 +42,15 @@ public class GameService : IGameService
             }
         }
     }
+    
+    public async Task<bool> IsUsernameAvailable(string username)
+    {
+        // Check if the username is already taken
+        return !_currentPlayers.Any(player => player.Name.Equals(username, StringComparison.OrdinalIgnoreCase));
+    }
+    
+    public async Task AddPlayer(Player player)
+    {
+         AddNewPlayer(player);
+    }
 }
