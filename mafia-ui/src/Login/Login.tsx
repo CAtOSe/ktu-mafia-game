@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import useWebSocket, { ReadyState } from "react-use-websocket";
 import WaitingLobby from "../WaitingLobby/WaitingLobby";
+import './Login.css';
 
 const socketUrl = 'ws://localhost:5141/ws';
 
@@ -39,27 +40,27 @@ function Login() {
     const allPlayers = [...existingPlayers, ...newPlayers];
 
     return (
-        <div>
-            {!loggedIn ? (
-                <div>
-                    <h2>Enter Game</h2>
-
-                    <input
-                        type="text"
-                        placeholder="Enter username"
-                        value={username}
-                        onChange={(e) => setUsername(e.target.value)} // update username
-                    />
-                    <br/>
-
-
-                    <button onClick={sendLogin}>Login</button>
-                </div>
-            ) : (
-                <WaitingLobby players={allPlayers} username={username}/>
-            )}
+        <div className="container">
+            <div className="content">
+                {!loggedIn ? (
+                    <div>
+                        <h2>Enter Game</h2>
+                        <input
+                            type="text"
+                            className="input"
+                            placeholder="Enter username"
+                            value={username}
+                            onChange={(e) => setUsername(e.target.value)}
+                        />
+                        <button className="glow-button" onClick={sendLogin}>Login</button>
+                    </div>
+                ) : (
+                    <WaitingLobby players={allPlayers} username={username} />
+                )}
+            </div>
         </div>
     );
+
 }
 
 export default Login;
