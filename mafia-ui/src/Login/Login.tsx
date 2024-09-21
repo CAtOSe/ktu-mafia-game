@@ -9,6 +9,7 @@ function Login() {
     const [loggedIn, setLoggedIn] = useState(false);
     const [existingPlayers, setExistingPlayers] = useState<string[]>([]);  // Players list before log in
     const [newPlayers, setNewPlayers] = useState<string[]>([]);            // New logged in players
+    const [username, setUsername] = useState('');                          // Save username from input field
 
     useEffect(() => {
         if (!lastMessage) return;
@@ -42,10 +43,20 @@ function Login() {
             {!loggedIn ? (
                 <div>
                     <h2>Enter Game</h2>
+
+                    <input
+                        type="text"
+                        placeholder="Enter username"
+                        value={username}
+                        onChange={(e) => setUsername(e.target.value)} // update username
+                    />
+                    <br/>
+
+
                     <button onClick={sendLogin}>Login</button>
                 </div>
             ) : (
-                <WaitingLobby players={allPlayers} username = "Player1" />
+                <WaitingLobby players={allPlayers} username={username}/>
             )}
         </div>
     );
