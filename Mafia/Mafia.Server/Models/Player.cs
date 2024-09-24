@@ -10,7 +10,9 @@ public class Player
 {
     public DateTime CreationTime { get; init; } = DateTime.UtcNow;
     public string Name { get; set; }
-    
+
+    public string Role { get; set; } = "None"; //Default role set to None
+
     private WebSocket webSocket;
 
     public Player(WebSocket webSocket)

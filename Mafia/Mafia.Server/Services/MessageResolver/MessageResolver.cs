@@ -27,5 +27,14 @@ public class MessageResolver(IGameService gameService) : IMessageResolver
                 await player.SendMessage("error: Username is already taken."); // Notify of failure
             }
         }
+        if (message.Equals(Messages.Login))
+        {
+            gameService.AddNewPlayer(player);
+        }
+        else if (message.Equals(Messages.StartGame))
+        {
+            gameService.StartGame();
+        }
+        
     }
 }
