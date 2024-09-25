@@ -8,4 +8,5 @@ public interface IGameService
     public void RemovePlayer(Player player); 
     Task<bool> IsUsernameAvailable(string username);
     Task AddPlayer(Player player);
+    public void StartGame();
 }
