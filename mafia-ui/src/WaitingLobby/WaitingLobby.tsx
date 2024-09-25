@@ -109,9 +109,11 @@ import './WaitingLobby.css';
 interface WaitingLobbyProps {
     players: string[];
     username: string | null;
+    sendMessage: (message: string) => void;
+    lastMessage: any;
 }
 
-function WaitingLobby({ players, username }: WaitingLobbyProps) {
+function WaitingLobby({ players, username, sendMessage, lastMessage }: WaitingLobbyProps) {
     const [gameStarting, setGameStarting] = useState(false);
     const [timeRemaining, setTimeRemaining] = useState<number | null>(null);
     const [countdownInterval, setCountdownInterval] = useState<number | null>(null);
@@ -126,7 +128,9 @@ function WaitingLobby({ players, username }: WaitingLobbyProps) {
             setTimeRemaining(prevTime => {
                 if (prevTime && prevTime <= 1) {
                     clearInterval(interval);
+                    sendMessage('start-game');
                     setGameStarting(true); // Set game starting state
+                    
                     setTimeRemaining(0);
                     return 0;
                 }
@@ -137,6 +141,13 @@ function WaitingLobby({ players, username }: WaitingLobbyProps) {
         setCountdownInterval(interval);
     };
 
+    // Handle receiving the "game-started" message from the backend
+    useEffect(() => {
+        if (lastMessage?.data === 'game-started') {
+            setGameStarting(true);
+        }
+    }, [lastMessage]);
+    
     useEffect(() => {
         if (gameStarting) {
             // Nukreipimas į "Game" komponentą su username ir players perduodamu

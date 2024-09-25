@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import useWebSocket, { ReadyState } from "react-use-websocket";
 import WaitingLobby from "../WaitingLobby/WaitingLobby";
 import './Login.css';
+import {useNavigate} from "react-router-dom";
 
 const socketUrl = 'ws://localhost:5141/ws';
 
@@ -14,6 +15,7 @@ function Login() {
     const [error, setError] = useState<string | null>(null);               // Store error message
     const minimalInputChars = 4;
     const maximalInputChars = 10;
+    const navigate = useNavigate();
 
     useEffect(() => {
         if (!lastMessage) return;
@@ -39,6 +41,11 @@ function Login() {
             const playerLeft = lastMessage.data.split(':')[1];
             setExistingPlayers(prevPlayers => prevPlayers.filter(player => player !== playerLeft));
             setNewPlayers(prevPlayers => prevPlayers.filter(player => player !== playerLeft));
+        }
+
+        // Handle game starting
+        if (lastMessage.data === 'game-starting') {
+            navigate('/game', { state: { username, players: allPlayers } });
         }
         
         // Handle error messages
@@ -84,7 +91,7 @@ function Login() {
                         
                     </div>
                 ) : (
-                    <WaitingLobby players={allPlayers} username={username} />
+                    <WaitingLobby players={allPlayers} username={username} sendMessage={sendMessage} lastMessage={lastMessage}/>
                 )}
             </div>
         </div>

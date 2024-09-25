@@ -31,9 +31,17 @@ public class MessageResolver(IGameService gameService) : IMessageResolver
         {
             gameService.AddNewPlayer(player);
         }
-        else if (message.Equals(Messages.StartGame))
+        
+        if (message == "start-game")
         {
+            // Call the StartGame method in the game service
             gameService.StartGame();
+
+            // Notify all players that the game has started
+            foreach (var p in gameService.GetPlayers())
+            {
+                await p.SendMessage("game-started");
+            }
         }
         
     }

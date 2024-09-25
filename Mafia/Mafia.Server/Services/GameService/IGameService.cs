@@ -10,4 +10,5 @@ public interface IGameService
     Task AddPlayer(Player player);
     public void StartGame();
     public void NotifyAllPlayers(Player player, string action);
+    public List<Player> GetPlayers();
 }
