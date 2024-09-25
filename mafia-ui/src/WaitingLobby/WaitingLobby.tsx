@@ -109,15 +109,18 @@ import './WaitingLobby.css';
 interface WaitingLobbyProps {
     players: string[];
     username: string | null;
+    sendMessage: (message: string) => void;
+    lastMessage: any;
 }
 
-function WaitingLobby({ players, username }: WaitingLobbyProps) {
+function WaitingLobby({ players, username, sendMessage, lastMessage }: WaitingLobbyProps) {
     const [gameStarting, setGameStarting] = useState(false);
     const [timeRemaining, setTimeRemaining] = useState<number | null>(null);
     const [countdownInterval, setCountdownInterval] = useState<number | null>(null);
+    const [currentPlayers, setCurrentPlayers] = useState<string[]>(players); // Track current players
+    const [host, setHost] = useState<string | null>(players.length > 0 ? players[0] : null); // Track host
 
     const navigate = useNavigate(); // Get the navigate function from React Router
-
     const startCountdown = () => {
         setTimeRemaining(5); // Set initial countdown to 5 seconds
 
@@ -125,7 +128,9 @@ function WaitingLobby({ players, username }: WaitingLobbyProps) {
             setTimeRemaining(prevTime => {
                 if (prevTime && prevTime <= 1) {
                     clearInterval(interval);
+                    sendMessage('start-game');
                     setGameStarting(true); // Set game starting state
+                    
                     setTimeRemaining(0);
                     return 0;
                 }
@@ -136,6 +141,13 @@ function WaitingLobby({ players, username }: WaitingLobbyProps) {
         setCountdownInterval(interval);
     };
 
+    // Handle receiving the "game-started" message from the backend
+    useEffect(() => {
+        if (lastMessage?.data === 'game-started') {
+            setGameStarting(true);
+        }
+    }, [lastMessage]);
+    
     useEffect(() => {
         if (gameStarting) {
             // Nukreipimas į "Game" komponentą su username ir players perduodamu
@@ -143,6 +155,24 @@ function WaitingLobby({ players, username }: WaitingLobbyProps) {
         }
     }, [gameStarting, navigate, username, players]);
 
+    useEffect(() => {
+        // Check for host changes
+        const checkHost = () => {
+            if (!currentPlayers.includes(host || '')) {
+                // If the current host is no longer in the player list, assign a new host
+                const newHost = currentPlayers[0] || null;
+                setHost(newHost);
+            }
+        };
+
+        checkHost();
+    }, [currentPlayers, host]);
+
+    useEffect(() => {
+        // Update the list of current players when the players prop changes
+        setCurrentPlayers(players);
+    }, [players]);
+    
     const cancelCountdown = () => {
         if (countdownInterval) {
             clearInterval(countdownInterval); // Clear the countdown
@@ -155,6 +185,7 @@ function WaitingLobby({ players, username }: WaitingLobbyProps) {
         console.log("Logout clicked");
         // Implement your logout logic here
     };
+
 
     return (
         <div>
@@ -171,7 +202,11 @@ function WaitingLobby({ players, username }: WaitingLobbyProps) {
                                         <tbody>
                                         {players.map((player, index) => (
                                             <tr key={index}>
-                                                <td>{player}</td>
+                                                <td>
+                                                    {player}
+                                                    {/* Show "(host)" next to the host name*/}
+                                                    {player === host && <span> (host)</span>}
+                                                </td>
                                             </tr>
                                         ))}
                                         </tbody>
@@ -182,8 +217,9 @@ function WaitingLobby({ players, username }: WaitingLobbyProps) {
                             )}
                             <p className="player-count">Players in lobby: {players.length}</p>
 
-                            {/* Show the Start or Cancel button */}
+                            {/* Show the Start button only for the host */}
                             {players.length >= 3 ? (
+                                username === host ? (
                                 timeRemaining === null ? (
                                     <button className="glow-button" onClick={startCountdown}>
                                         Start Game
@@ -192,6 +228,9 @@ function WaitingLobby({ players, username }: WaitingLobbyProps) {
                                     <button className="glow-button" onClick={cancelCountdown}>
                                         Cancel
                                     </button>
+                                )
+                                ) : (
+                                    <p className="waiting-message">Waiting for the host to start the game...</p>
                                 )
                             ) : (
                                 <p className="waiting-message">Waiting for more players (at least 3)</p>

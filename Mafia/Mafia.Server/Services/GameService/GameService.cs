@@ -29,6 +29,7 @@ public class GameService : IGameService
     public void RemovePlayer(Player player)
     {
         _currentPlayers.Remove(player);
+        NotifyAllPlayers(player, "player-left");
         player.CloseConnection();
     }
     
@@ -67,17 +68,24 @@ public class GameService : IGameService
             // Siunčiame žinutę žaidėjams apie jų vaidmenį
             //player.SendMessage($"role:{player.Role}");
         }
+        
+        NotifyAllPlayers(null, "game-starting");
     }
 
     
-    private void NotifyAllPlayers(Player newPlayer, string action)
+    public void NotifyAllPlayers(Player newPlayer, string action)
     {
         foreach (var player in _currentPlayers)
         {
-            if (player != newPlayer)
+            if (player != newPlayer && newPlayer != null)
             {
                 player.SendMessage($"{action}:{newPlayer.Name}"); 
             }
         }
+    }
+
+    public List<Player> GetPlayers()
+    {
+        return _currentPlayers;
     }
 }
