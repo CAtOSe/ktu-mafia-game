@@ -29,6 +29,7 @@ public class GameService : IGameService
     public void RemovePlayer(Player player)
     {
         _currentPlayers.Remove(player);
+        NotifyAllPlayers(player, "player-left");
         player.CloseConnection();
     }
     
@@ -70,7 +71,7 @@ public class GameService : IGameService
     }
 
     
-    private void NotifyAllPlayers(Player newPlayer, string action)
+    public void NotifyAllPlayers(Player newPlayer, string action)
     {
         foreach (var player in _currentPlayers)
         {

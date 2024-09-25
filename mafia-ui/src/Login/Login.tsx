@@ -34,6 +34,13 @@ function Login() {
             setNewPlayers(prevPlayers => [...prevPlayers, newPlayer]);
         }
 
+        // Handle player leaving the lobby
+        if (lastMessage.data.startsWith('player-left:')) {
+            const playerLeft = lastMessage.data.split(':')[1];
+            setExistingPlayers(prevPlayers => prevPlayers.filter(player => player !== playerLeft));
+            setNewPlayers(prevPlayers => prevPlayers.filter(player => player !== playerLeft));
+        }
+        
         // Handle error messages
         if (lastMessage.data.startsWith('error:')) {
             const errorMessage = lastMessage.data.split(':')[1];

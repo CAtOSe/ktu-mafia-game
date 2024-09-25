@@ -9,4 +9,5 @@ public interface IGameService
     Task<bool> IsUsernameAvailable(string username);
     Task AddPlayer(Player player);
     public void StartGame();
+    public void NotifyAllPlayers(Player player, string action);
 }
