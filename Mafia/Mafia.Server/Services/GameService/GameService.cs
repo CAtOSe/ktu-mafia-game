@@ -65,13 +65,13 @@ public class GameService : IGameService
                 player.Role = "Citizen";
             }
 
-            // Siunčiame žinutę žaidėjams apie jų vaidmenį
-            //player.SendMessage($"role:{player.Role}");
+            // Notify each player of their role
+            player.SendMessage($"role-assigned:{player.Role}");
         }
-        
-        NotifyAllPlayers(null, "game-starting");
-    }
 
+        // Notify all players that the roles have been assigned
+        NotifyAllPlayers(null, "roles-assigned");
+    }
     
     public void NotifyAllPlayers(Player newPlayer, string action)
     {
@@ -88,4 +88,10 @@ public class GameService : IGameService
     {
         return _currentPlayers;
     }
+    
+    public Dictionary<string, string> GetPlayerRoles()
+    {
+        return _currentPlayers.ToDictionary(player => player.Name, player => player.Role);
+    }
+
 }
