@@ -11,4 +11,5 @@ public interface IGameService
     public void StartGame();
     public void NotifyAllPlayers(Player player, string action);
     public List<Player> GetPlayers();
+    public Dictionary<string, string> GetPlayerRoles();
 }

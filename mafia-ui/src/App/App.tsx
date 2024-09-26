@@ -13,6 +13,7 @@ function App() {
 
 export default App
 */
+import './App.css'
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Login from '../Login/Login';
 import WaitingLobby from '..//WaitingLobby/WaitingLobby';
