@@ -1,0 +1,57 @@
+.role-selection-container {
+    text-align: center;
+    padding: 20px;
+}
+
+.role-box {
+    width: 300px;
+    height: 100px;
+    border: 2px solid transparent; /* Base border */
+    overflow: hidden;
+    margin: 0 auto;
+    font-size: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold; 
+    background: linear-gradient(45deg, #ff6ec4, #7873f5, #ff6ec4); 
+    transition: background-color 0.2s ease, border-image 0.5s ease, box-shadow 0.5s ease;
+}
+
+.role-box.spinning {
+    background: linear-gradient(45deg, #ff6ec4, #7873f5, #ff6ec4);
+}
+
+.role-box.townsfolk {
+    border-image: linear-gradient(45deg, #9e9e8b, #1cefff) 1; /* Blue gradient for townsfolk */
+    background: linear-gradient(45deg, #9e9e8b, #1cefff); /* Corrected: Use background instead of background-color */
+    box-shadow: 0 0 20px rgba(192, 192, 170, 0.8), /* Corrected: Proper rgba for glow */
+                0 0 40px rgba(28, 239, 255, 0.8); /* Corrected: Proper rgba for glow */
+}
+
+.role-box.evil {
+    border-image: linear-gradient(45deg, #FF416C, #FF4B2B) 1; /* Red gradient for evil roles */
+    background: linear-gradient(45deg, #FF416C, #FF4B2B); /* Corrected: Use background instead of background-color */
+    box-shadow: 0 0 20px rgba(255, 65, 108, 0.8), /* Corrected: Proper rgba for glow */
+                0 0 40px rgba(255, 75, 43, 0.8); /* Corrected: Proper rgba for glow */
+}
+
+.final-role-message {
+    margin-top: 20px;
+    font-size: 20px;
+    color: #ffffff;
+}
+
+.role-name.townsfolk {
+    background: linear-gradient(45deg, #c0c0aa, #1cefff); /* Blue gradient for townsfolk */
+    -webkit-background-clip: text; /* For WebKit browsers (Chrome, Safari, etc.) */
+    -webkit-text-fill-color: transparent; /* Makes the text transparent to show the background */
+    background-clip: text; /* Standard property for future compatibility */
+}
+
+.role-name.evil {
+    background: linear-gradient(45deg, #FF416C, #FF4B2B); /* Red gradient for evil roles */
+    -webkit-background-clip: text; /* For WebKit browsers */
+    -webkit-text-fill-color: transparent; /* Makes the text transparent */
+    background-clip: text; /* Standard property for future compatibility */
+}

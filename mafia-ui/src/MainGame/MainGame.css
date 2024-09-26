@@ -1,0 +1,15 @@
+/* Main Game Styles */
+.main-game {
+    position: relative; /* Needed for absolute positioning of child components */
+    width: 100vw; /* Full width */
+    height: 100vh; /* Full height */
+    display: flex; /* Use flexbox for layout */
+  }
+  
+  /* Positioning RoleInformation to the right */
+  .role-information {
+    margin-left: auto; /* Pushes the RoleInformation to the right */
+    height: 30vh; /* Take half of the screen height */
+    padding: 20px; /* Optional padding for content */
+  }
+  

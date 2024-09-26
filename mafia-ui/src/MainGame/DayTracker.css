@@ -1,0 +1,70 @@
+/* Main container for day tracker */
+.day-tracker {
+  position: absolute;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* Circular shape for day/night display */
+.circle {
+  width: 150px;
+  height: 150px;
+  border-radius: 50%; /* Make sure the element itself is a circle */
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  position: relative; /* Required for ::before pseudo-element */
+
+  background-color: #333; /* Neutral background */
+}
+
+/* Smooth transition for border color */
+.circle::before {
+  content: '';
+  position: absolute;
+  top: -4px; /* Adjusted offset for a thinner border */
+  left: -4px;
+  width: 158px; /* Slightly smaller than the circle for a thinner border */
+  height: 158px;
+  border-radius: 50%; /* Keep the border circular */
+  
+  /* Border default settings */
+  background-color: #ff6ec4; /* Default solid color for day */
+  z-index: -1; /* Keep it behind the circle content */
+  
+  /* Smooth transition for the background color */
+  transition: background-color 2s ease-in-out;
+}
+
+/* Day-specific solid border color */
+.day::before {
+  background-color: #ff6ec4; /* Day solid color (orange) */
+}
+
+/* Night-specific solid border color */
+.night::before {
+  background-color: #7873f5; /* Night solid color (dark blue/black) */
+}
+
+/* Phase text inside the circle */
+.phase-text {
+  font-size: 24px;
+  color: white;
+  font-weight: bold;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+  margin: 0;
+}
+
+/* Timer text (countdown) */
+.timer-text {
+  font-size: 32px;
+  color: white;
+  font-weight: bold;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+  margin: 0;
+}
