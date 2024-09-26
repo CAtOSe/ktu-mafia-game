@@ -29,17 +29,63 @@ public class GameService : IGameService
     public void RemovePlayer(Player player)
     {
         _currentPlayers.Remove(player);
+        NotifyAllPlayers(player, "player-left");
         player.CloseConnection();
     }
     
-    private void NotifyAllPlayers(Player newPlayer, string action)
+    public async Task<bool> IsUsernameAvailable(string username)
+    {
+        // Check if the username is already taken
+        return !_currentPlayers.Any(player => player.Name.Equals(username, StringComparison.OrdinalIgnoreCase));
+    }
+    
+    public async Task AddPlayer(Player player)
+    {
+         AddNewPlayer(player);
+    }
+    
+    public void StartGame()
+    {
+        if (_currentPlayers.Count < 2)
+        {
+            throw new InvalidOperationException("There must be at least 3 players to start the game.");
+        }
+
+        // Randomly setting Killer role to 1 player
+        var random = new Random();
+        int killerIndex = random.Next(_currentPlayers.Count);
+        Player killer = _currentPlayers[killerIndex];
+        killer.Role = "Killer";
+    
+        // Setting Citizen role for other players
+        foreach (var player in _currentPlayers)
+        {
+            if (player != killer)
+            {
+                player.Role = "Citizen";
+            }
+
+            // Siunčiame žinutę žaidėjams apie jų vaidmenį
+            //player.SendMessage($"role:{player.Role}");
+        }
+        
+        NotifyAllPlayers(null, "game-starting");
+    }
+
+    
+    public void NotifyAllPlayers(Player newPlayer, string action)
     {
         foreach (var player in _currentPlayers)
         {
-            if (player != newPlayer)
+            if (player != newPlayer && newPlayer != null)
             {
                 player.SendMessage($"{action}:{newPlayer.Name}"); 
             }
         }
+    }
+
+    public List<Player> GetPlayers()
+    {
+        return _currentPlayers;
     }
 }

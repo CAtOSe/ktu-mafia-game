@@ -10,13 +10,15 @@ public class Player
 {
     public DateTime CreationTime { get; init; } = DateTime.UtcNow;
     public string Name { get; set; }
-    
+
+    public string Role { get; set; } = "None"; //Default role set to None
+
     private WebSocket webSocket;
 
     public Player(WebSocket webSocket)
     {
         this.webSocket = webSocket;
-        Name = "Player" + new Random().Next(1000, 9999); // Generated name for testing
+        Name = "Guest"; // if error occurs, player will be displayed as guest
     }
     public async Task SendMessage(string message)
     {
