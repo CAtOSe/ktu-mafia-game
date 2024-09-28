@@ -43,6 +43,13 @@ public class MessageResolver(IGameService gameService) : IMessageResolver
                 await p.SendMessage("game-started");
             }
         }
+        if (message == "get-roles")
+        {
+            var roles = gameService.GetPlayerRoles();
+            var rolesMessage = string.Join(",", roles.Select(r => $"{r.Key}:{r.Value}"));
+            await player.SendMessage($"roles-list:{rolesMessage}");
+        }
+
         
     }
 }
