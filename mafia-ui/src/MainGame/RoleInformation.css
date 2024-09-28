@@ -1,35 +1,18 @@
-/* Role Information Component Styles */
-.role-information {
-    position: absolute;
-    top: 20px; /* Adjust as needed */
-    right: 20px; /* Adjust as needed */
-    background-color: #333; /* Dark background */
-    color: white; /* Text color */
-    padding: 20px; /* Padding around the content */
-    border-radius: 8px; /* Rounded corners */
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3); /* Slight shadow for depth */
-    width: 200px; /* Width of the box */
-    overflow: hidden; /* Prevents overflow from the border */
-    border: 2px solid transparent; /* Use transparent for the base border */
-    border-image: linear-gradient(45deg, #ff6ec4, #7873f5) 1; /* Gradient border */
-  }
-  
-  
-  /* Username Style */
   .username {
-    font-size: 20px; /* Size of the username */
-    font-weight: bold; /* Bold text */
-    margin: 0; /* Remove margin */
+    font-size: 20px;
+    font-weight: bold; 
+    margin: 0; 
+    text-align: center; 
   }
   
-  /* Role Name Style */
   .role-name {
-    font-size: 16px; /* Size of the role name */
-    margin: 5px 0 15px; /* Margin between role name and info section */
+    font-size: 23px;
+    font-weight: bold; 
+    margin: 3px 0 15px;
+    text-align: center; 
   }
   
-  /* Info Section Style */
   .info-section p {
-    margin: 5px 0; /* Spacing between paragraphs */
+    margin: 5px 0;
   }
   

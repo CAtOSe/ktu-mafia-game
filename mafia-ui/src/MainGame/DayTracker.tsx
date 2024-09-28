@@ -2,9 +2,9 @@ import React, { useState, useEffect } from 'react';
 import './DayTracker.css';
 
 const DayTracker: React.FC = () => {
-  const [isDay, setIsDay] = useState(true); // Start with day phase
-  const [phase, setPhase] = useState(1); // Track day/night number
-  const [timeRemaining, setTimeRemaining] = useState(15); // Countdown timer
+  const [isDay, setIsDay] = useState(true); // Is it Day or is it Night?
+  const [phase, setPhase] = useState(1); // Day/night number (Day 1, Night 1, Day 2...)
+  const [timeRemaining, setTimeRemaining] = useState(15); // Time remaining until other phase
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -12,7 +12,8 @@ const DayTracker: React.FC = () => {
         if (prevTime <= 1) {
           clearInterval(timer);
           toggleDayNight(); // Switch phase when time runs out
-          return isDay ? 15 : 30; // Shorter nights, longer days
+          // Night will last 30s, Day will last 1min30s: 1min for discussion, 30s for voting:
+          return isDay ? 15 : 30; // Currently times are shorter for testing
         }
         return prevTime - 1;
       });
@@ -22,12 +23,12 @@ const DayTracker: React.FC = () => {
   }, [isDay]);
 
   const toggleDayNight = () => {
-    setIsDay(!isDay); // Toggle between day and night
+    setIsDay(!isDay); // Switch phase
     setPhase((prevPhase) => (isDay ? prevPhase + 1 : prevPhase)); // Increment phase on new day
   };
 
   return (
-    <div className="day-tracker">
+    <div>
       <div className={`circle ${isDay ? 'day' : 'night'}`}>
         <p className="phase-text">{isDay ? `Day ${phase}` : `Night ${phase}`}</p>
         <p className="timer-text">{timeRemaining}</p>
