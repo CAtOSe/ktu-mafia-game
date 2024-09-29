@@ -11,7 +11,7 @@ public class GameService : IGameService
         _currentPlayers.Remove(player);
         await player.SendMessage(new Message
         {
-            Base = BaseCommands.Disconnect
+            Base = RequestCommands.Disconnect
         });
         await SendPlayerList();
         player.CloseConnection();
@@ -26,7 +26,7 @@ public class GameService : IGameService
         {
             await player.SendMessage(new Message
             {
-                Base = BaseCommands.Error,
+                Base = ResponseCommands.Error,
                 Error = ErrorMessages.UsernameTaken
             });
             return;
@@ -36,7 +36,7 @@ public class GameService : IGameService
         _currentPlayers.Add(player);
         await player.SendMessage(new Message
         {
-            Base = BaseCommands.LoggedIn
+            Base = ResponseCommands.LoggedIn
         });
         await SendPlayerList();
     }
@@ -45,15 +45,13 @@ public class GameService : IGameService
     {
         var message = new Message
         {
-            Base = BaseCommands.PlayerList,
+            Base = ResponseCommands.PlayerListUpdate,
             Arguments = _currentPlayers.Select(p => p.Name).ToList(),
         };
-        
-        var notifications = _currentPlayers.Select(p => p.SendMessage(message));
-        return Task.WhenAll(notifications);
+        return NotifyAllPlayers(message);
     }
     
-    public void StartGame()
+    public async Task StartGame()
     {
         if (_currentPlayers.Count < 2)
         {
@@ -62,35 +60,31 @@ public class GameService : IGameService
 
         // Randomly setting Killer role to 1 player
         var random = new Random();
-        int killerIndex = random.Next(_currentPlayers.Count);
-        Player killer = _currentPlayers[killerIndex];
-        killer.Role = "Killer";
+        var killerIndex = random.Next(_currentPlayers.Count);
+        var killer = _currentPlayers[killerIndex];
+        killer.Role = PlayerRole.Killer;
     
         // Setting Citizen role for other players
         foreach (var player in _currentPlayers)
         {
             if (player != killer)
             {
-                player.Role = "Citizen";
+                player.Role = PlayerRole.Citizen;
             }
 
             // Notify each player of their role
-            player.SendMessage($"role-assigned:{player.Role}");
+            await player.SendMessage(new Message
+            {
+                Base = ResponseCommands.RoleAssigned,
+                Arguments = [player.RoleName]
+            });
         }
 
         // Notify all players that the roles have been assigned
-        NotifyAllPlayers(null, "roles-assigned");
-    }
-    
-    public void NotifyAllPlayers(Player newPlayer, string action)
-    {
-        foreach (var player in _currentPlayers)
+        await NotifyAllPlayers(new Message
         {
-            if (player != newPlayer && newPlayer != null)
-            {
-                player.SendMessage($"{action}:{newPlayer.Name}"); 
-            }
-        }
+            Base = ResponseCommands.GameStarted
+        });
     }
 
     public List<Player> GetPlayers()
@@ -100,7 +94,12 @@ public class GameService : IGameService
     
     public Dictionary<string, string> GetPlayerRoles()
     {
-        return _currentPlayers.ToDictionary(player => player.Name, player => player.Role);
+        return _currentPlayers.ToDictionary(player => player.Name, player => player.RoleName);
     }
-
+    
+    private Task NotifyAllPlayers(Message message)
+    {
+        var notifications = _currentPlayers.Select(p => p.SendMessage(message));
+        return Task.WhenAll(notifications);
+    }
 }

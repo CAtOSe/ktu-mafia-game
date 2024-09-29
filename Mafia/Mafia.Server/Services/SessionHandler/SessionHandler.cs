@@ -37,7 +37,6 @@ public class SessionHandler(
                 receiveResult.CloseStatusDescription,
                 CancellationToken.None);
         }
-        gameService.DisconnectPlayer(player);
-        gameService.NotifyAllPlayers(player, "player-left");
+        await gameService.DisconnectPlayer(player);
     }
 }

@@ -1,3 +1,6 @@
+using System.Text;
+using Microsoft.Extensions.Primitives;
+
 namespace Mafia.Server.Models;
 
 public record Message
@@ -28,5 +31,24 @@ public record Message
                 .Where(x => !string.IsNullOrWhiteSpace(x))
                 .ToArray(),
         };
+    }
+
+    public override string ToString()
+    {
+        var messageBuilder = new StringBuilder();
+        messageBuilder.Append(Base);
+
+        if (!string.IsNullOrWhiteSpace(Error))
+        {
+            messageBuilder.Append(':');
+            messageBuilder.Append(Error);
+        }
+        else if (Arguments is not null && Arguments.Count > 0)
+        {
+            messageBuilder.Append(':');
+            messageBuilder.Append(string.Join(';', Arguments));
+        }
+
+        return messageBuilder.ToString();
     }
 }

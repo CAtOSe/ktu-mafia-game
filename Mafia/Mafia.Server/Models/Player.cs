@@ -9,10 +9,8 @@ public class Player(WebSocket webSocket)
 {
     public DateTime CreationTime { get; init; } = DateTime.UtcNow;
     public string Name { get; set; } = "Guest";
-
-    public string Role { get; set; } = "None"; //Default role set to None
-
-    private WebSocket webSocket;
+    public PlayerRole Role { get; set; } = PlayerRole.Unassigned;
+    public string RoleName => Enum.GetName(typeof(PlayerRole), Role);
 
     public async Task SendMessage(Message message)
     {
@@ -23,7 +21,7 @@ public class Player(WebSocket webSocket)
     {
         if (webSocket.State != WebSocketState.Open) return;
         
-        await webSocket.SendMessage(BaseCommands.Disconnect);
+        await webSocket.SendMessage(RequestCommands.Disconnect);
         await webSocket.CloseAsync(WebSocketCloseStatus.NormalClosure, 
             "GameService:CloseConnection",
             CancellationToken.None);

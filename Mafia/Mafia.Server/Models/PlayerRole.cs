@@ -1,6 +1,6 @@
 namespace Mafia.Server.Models;
 
-public enum PlayerRoles
+public enum PlayerRole
 {
     Unassigned,
     Citizen,
