@@ -10,6 +10,10 @@ public class Player(WebSocket webSocket)
     public DateTime CreationTime { get; init; } = DateTime.UtcNow;
     public string Name { get; set; } = "Guest";
 
+    public string Role { get; set; } = "None"; //Default role set to None
+
+    private WebSocket webSocket;
+
     public async Task SendMessage(Message message)
     {
         await webSocket.SendMessage(message.ToString());

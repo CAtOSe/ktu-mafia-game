@@ -38,5 +38,6 @@ public class SessionHandler(
                 CancellationToken.None);
         }
         gameService.DisconnectPlayer(player);
+        gameService.NotifyAllPlayers(player, "player-left");
     }
 }
