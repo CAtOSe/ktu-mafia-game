@@ -1,0 +1,18 @@
+  .username {
+    font-size: 20px;
+    font-weight: bold; 
+    margin: 0; 
+    text-align: center; 
+  }
+  
+  .role-name {
+    font-size: 23px;
+    font-weight: bold; 
+    margin: 3px 0 15px;
+    text-align: center; 
+  }
+  
+  .info-section p {
+    margin: 5px 0;
+  }
+  
