@@ -37,6 +37,6 @@ public class SessionHandler(
                 receiveResult.CloseStatusDescription,
                 CancellationToken.None);
         }
-        gameService.RemovePlayer(player);
+        gameService.DisconnectPlayer(player);
     }
 }

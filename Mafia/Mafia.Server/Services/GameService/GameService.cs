@@ -1,56 +1,55 @@
 ﻿using Mafia.Server.Models;
+using Mafia.Server.Models.Commands;
 
 namespace Mafia.Server.Services.GameService;
 
 public class GameService : IGameService
 {
     private readonly List<Player> _currentPlayers = [];
-
-    public void AddNewPlayer(Player player)
-    {
-        /*_currentPlayers.Add(player); // OLD one
-        player.SendMessage(Messages.LoggedIn);
-        NotifyAllPlayers(player, "new-player");*/
-        
-        // Adding new player to list
-        _currentPlayers.Add(player);
-
-        // Sending message to new player with all player list
-        var allPlayers = string.Join(",", _currentPlayers.Select(p => p.Name));
-        player.SendMessage($"players-list:{allPlayers}");
-
-        // Notifying all other players about new player
-        NotifyAllPlayers(player, "new-player");
-
-        // Inform new player, that he successfully logged in
-        player.SendMessage(Messages.LoggedIn);
-    }
-
-    public void RemovePlayer(Player player)
+    public async Task DisconnectPlayer(Player player)
     {
         _currentPlayers.Remove(player);
+        await player.SendMessage(new Message
+        {
+            Base = BaseCommands.Disconnect
+        });
+        await SendPlayerList();
         player.CloseConnection();
     }
     
-    private void NotifyAllPlayers(Player newPlayer, string action)
+    public async Task TryAddPlayer(Player player, string username)
     {
-        foreach (var player in _currentPlayers)
+        var usernameTaken = _currentPlayers.Any(p =>
+            p.Name.Equals(username, StringComparison.OrdinalIgnoreCase));
+
+        if (usernameTaken)
         {
-            if (player != newPlayer)
+            await player.SendMessage(new Message
             {
-                player.SendMessage($"{action}:{newPlayer.Name}"); 
-            }
+                Base = BaseCommands.Error,
+                Error = ErrorMessages.UsernameTaken
+            });
+            return;
         }
+
+        player.Name = username;
+        _currentPlayers.Add(player);
+        await player.SendMessage(new Message
+        {
+            Base = BaseCommands.LoggedIn
+        });
+        await SendPlayerList();
     }
     
-    public async Task<bool> IsUsernameAvailable(string username)
+    private Task SendPlayerList()
     {
-        // Check if the username is already taken
-        return !_currentPlayers.Any(player => player.Name.Equals(username, StringComparison.OrdinalIgnoreCase));
-    }
-    
-    public async Task AddPlayer(Player player)
-    {
-         AddNewPlayer(player);
+        var message = new Message
+        {
+            Base = BaseCommands.PlayerList,
+            Arguments = _currentPlayers.Select(p => p.Name).ToList(),
+        };
+        
+        var notifications = _currentPlayers.Select(p => p.SendMessage(message));
+        return Task.WhenAll(notifications);
     }
 }
