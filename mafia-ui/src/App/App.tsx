@@ -1,23 +1,7 @@
-/*import './App.css'
-import Login from "../Login/Login.tsx";
-//import WaitingLobby from "../WaitingLobby/WaitingLobby.tsx";
-
-function App() {
-
-  return (
-    <>
-      <Login />
-    </>
-  )
-}
-
-export default App
-*/
-import './App.scss';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import Login from '../Login/Login';
-import WaitingLobby from '..//WaitingLobby/WaitingLobby';
-import Game from '../Game/Game'; // Import the Game component
+import Login from '../components/Login/Login';
+import WaitingLobby from '../components/WaitingLobby/WaitingLobby';
+import Game from '../components/Game/Game'; // Import the Game component
 
 function App() {
   return (

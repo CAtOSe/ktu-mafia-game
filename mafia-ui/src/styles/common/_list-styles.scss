@@ -1,0 +1,22 @@
+@mixin gradient-border-element {
+  background-color: #333;
+  color: white;
+  box-shadow: 0 4px 10px rgb(0 0 0 / 30%);
+  overflow: hidden;
+  border: 2px solid transparent;
+  border-image: linear-gradient(45deg, #ff6ec4, #7873f5) 1;
+  padding: 20px;
+}
+
+@mixin list-box {
+  padding: 20px;
+  width: 200px;
+  margin: 20px;
+
+  h3 {
+    margin: 0;
+    padding-bottom: 10px;
+    text-align: center;
+    font-size: 18px;
+  }
+}

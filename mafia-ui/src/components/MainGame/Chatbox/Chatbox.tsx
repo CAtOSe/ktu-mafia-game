@@ -1,10 +1,13 @@
 import React, { useState } from 'react';
-import './Chatbox.css';
+import styles from './Chatbox.module.scss';
+import classNames from 'classnames/bind';
+
+const cn = classNames.bind(styles);
 
 const Chatbox: React.FC = () => {
   // State to store chat messages
   const [messages, setMessages] = useState<string[]>([]);
-  
+
   // State to store the current input value
   const [inputValue, setInputValue] = useState('');
 
@@ -22,21 +25,25 @@ const Chatbox: React.FC = () => {
   };
 
   return (
-    <div className="chatbox">
-      <div className="chat-display">
+    <div className={cn('chatbox')}>
+      <div className={cn('chat-display')}>
         {messages.map((message, index) => (
-          <p key={index} className="chat-message">{message}</p>
+          <p key={index} className={cn('chat-message')}>
+            {message}
+          </p>
         ))}
       </div>
-      <div className="chat-input-area">
+      <div className={cn('chat-input-area')}>
         <input
           type="text"
           value={inputValue}
           onChange={handleInputChange}
           placeholder="Type a message..."
-          className="chat-input"
+          className={cn('chat-input')}
         />
-        <button onClick={handleSendMessage} className="send-button">Send</button>
+        <button onClick={handleSendMessage} className={cn('send-button')}>
+          Send
+        </button>
       </div>
     </div>
   );

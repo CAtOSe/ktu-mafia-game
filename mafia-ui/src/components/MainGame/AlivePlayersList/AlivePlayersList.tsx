@@ -1,5 +1,8 @@
 import React from 'react';
-import '../MainGame.css';
+import styles from './AlivePlayerList.module.scss';
+import classNames from 'classnames/bind';
+
+const cn = classNames.bind(styles);
 
 type AlivePlayersListProps = {
   players: string[];
@@ -21,11 +24,11 @@ const AlivePlayersList: React.FC<AlivePlayersListProps> = ({ players }) => {
     '12 Ben',
     '13 Steve',
     '14 Richard',
-    '15 Samuel'
+    '15 Samuel',
   ];
 
   return (
-    <div className="list-box gradient-border-element">
+    <div className={cn('alive-player-list')}>
       <h3>Alive Players</h3>
       <ul>
         {players.slice(0, 15).map((player, index) => (

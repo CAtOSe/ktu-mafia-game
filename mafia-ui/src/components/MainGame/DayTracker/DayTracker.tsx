@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import './DayTracker.css';
+import './DayTracker.module.scss';
 
 const DayTracker: React.FC = () => {
   const [isDay, setIsDay] = useState(true); // Is it Day or is it Night?
@@ -30,7 +30,9 @@ const DayTracker: React.FC = () => {
   return (
     <div>
       <div className={`circle ${isDay ? 'day' : 'night'}`}>
-        <p className="phase-text">{isDay ? `Day ${phase}` : `Night ${phase}`}</p>
+        <p className="phase-text">
+          {isDay ? `Day ${phase}` : `Night ${phase}`}
+        </p>
         <p className="timer-text">{timeRemaining}</p>
       </div>
     </div>
