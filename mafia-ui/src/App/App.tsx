@@ -13,22 +13,28 @@ function App() {
 
 export default App
 */
-import './App.css'
+import './App.scss';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Login from '../Login/Login';
 import WaitingLobby from '..//WaitingLobby/WaitingLobby';
 import Game from '../Game/Game'; // Import the Game component
 
 function App() {
-    return (
-        <Router>
-            <Routes>
-                <Route path="/" element={<Login />} />
-                <Route path="/lobby" element={<WaitingLobby players={[]} username={null} />} />
-                <Route path="/game" element={<Game /*username={""} players={[]} *//>} />
-            </Routes>
-        </Router>
-    );
+  return (
+    <Router>
+      <Routes>
+        <Route path="/" element={<Login />} />
+        <Route
+          path="/lobby"
+          element={<WaitingLobby players={[]} username={null} />}
+        />
+        <Route
+          path="/game"
+          element={<Game /*username={""} players={[]} */ />}
+        />
+      </Routes>
+    </Router>
+  );
 }
 
 export default App;

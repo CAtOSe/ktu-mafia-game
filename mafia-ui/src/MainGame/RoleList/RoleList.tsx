@@ -1,5 +1,5 @@
 import React from 'react';
-import './MainGame.css';
+import '../MainGame.css';
 
 type RoleListProps = {
   roles: string[];
@@ -7,21 +7,21 @@ type RoleListProps = {
 
 const RoleList: React.FC<RoleListProps> = ({ roles }) => {
      roles = [
-        "Killer", 
-        "Consort", 
-        "Townsfolk", 
-        "Townsfolk", 
-        "Townsfolk", 
-        "Townsfolk", 
-        "Townsfolk", 
-        "Townsfolk", 
-        "Sheriff", 
-        "Escort", 
-        "Doctor", 
-        "Any", 
-        "Any", 
-        "Any", 
-        "Serial Killer"
+        'Killer', 
+        'Consort', 
+        'Townsfolk', 
+        'Townsfolk', 
+        'Townsfolk', 
+        'Townsfolk', 
+        'Townsfolk', 
+        'Townsfolk', 
+        'Sheriff', 
+        'Escort', 
+        'Doctor', 
+        'Any', 
+        'Any', 
+        'Any', 
+        'Serial Killer'
       ];
   return (
     <div className="list-box gradient-border-element">

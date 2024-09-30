@@ -1,5 +1,5 @@
 import React from 'react';
-import './MainGame.css';
+import '../MainGame.css';
 
 type RoleListProps = {
   deadPlayers: string[];
@@ -7,9 +7,9 @@ type RoleListProps = {
 
 const Graveyard: React.FC<RoleListProps> = ({ deadPlayers }) => {
   deadPlayers = [
-        "John (Killer)", 
-        "Mark (Townsfolk)", 
-        "Elizabeth (Doctor)"
+        'John (Killer)', 
+        'Mark (Townsfolk)', 
+        'Elizabeth (Doctor)'
       ];
   return (
     <div className="list-box gradient-border-element">

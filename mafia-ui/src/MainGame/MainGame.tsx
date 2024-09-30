@@ -1,11 +1,11 @@
 import React from 'react';
-import DayTracker from './DayTracker';
-import RoleInformation from './RoleInformation';
-import RoleList from './RoleList';
-import Graveyard from './Graveyard';
+import DayTracker from './DayTracker/DayTracker.tsx';
+import RoleInformation from './RoleInformation/RoleInformation.tsx';
+import RoleList from './RoleList/RoleList.tsx';
+import Graveyard from './Graveyard/Graveyard.tsx';
 import './MainGame.css';
-import AlivePlayersList from './AlivePlayersList';
-import Chatbox from './Chatbox';
+import AlivePlayersList from './AlivePlayersList/AlivePlayersList.tsx';
+import Chatbox from './Chatbox/Chatbox.tsx';
 
 const MainGame: React.FC = () => {
   return (

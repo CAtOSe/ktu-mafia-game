@@ -1,6 +1,6 @@
 import React from 'react';
 import './RoleInformation.css';
-import './MainGame.css';
+import '../MainGame.css';
 
 const RoleInformation: React.FC = () => {
   return (

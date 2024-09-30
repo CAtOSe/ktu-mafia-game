@@ -1,7 +1,7 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect } from 'react';
 import Header from '../Header/Header';
 import { useNavigate } from 'react-router-dom'; // Import React Router's useNavigate
-import './WaitingLobby.css';
+import './WaitingLobby.scss';
 
 interface WaitingLobbyProps {
     players: string[];
@@ -79,13 +79,13 @@ function WaitingLobby({ players, username, sendMessage, lastMessage }: WaitingLo
     };
 
     const handleLogout = () => {
-        console.log("Logout clicked");
+        console.log('Logout clicked');
     };
 
 
     return (
         <div>
-            <Header title="Waiting Lobby" username={username || "Unknown Player"} onLogout={handleLogout} />
+            <Header title="Waiting Lobby" username={username || 'Unknown Player'} onLogout={handleLogout} />
 
             <div className="container">
                 <div className="content">

@@ -1,8 +1,8 @@
-import { useEffect, useState } from "react";
-import useWebSocket, { ReadyState } from "react-use-websocket";
-import WaitingLobby from "../WaitingLobby/WaitingLobby";
-import './Login.css';
-import {useNavigate} from "react-router-dom";
+import { useEffect, useState } from 'react';
+import useWebSocket, { ReadyState } from 'react-use-websocket';
+import WaitingLobby from '../WaitingLobby/WaitingLobby';
+import './Login.scss';
+import { useNavigate } from 'react-router-dom';
 
 const socketUrl = 'ws://localhost:5141/ws';
 

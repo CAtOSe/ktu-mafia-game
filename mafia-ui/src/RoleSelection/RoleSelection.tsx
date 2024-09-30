@@ -24,7 +24,7 @@ const RoleSelection: React.FC<RoleSelectionProps> = ({ targetRole }) => {
         let timeout: number;
 
         if (isRandomizing) {
-            let speed = 100;
+            const speed = 100;
 
             interval = window.setInterval(() => {
                 const randomIndex = Math.floor(Math.random() * roles.length);

@@ -1,116 +1,124 @@
 /* Container for the entire game screen */
 .game-container {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
-    width: 100vw;
-    box-sizing: border-box;
-    background-color: #222; /* Dark background for the game screen */
-    color: white;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  width: 100vw;
+  box-sizing: border-box;
+  background-color: #222; /* Dark background for the game screen */
+  color: white;
 }
 
 /* Game content area with padding and rounded corners */
 .game-content {
-    text-align: center;
-    width: 60%; /* Make this wider than the login screen */
-    background-color: rgba(34, 34, 34, 0.9); /* Dark background with slight transparency */
-    border-radius: 15px;
-    padding: 30px;
-    box-shadow: 0 0 30px rgba(0, 0, 0, 0.6); /* Slightly more shadow than the login */
+  text-align: center;
+  width: 60%; /* Make this wider than the login screen */
+  background-color: rgb(
+    34 34 34 / 90%
+  ); /* Dark background with slight transparency */
+
+  border-radius: 15px;
+  padding: 30px;
+  box-shadow: 0 0 30px rgb(0 0 0 / 60%); /* Slightly more shadow than the login */
 }
 
 /* Header styling (e.g., for the player's role) */
 .game-header {
-    font-size: 24px;
-    font-weight: bold;
-    margin-bottom: 20px;
-    color: #ff6ec4; /* Accent color for the header */
+  font-size: 24px;
+  font-weight: bold;
+  margin-bottom: 20px;
+  color: #ff6ec4; /* Accent color for the header */
 }
 
 /* Styling for the player list */
 .player-list {
-    list-style-type: none;
-    padding: 0;
-    margin: 20px 0;
-    text-align: left;
+  list-style-type: none;
+  padding: 0;
+  margin: 20px 0;
+  text-align: left;
 }
 
 .player-list li {
-    padding: 10px;
-    margin-bottom: 10px;
-    background-color: #333; /* Dark background for player items */
-    border-radius: 8px;
-    border: 2px solid transparent; /* Base border */
-    border-image: linear-gradient(45deg, #ff6ec4, #7873f5) 1; /* Gradient border */
-    font-size: 18px;
+  padding: 10px;
+  margin-bottom: 10px;
+  background-color: #333; /* Dark background for player items */
+  border-radius: 8px;
+  border: 2px solid transparent; /* Base border */
+  border-image: linear-gradient(45deg, #ff6ec4, #7873f5) 1; /* Gradient border */
+  font-size: 18px;
 }
 
 /* Button for game actions, similar to glow button */
 .game-button {
-    padding: 12px 24px;
-    font-size: 18px;
-    color: white;
-    background: linear-gradient(45deg, #ff6ec4, #7873f5, #ff6ec4);
-    background-size: 300% 300%;
-    border: none;
-    border-radius: 10px;
-    cursor: pointer;
-    transition: box-shadow 0.3s ease, transform 0.3s ease;
-    text-transform: uppercase;
-    letter-spacing: 1.5px;
-    animation: gradientAnimation 6s ease infinite;
+  padding: 12px 24px;
+  font-size: 18px;
+  color: white;
+  background: linear-gradient(45deg, #ff6ec4, #7873f5, #ff6ec4);
+  background-size: 300% 300%;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  transition:
+    box-shadow 0.3s ease,
+    transform 0.3s ease;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  animation: gradient-animation 6s ease infinite;
 }
 
 .game-button:hover {
-    box-shadow: 0 0 20px rgba(255, 110, 196, 0.8),
-    0 0 40px rgba(120, 115, 245, 0.8);
-    transform: scale(1.05);
+  box-shadow:
+    0 0 20px rgb(255 110 196 / 80%),
+    0 0 40px rgb(120 115 245 / 80%);
+  transform: scale(1.05);
 }
 
 /* Info box for showing game-related messages */
 .info-box {
-    background-color: #333;
-    padding: 15px;
-    margin: 20px 0;
-    border-radius: 8px;
-    border: 2px solid transparent;
-    border-image: linear-gradient(45deg, #ff6ec4, #7873f5) 1;
-    font-size: 16px;
+  background-color: #333;
+  padding: 15px;
+  margin: 20px 0;
+  border-radius: 8px;
+  border: 2px solid transparent;
+  border-image: linear-gradient(45deg, #ff6ec4, #7873f5) 1;
+  font-size: 16px;
 }
 
 /* Animation for button gradient */
-@keyframes gradientAnimation {
-    0% {
-        background-position: 0% 50%;
-    }
-    50% {
-        background-position: 100% 50%;
-    }
-    100% {
-        background-position: 0% 50%;
-    }
+@keyframes gradient-animation {
+  0% {
+    background-position: 0% 50%;
+  }
+
+  50% {
+    background-position: 100% 50%;
+  }
+
+  100% {
+    background-position: 0% 50%;
+  }
 }
 
 /* Add responsive design for smaller screens */
-@media (max-width: 768px) {
-    .game-content {
-        width: 90%; /* Adjust the width for smaller devices */
-        padding: 20px;
-    }
+@media (width <= 768px) {
+  .game-content {
+    width: 90%; /* Adjust the width for smaller devices */
+    padding: 20px;
+  }
 
-    .game-header {
-        font-size: 20px;
-    }
+  .game-header {
+    font-size: 20px;
+  }
 
-    .game-button {
-        font-size: 16px;
-        padding: 10px 20px;
-    }
+  .game-button {
+    font-size: 16px;
+    padding: 10px 20px;
+  }
 
-    .player-list li {
-        font-size: 16px;
-        padding: 8px;
-    }
+  .player-list li {
+    font-size: 16px;
+    padding: 8px;
+  }
 }

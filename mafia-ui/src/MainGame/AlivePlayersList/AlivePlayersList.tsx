@@ -1,5 +1,5 @@
 import React from 'react';
-import './MainGame.css';
+import '../MainGame.css';
 
 type AlivePlayersListProps = {
   players: string[];
@@ -7,21 +7,21 @@ type AlivePlayersListProps = {
 
 const AlivePlayersList: React.FC<AlivePlayersListProps> = ({ players }) => {
   players = [
-    "1 John",
-    "2 Mark",
-    "3 Luke",
-    "4 Adam",
-    "5 Carley",
-    "6 Brooke",
-    "7 Laurie",
-    "8 Sullivan",
-    "9 Blaire",
-    "10 Becca",
-    "11 Tom",
-    "12 Ben",
-    "13 Steve",
-    "14 Richard",
-    "15 Samuel"
+    '1 John',
+    '2 Mark',
+    '3 Luke',
+    '4 Adam',
+    '5 Carley',
+    '6 Brooke',
+    '7 Laurie',
+    '8 Sullivan',
+    '9 Blaire',
+    '10 Becca',
+    '11 Tom',
+    '12 Ben',
+    '13 Steve',
+    '14 Richard',
+    '15 Samuel'
   ];
 
   return (
