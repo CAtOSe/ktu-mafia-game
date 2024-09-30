@@ -1,0 +1,104 @@
+.main-game {
+    position: relative; /* For absolute positioning of child components */
+    width: 100vw;
+    height: 100vh;
+    display: flex; /* So that the Graveyard could be placed to the right of the Role list */
+  }
+  
+  /* Top right corner */
+  .role-information {
+    position: absolute;
+    top: 20px; 
+    right: 20px; 
+    margin-left: auto; 
+  }
+
+  .list-box {
+    padding: 20px; 
+    width: 200px; 
+    margin:20px
+  }
+
+  /* Top middle */
+  .day-tracker {
+    position: absolute;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .gradient-border-element {
+    background-color: #333; 
+    color: white; 
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+    overflow: hidden;
+    border: 2px solid transparent;
+    border-image: linear-gradient(45deg, #ff6ec4, #7873f5) 1;
+    padding: 20px;
+  }
+
+/* Style the list and player rows */
+ul {
+  list-style-type: none; /* No bullet points */
+  padding: 0;
+  margin: 0;
+}
+
+li {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1); /* Separator line */
+}
+
+.player-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 3px 0; 
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1); /* Separator line */
+}
+
+.player-info {
+  font-size: 13px;
+  flex: 1;
+}
+
+/* Button styling */
+.action-button {
+  background-color: #ff6ec4;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 3px 8px; 
+  font-size: 12px; 
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.action-button:hover {
+  background-color: #7873f5;
+}
+
+/* List Heading Style */
+.list-box h3 {
+  margin: 0;
+  padding-bottom: 10px; 
+  text-align: center; 
+  font-size: 18px;
+}
+
+/* Bottom left corner */
+.chatbox-container {
+  position: absolute;
+  bottom: 0px; 
+  left: 0px;
+  margin: 20px;
+}
+
+/* Bottom right corner */
+.alive-players-list {
+  position: absolute;
+  bottom: 0px;
+  right: 0px; 
+}
