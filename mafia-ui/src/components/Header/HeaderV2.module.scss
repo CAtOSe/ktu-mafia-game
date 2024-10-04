@@ -1,0 +1,29 @@
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 32px;
+  background: linear-gradient(90deg, #b476e1 0%, #7873f5 10%, #333 100%);
+
+  &__icon {
+    width: 40px;
+    height: 40px;
+    margin-right: 10px;
+  }
+
+  &__title {
+    margin: 0;
+    color: #fff;
+  }
+
+  &__section {
+    display: flex;
+    gap: 16px;
+  }
+
+  &__username {
+    font-size: 16px;
+    font-weight: 700;
+    color: #fff;
+  }
+}

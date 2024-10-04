@@ -1,23 +1,26 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Login from '../components/Login/Login';
 import WaitingLobby from '../components/WaitingLobby/WaitingLobby';
-import Game from '../components/Game/Game'; // Import the Game component
+import Game from '../components/Game/Game';
+import { WebSocketProvider } from '../contexts/WebSocketContext/WebsocketContext.tsx';
 
 function App() {
   return (
-    <Router>
-      <Routes>
-        <Route path="/" element={<Login />} />
-        <Route
-          path="/lobby"
-          element={<WaitingLobby players={[]} username={null} />}
-        />
-        <Route
-          path="/game"
-          element={<Game /*username={""} players={[]} */ />}
-        />
-      </Routes>
-    </Router>
+    <WebSocketProvider>
+      <Router>
+        <Routes>
+          <Route path="/" element={<Login />} />
+          <Route
+            path="/lobby"
+            element={<WaitingLobby players={[]} username={null} />}
+          />
+          <Route
+            path="/game"
+            element={<Game /*username={""} players={[]} */ />}
+          />
+        </Routes>
+      </Router>
+    </WebSocketProvider>
   );
 }
 

@@ -2,12 +2,13 @@ import { useState, useEffect } from 'react';
 import Header from '../Header/Header.tsx';
 import { useNavigate } from 'react-router-dom'; // Import React Router's useNavigate
 import './WaitingLobby.scss';
+import { Message } from '../../contexts/WebSocketContext/types.ts';
 
 interface WaitingLobbyProps {
   players: string[];
   username: string | null;
   sendMessage: (message: string) => void;
-  lastMessage: any;
+  lastMessage: Message;
 }
 
 function WaitingLobby({
@@ -21,6 +22,7 @@ function WaitingLobby({
   const [countdownInterval, setCountdownInterval] = useState<number | null>(
     null,
   );
+  const [role, setRole] = useState<string>();
   const [currentPlayers, setCurrentPlayers] = useState<string[]>(players); // Track current players
   const [host, setHost] = useState<string | null>(
     players.length > 0 ? players[0] : null,
@@ -49,15 +51,18 @@ function WaitingLobby({
 
   // Handle receiving the "game-started" message from the backend
   useEffect(() => {
-    if (lastMessage?.data === 'game-started') {
+    if (lastMessage.base === 'game-started') {
       setGameStarting(true);
+    }
+    if (lastMessage.base === 'role-assigned') {
+      setRole(lastMessage.arguments?.[0] ?? 'Unknown');
     }
   }, [lastMessage]);
 
   useEffect(() => {
     if (gameStarting) {
       // Heading to "Game" compponent with username and players
-      navigate('/game', { state: { username, players } });
+      navigate('/game', { state: { username, players, role } });
     }
   }, [gameStarting, navigate, username, players]);
 
