@@ -1,10 +1,10 @@
 import { useEffect, useRef, createContext } from 'react';
 import {
-  Message,
   Subscription,
   WebsocketContextProps,
   WebSocketContextValue,
 } from './types.ts';
+import { Message } from '../../types.ts';
 
 const WebSocketContext = createContext<WebSocketContextValue | undefined>(
   undefined,

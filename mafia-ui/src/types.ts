@@ -11,4 +11,5 @@ export enum RequestMessages {
 export enum ResponseMessages {
   Hello = 'hello',
   PlayerListUpdate = 'player-list-update',
+  LoggedIn = 'logged-in',
 }

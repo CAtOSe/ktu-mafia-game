@@ -1,4 +1,10 @@
-import { createContext, useContext, useEffect, useState } from 'react';
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useState,
+} from 'react';
 import {
   GameStage,
   GameState,
@@ -30,19 +36,25 @@ export const GameStateContextProvider = ({
     setGameState({ ...gameState, ...partialGameState });
   };
 
-  useEffect(() => {
-    if (!websocket) return;
-
-    const handleMessage = (message: Message) => {
+  const handleMessage = useCallback(
+    (message: Message) => {
       switch (message.base) {
         case ResponseMessages.Hello:
           updateGameState({ gameStage: GameStage.Login });
+          return;
+        case ResponseMessages.LoggedIn:
+          updateGameState({ gameStage: GameStage.Lobby });
           return;
         case ResponseMessages.PlayerListUpdate:
           updateGameState({ players: message.arguments ?? [] });
           return;
       }
-    };
+    },
+    [updateGameState],
+  );
+
+  useEffect(() => {
+    if (!websocket) return;
 
     const subId = websocket.subscribe({
       id: 'gameState',

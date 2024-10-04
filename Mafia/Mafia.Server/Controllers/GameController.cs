@@ -1,4 +1,5 @@
-﻿using Mafia.Server.Services.SessionHandler;
+﻿using System.Net.WebSockets;
+using Mafia.Server.Services.SessionHandler;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Mafia.Server.Controllers;
@@ -19,6 +20,17 @@ public class GameController(ISessionHandler sessionHandler, IHostApplicationLife
             catch (OperationCanceledException e)
             {
                 Console.WriteLine($"Terminating connection.");
+            }
+            catch (WebSocketException e)
+            {
+                if (e.WebSocketErrorCode == WebSocketError.ConnectionClosedPrematurely)
+                { 
+                    Console.WriteLine($"Unexpected connection close ({e.WebSocketErrorCode})");
+                }
+                else
+                {
+                    throw;
+                }
             }
         }
         else

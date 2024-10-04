@@ -16,6 +16,7 @@ const HeaderV2 = () => {
 
   const headerTitle = (currentGameStage: GameStage) => {
     switch (currentGameStage) {
+      case GameStage.Connecting:
       case GameStage.Login:
         return 'Login';
       case GameStage.Lobby:
@@ -44,7 +45,7 @@ const HeaderV2 = () => {
       <div className={cn('header__section')}>
         {showLogout && (
           <>
-            <p className={cn('header__username')}>Jonas{username}</p>
+            <p className={cn('header__username')}>{username}</p>
             <Button style={ButtonStyle.Glow}>Logout</Button>
           </>
         )}
