@@ -12,22 +12,23 @@ public class SessionHandler(
     ) : ISessionHandler
 {
 
-    public async Task HandleConnection(WebSocket webSocket)
+    public async Task HandleConnection(WebSocket webSocket, CancellationToken cancellationToken)
     {
         Player player = new(webSocket);
         
         var buffer = new byte[1024 * 4];
         var receiveResult = await webSocket.ReceiveAsync(
-            new ArraySegment<byte>(buffer), CancellationToken.None);
+            new ArraySegment<byte>(buffer), cancellationToken);
 
         while (!receiveResult.CloseStatus.HasValue)
         {
             var message = Encoding.UTF8.GetString(buffer, 0, receiveResult.Count);
 
             await messageResolver.HandleMessage(player, message);
-
+            
+            if (webSocket.State != WebSocketState.Open && webSocket.State != WebSocketState.CloseSent) return;
             receiveResult = await webSocket.ReceiveAsync(
-                new ArraySegment<byte>(buffer), CancellationToken.None);
+                new ArraySegment<byte>(buffer), cancellationToken);
         }
 
         if (webSocket.State == WebSocketState.Open)
@@ -35,7 +36,7 @@ public class SessionHandler(
             await webSocket.CloseAsync(
                 receiveResult.CloseStatus.Value,
                 receiveResult.CloseStatusDescription,
-                CancellationToken.None);
+                cancellationToken);
         }
         await gameService.DisconnectPlayer(player);
     }

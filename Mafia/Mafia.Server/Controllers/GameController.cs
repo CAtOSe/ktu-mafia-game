@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Mafia.Server.Controllers;
 
-public class GameController(ISessionHandler sessionHandler) : Controller
+public class GameController(ISessionHandler sessionHandler, IHostApplicationLifetime hostLifetime) : Controller
 {
     [Route("/ws")]
     public async Task Get()
@@ -11,7 +11,15 @@ public class GameController(ISessionHandler sessionHandler) : Controller
         if (HttpContext.WebSockets.IsWebSocketRequest)
         {
             using var webSocket = await HttpContext.WebSockets.AcceptWebSocketAsync();
-            await sessionHandler.HandleConnection(webSocket);
+
+            try
+            {
+                await sessionHandler.HandleConnection(webSocket, hostLifetime.ApplicationStopping);
+            }
+            catch (OperationCanceledException e)
+            {
+                Console.WriteLine($"Terminating connection.");
+            }
         }
         else
         {

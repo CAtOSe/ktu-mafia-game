@@ -13,8 +13,8 @@ public class GameService : IGameService
         {
             Base = RequestCommands.Disconnect
         });
-        await SendPlayerList();
         player.CloseConnection();
+        await SendPlayerList();
     }
     
     public async Task TryAddPlayer(Player player, string username)
