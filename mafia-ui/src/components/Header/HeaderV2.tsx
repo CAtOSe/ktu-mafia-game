@@ -10,7 +10,9 @@ import { ButtonStyle } from '../Button/types.ts';
 const cn = classNames.bind(styles);
 
 const HeaderV2 = () => {
-  const { username, gameStage } = useContext(GameStateContext);
+  const {
+    gameState: { username, gameStage },
+  } = useContext(GameStateContext);
 
   const headerTitle = (currentGameStage: GameStage) => {
     switch (currentGameStage) {

@@ -1,9 +1,11 @@
 import React from 'react';
+import { Message } from '../../types.ts';
 
 export interface WebSocketContextValue {
   sendMessage: (message: string) => void;
   subscribe: (subscription: Subscription) => string;
   unsubscribe: (subscriptionId: string) => void;
+  isOpen: boolean;
 }
 
 export interface WebsocketContextProps {
@@ -14,10 +16,4 @@ export interface Subscription {
   id: string;
   onReceive: (message: Message) => void;
   filter?: string[];
-}
-
-export interface Message {
-  base: string;
-  error?: string;
-  arguments?: string[];
 }

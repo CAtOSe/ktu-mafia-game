@@ -15,6 +15,8 @@ const WebSocketProvider = ({ children }: WebsocketContextProps) => {
   const websocket = useRef<WebSocket | null>(null);
   const subscribers = useRef<Subscription[]>([]);
 
+  const isOpen = websocket.current?.readyState === websocket.current?.OPEN;
+
   useEffect(() => {
     const socket = new WebSocket(socketUrl);
     websocket.current = socket;
@@ -72,8 +74,10 @@ const WebSocketProvider = ({ children }: WebsocketContextProps) => {
     );
 
     if (index === -1) {
+      console.log('Subscribing with id', subscription.id);
       subscribers.current = [...subscribers.current, subscription];
     } else {
+      console.log('Updating subscription with id', subscription.id);
       subscribers.current[index] = subscription;
     }
 
@@ -82,13 +86,20 @@ const WebSocketProvider = ({ children }: WebsocketContextProps) => {
 
   const unsubscribe = (subscriptionId: string) => {
     const index = subscribers.current.findIndex((s) => s.id === subscriptionId);
-    if (index >= 0) subscribers.current.splice(index, 1);
+    if (index >= 0) {
+      console.log(
+        'Removing subscription with id',
+        subscribers.current[index].id,
+      );
+      subscribers.current.splice(index, 1);
+    }
   };
 
   const contextValue: WebSocketContextValue = {
     sendMessage,
     subscribe,
     unsubscribe,
+    isOpen,
   };
 
   return (

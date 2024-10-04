@@ -9,10 +9,14 @@ import LoginV2 from '../Login/LoginV2.tsx';
 const cn = classNames.bind(styles);
 
 const GameLayout = () => {
-  const { gameStage } = useContext(GameStateContext);
+  const {
+    gameState: { gameStage },
+  } = useContext(GameStateContext);
 
   const output = (currentGameStage: GameStage) => {
     switch (currentGameStage) {
+      case GameStage.Connecting:
+        return <p>Connecting...</p>;
       case GameStage.Login:
         return <LoginV2 />;
       default:

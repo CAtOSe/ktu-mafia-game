@@ -21,6 +21,7 @@ public class Player(WebSocket webSocket)
     {
         if (webSocket.State != WebSocketState.Open) return;
         
+        Console.WriteLine("Connection closed.");
         await webSocket.SendMessage(RequestCommands.Disconnect);
         await webSocket.CloseAsync(WebSocketCloseStatus.NormalClosure, 
             "GameService:CloseConnection",

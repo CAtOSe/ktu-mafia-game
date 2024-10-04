@@ -7,4 +7,5 @@ public static class ResponseCommands
     public const string LoggedIn = "logged-in";
     public const string GameStarted = "game-started";
     public const string PlayerListUpdate = "player-list-update";
+    public const string Hello = "hello";
 }

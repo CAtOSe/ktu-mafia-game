@@ -1,6 +1,7 @@
 using System.Net.WebSockets;
 using System.Text;
 using Mafia.Server.Models;
+using Mafia.Server.Models.Commands;
 using Mafia.Server.Services.GameService;
 using Mafia.Server.Services.MessageResolver;
 
@@ -14,7 +15,9 @@ public class SessionHandler(
 
     public async Task HandleConnection(WebSocket webSocket, CancellationToken cancellationToken)
     {
+        Console.WriteLine("New connection established.");
         Player player = new(webSocket);
+        await player.SendMessage(new Message { Base = ResponseCommands.Hello });
         
         var buffer = new byte[1024 * 4];
         var receiveResult = await webSocket.ReceiveAsync(
@@ -33,6 +36,7 @@ public class SessionHandler(
 
         if (webSocket.State == WebSocketState.Open)
         {
+            Console.WriteLine("Connection closed.");
             await webSocket.CloseAsync(
                 receiveResult.CloseStatus.Value,
                 receiveResult.CloseStatusDescription,

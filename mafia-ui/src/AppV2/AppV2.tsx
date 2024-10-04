@@ -4,11 +4,11 @@ import GameLayout from '../components/GameLayout/GameLayout.tsx';
 
 const AppV2 = () => {
   return (
-    <GameStateContextProvider>
-      <WebSocketProvider>
+    <WebSocketProvider>
+      <GameStateContextProvider>
         <GameLayout />
-      </WebSocketProvider>
-    </GameStateContextProvider>
+      </GameStateContextProvider>
+    </WebSocketProvider>
   );
 };
 
