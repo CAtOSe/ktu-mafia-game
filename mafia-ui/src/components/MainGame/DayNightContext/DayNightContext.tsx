@@ -1,6 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 
-// Sukuriame kontekstą
 interface DayNightContextProps {
   isDay: boolean;
   timeRemaining: number;

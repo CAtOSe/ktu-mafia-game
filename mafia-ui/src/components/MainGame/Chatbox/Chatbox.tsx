@@ -57,12 +57,12 @@ export default Chatbox;*/
 import React, { useState } from 'react';
 import styles from './Chatbox.module.scss';
 import classNames from 'classnames/bind';
-import { useDayNight } from '../DayNightContext/DayNightContext.tsx'; // Naudojame kontekstą
+import { useDayNight } from '../DayNightContext/DayNightContext.tsx'; 
 
 const cn = classNames.bind(styles);
 
 const Chatbox: React.FC = () => {
-  const { isDay } = useDayNight(); // Paimame dienos/nakties informaciją
+  const { isDay } = useDayNight(); 
   const [messages, setMessages] = useState<string[]>([]);
   const [inputValue, setInputValue] = useState('');
 

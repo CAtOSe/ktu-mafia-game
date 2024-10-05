@@ -2,13 +2,13 @@
 import { GameStateContextProvider } from '../contexts/GameStateContext/GameStateContext.tsx';
 import GameLayout from '../components/GameLayout/GameLayout.tsx';
 import WebsocketContextProvider from '../contexts/WebSocketContext/WebsocketContextProvider.tsx';
-import { DayNightProvider } from '../components/MainGame/DayNightContext/DayNightContext.tsx'; // Importuojame DayNight kontekstą
+import { DayNightProvider } from '../components/MainGame/DayNightContext/DayNightContext.tsx'; 
 
 const AppV2 = () => {
   return (
     <WebsocketContextProvider>
       <GameStateContextProvider>
-        <DayNightProvider> {/* Apvyniojame su DayNightProvider */}
+        <DayNightProvider> {}
           <GameLayout />
         </DayNightProvider>
       </GameStateContextProvider>

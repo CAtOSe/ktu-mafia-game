@@ -45,11 +45,10 @@ export default DayTracker;*/
 
 import React from 'react';
 import './DayTracker.module.scss';
-import { useDayNight } from '../DayNightContext/DayNightContext.tsx'; // Importuojame kontekstą
+import { useDayNight } from '../DayNightContext/DayNightContext.tsx'; 
 
 const DayTracker: React.FC = () => {
-  const { isDay, timeRemaining } = useDayNight(); // Paimame būseną iš konteksto
-
+  const { isDay, timeRemaining } = useDayNight(); 
   return (
     <div>
       <div className={`circle ${isDay ? 'day' : 'night'}`}>
