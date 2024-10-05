@@ -1,0 +1,38 @@
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  height: 48px;
+  padding: 0 32px;
+  background: linear-gradient(90deg, #b476e1 0%, #7873f5 10%, #333 100%);
+
+  &__icon {
+    width: 32px;
+    height: 32px;
+    margin-right: 10px;
+  }
+
+  &__title {
+    margin: 0;
+    color: #fff;
+  }
+
+  &__section {
+    align-items: center;
+    display: flex;
+    gap: 16px;
+  }
+
+  &__username {
+    font-size: 16px;
+    font-weight: 700;
+    margin: 0;
+    color: #fff;
+  }
+
+  &__role {
+    font-size: 14px;
+    font-weight: 700;
+    color: #ddd;
+  }
+}

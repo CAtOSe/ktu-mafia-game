@@ -1,0 +1,6 @@
+@use '@/styles/common/list-styles';
+
+.alive-player-list {
+  @include list-styles.gradient-border-element;
+  @include list-styles.list-box;
+}

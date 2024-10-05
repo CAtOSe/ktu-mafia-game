@@ -1,35 +1,30 @@
 using System.Net.WebSockets;
 using Mafia.Server.Extensions;
 using System.Net.WebSockets;
+using Mafia.Server.Models.Commands;
 
 namespace Mafia.Server.Models;
 
-//public class Player(WebSocket webSocket)
-
-public class Player
+public class Player(WebSocket webSocket)
 {
     public DateTime CreationTime { get; init; } = DateTime.UtcNow;
-    public string Name { get; set; }
+    public string Name { get; set; } = "Guest";
+    public PlayerRole Role { get; set; } = PlayerRole.Unassigned;
+    public string RoleName => Enum.GetName(typeof(PlayerRole), Role);
+    public bool IsLoggedIn { get; set; } = false;
+    public bool IsHost { get; set; } = false;
 
-    public string Role { get; set; } = "None"; //Default role set to None
-
-    private WebSocket webSocket;
-
-    public Player(WebSocket webSocket)
+    public async Task SendMessage(Message message)
     {
-        this.webSocket = webSocket;
-        Name = "Guest"; // if error occurs, player will be displayed as guest
-    }
-    public async Task SendMessage(string message)
-    {
-        await webSocket.SendMessage(message);
+        await webSocket.SendMessage(message.ToString());
     }
 
     public async void CloseConnection()
     {
         if (webSocket.State != WebSocketState.Open) return;
         
-        await webSocket.SendMessage(Messages.Disconnect);
+        Console.WriteLine("Connection closed.");
+        await webSocket.SendMessage(RequestCommands.Disconnect);
         await webSocket.CloseAsync(WebSocketCloseStatus.NormalClosure, 
             "GameService:CloseConnection",
             CancellationToken.None);

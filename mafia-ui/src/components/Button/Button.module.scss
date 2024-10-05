@@ -1,0 +1,43 @@
+.button {
+  padding: 10px 20px;
+  font-size: 16px;
+  color: white;
+  background: #535bf2;
+  border: none;
+  border-radius: 8px;
+  font-family: sans-serif;
+  text-transform: uppercase;
+  cursor: pointer;
+  line-height: 20px;
+
+  &--glow {
+    background: linear-gradient(45deg, #ff6ec4, #7873f5, #ff6ec4);
+    background-size: 300% 300%;
+    transition:
+      box-shadow 0.3s ease,
+      transform 0.3s ease;
+    animation: gradient-animation 6s ease infinite;
+
+    &:hover {
+      box-shadow:
+        0 0 20px rgb(255 110 196 / 80%),
+        0 0 40px rgb(120 115 245 / 80%);
+
+      //transform: scale(1.05);
+    }
+
+    @keyframes gradient-animation {
+      0% {
+        background-position: 0% 50%;
+      }
+
+      50% {
+        background-position: 100% 50%;
+      }
+
+      100% {
+        background-position: 0% 50%;
+      }
+    }
+  }
+}

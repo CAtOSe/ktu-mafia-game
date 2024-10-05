@@ -1,0 +1,54 @@
+.circle {
+  width: 150px;
+  height: 150px;
+  border-radius: 50%; /* Circle */
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  position: relative; /* Required for ::before pseudo-element */
+  background-color: #333;
+}
+
+.circle::before {
+  content: '';
+  position: absolute;
+  top: -4px;
+  left: -4px;
+
+  /* Change Width and Height to change border thickness: */
+  width: 158px;
+  height: 158px;
+  border-radius: 50%; /* Circle */
+  background-color: #ff6ec4;
+  z-index: -1; /* Display Border behind main information circle */
+  transition: background-color 2s ease-in-out; /* Smooth transition for the background color */
+}
+
+/* Day border color */
+.day::before {
+  background-color: #ff6ec4;
+}
+
+/* Night border color */
+.night::before {
+  background-color: #7873f5;
+}
+
+/* Phase text inside the circle */
+.phase-text {
+  font-size: 24px;
+  color: white;
+  font-weight: bold;
+  text-shadow: 1px 1px 2px rgb(0 0 0 / 50%);
+  margin: 0;
+}
+
+/* Timer text (countdown) */
+.timer-text {
+  font-size: 32px;
+  color: white;
+  font-weight: bold;
+  text-shadow: 1px 1px 2px rgb(0 0 0 / 50%);
+  margin: 0;
+}

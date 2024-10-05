@@ -1,87 +1,131 @@
 ﻿using Mafia.Server.Models;
+using Mafia.Server.Models.Commands;
 
 namespace Mafia.Server.Services.GameService;
 
 public class GameService : IGameService
 {
     private readonly List<Player> _currentPlayers = [];
-
-    public void AddNewPlayer(Player player)
-    {
-        /*_currentPlayers.Add(player); // OLD one
-        player.SendMessage(Messages.LoggedIn);
-        NotifyAllPlayers(player, "new-player");*/
-        
-        // Adding new player to list
-        _currentPlayers.Add(player);
-
-        // Sending message to new player with all player list
-        var allPlayers = string.Join(",", _currentPlayers.Select(p => p.Name));
-        player.SendMessage($"players-list:{allPlayers}");
-
-        // Notifying all other players about new player
-        NotifyAllPlayers(player, "new-player");
-
-        // Inform new player, that he successfully logged in
-        player.SendMessage(Messages.LoggedIn);
-    }
-
-    public void RemovePlayer(Player player)
+    
+    private bool GameStarted { get; set; } = false;
+    
+    public async Task DisconnectPlayer(Player player)
     {
         _currentPlayers.Remove(player);
-        NotifyAllPlayers(player, "player-left");
+        await player.SendMessage(new Message
+        {
+            Base = RequestCommands.Disconnect
+        });
         player.CloseConnection();
+
+        if (_currentPlayers.Count == 0)
+        {
+            ResetGame();
+        }
+        else
+        { 
+            await SendPlayerList();
+        }
     }
     
-    public async Task<bool> IsUsernameAvailable(string username)
+    public async Task TryAddPlayer(Player player, string username)
     {
-        // Check if the username is already taken
-        return !_currentPlayers.Any(player => player.Name.Equals(username, StringComparison.OrdinalIgnoreCase));
+        if (player.IsLoggedIn)
+        {
+            await player.SendMessage(new Message
+            {
+                Base = ResponseCommands.Error,
+                Error = ErrorMessages.AlreadyLoggedIn,
+            });
+            return;
+        }
+        
+        var usernameTaken = _currentPlayers.Any(p =>
+            p.Name.Equals(username, StringComparison.OrdinalIgnoreCase));
+        if (usernameTaken)
+        {
+            await player.SendMessage(new Message
+            {
+                Base = ResponseCommands.Error,
+                Error = ErrorMessages.UsernameTaken
+            });
+            return;
+        }
+
+        player.IsLoggedIn = true;
+        player.Name = username;
+        player.IsHost = _currentPlayers.Count == 0;
+        
+        _currentPlayers.Add(player);
+        await player.SendMessage(new Message
+        {
+            Base = ResponseCommands.LoggedIn,
+            Arguments = player.IsHost ? ["host"] : null
+        });
+        await SendPlayerList();
     }
     
-    public async Task AddPlayer(Player player)
+    private Task SendPlayerList()
     {
-         AddNewPlayer(player);
+        var message = new Message
+        {
+            Base = ResponseCommands.PlayerListUpdate,
+            Arguments = _currentPlayers.Select(p => p.Name).ToList(),
+        };
+        return NotifyAllPlayers(message);
     }
     
-    public void StartGame()
+    public async Task StartGame()
     {
+        if (GameStarted)
+        {
+            Console.WriteLine("Game already started");
+            return;
+        }
+        
         if (_currentPlayers.Count < 2)
         {
             throw new InvalidOperationException("There must be at least 3 players to start the game.");
         }
 
+        Console.WriteLine("Assigning roles and starting the countdown.");
+        
+        await NotifyAllPlayers(new Message
+        {
+            Base = ResponseCommands.StartCountdown,
+            Arguments = [GameConfiguration.BeginCountdown.ToString()]
+        });
+        var gameStartTask = Task.Delay(GameConfiguration.BeginCountdown).ContinueWith(async t =>
+        {
+            await NotifyAllPlayers(new Message
+            {
+                Base = ResponseCommands.GameStarted,
+            });
+        });
+
         // Randomly setting Killer role to 1 player
         var random = new Random();
-        int killerIndex = random.Next(_currentPlayers.Count);
-        Player killer = _currentPlayers[killerIndex];
-        killer.Role = "Killer";
+        var killerIndex = random.Next(_currentPlayers.Count);
+        var killer = _currentPlayers[killerIndex];
+        killer.Role = PlayerRole.Killer;
     
         // Setting Citizen role for other players
         foreach (var player in _currentPlayers)
         {
             if (player != killer)
             {
-                player.Role = "Citizen";
+                player.Role = PlayerRole.Citizen;
             }
 
             // Notify each player of their role
-            player.SendMessage($"role-assigned:{player.Role}");
+            await player.SendMessage(new Message
+            {
+                Base = ResponseCommands.RoleAssigned,
+                Arguments = [player.RoleName]
+            });
         }
 
-        // Notify all players that the roles have been assigned
-        NotifyAllPlayers(null, "roles-assigned");
-    }
-    
-    public void NotifyAllPlayers(Player newPlayer, string action)
-    {
-        foreach (var player in _currentPlayers)
-        {
-            if (player != newPlayer && newPlayer != null)
-            {
-                player.SendMessage($"{action}:{newPlayer.Name}"); 
-            }
-        }
+        await gameStartTask;
     }
 
     public List<Player> GetPlayers()
@@ -91,7 +135,17 @@ public class GameService : IGameService
     
     public Dictionary<string, string> GetPlayerRoles()
     {
-        return _currentPlayers.ToDictionary(player => player.Name, player => player.Role);
+        return _currentPlayers.ToDictionary(player => player.Name, player => player.RoleName);
+    }
+    
+    private Task NotifyAllPlayers(Message message)
+    {
+        var notifications = _currentPlayers.Select(p => p.SendMessage(message));
+        return Task.WhenAll(notifications);
     }
 
+    private void ResetGame()
+    {
+        GameStarted = false;
+    }
 }

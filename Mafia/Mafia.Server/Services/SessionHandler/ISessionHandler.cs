@@ -4,5 +4,5 @@ namespace Mafia.Server.Services.SessionHandler;
 
 public interface ISessionHandler
 {
-    public Task HandleConnection(WebSocket webSocket);
+    public Task HandleConnection(WebSocket webSocket, CancellationToken cancellationToken);
 }

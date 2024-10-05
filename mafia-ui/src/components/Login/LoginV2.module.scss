@@ -1,0 +1,36 @@
+@use '@/styles/common/containers';
+
+.login {
+  display: flex;
+  margin-top: 64px;
+
+  &__form {
+    @include containers.centered-container;
+
+    max-width: 400px;
+  }
+
+  &__heading {
+    margin: 0;
+    text-align: center;
+    font-size: 24px;
+  }
+
+  &__info,
+  &__error {
+    margin: 0;
+  }
+
+  &__input {
+    margin: 0;
+    padding: 10px;
+    font-size: 16px;
+    width: 90%;
+    border: 2px solid transparent; /* Use transparent for the base border */
+    border-image: linear-gradient(45deg, #ff6ec4, #7873f5) 1; /* Gradient border */
+    border-radius: 8px; /* Rounded corners */
+    background-color: #333; /* Dark background for input */
+    color: white; /* Text color */
+    outline: none;
+  }
+}
