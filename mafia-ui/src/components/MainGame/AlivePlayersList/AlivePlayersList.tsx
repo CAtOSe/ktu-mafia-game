@@ -20,11 +20,11 @@ const AlivePlayersList: React.FC<AlivePlayersListProps> = ({ players }) => {
     '8 Sullivan',
     '9 Blaire',
     '10 Becca',
-    '11 Tom',
+    /*'11 Tom',
     '12 Ben',
     '13 Steve',
     '14 Richard',
-    '15 Samuel',
+    '15 Samuel',*/
   ];
 
   return (
