@@ -4,14 +4,12 @@ import styles from './HeaderV2.module.scss';
 import classNames from 'classnames/bind';
 import MafiaGameLogo from '../../icons/MafiaGameLogo.png';
 import { GameStage } from '../../contexts/GameStateContext/types.ts';
-import Button from '../Button/Button.tsx';
-import { ButtonStyle } from '../Button/types.ts';
 
 const cn = classNames.bind(styles);
 
 const HeaderV2 = () => {
   const {
-    gameState: { username, gameStage },
+    gameState: { username, gameStage, role },
   } = useContext(GameStateContext);
 
   const headerTitle = (currentGameStage: GameStage) => {
@@ -45,8 +43,8 @@ const HeaderV2 = () => {
       <div className={cn('header__section')}>
         {showLogout && (
           <>
+            {role && <p className={cn('header__role')}>{role}</p>}
             <p className={cn('header__username')}>{username}</p>
-            <Button style={ButtonStyle.Glow}>Logout</Button>
           </>
         )}
       </div>
