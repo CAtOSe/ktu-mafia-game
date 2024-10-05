@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+//ORIGINAL
+/*import React, { useState, useEffect } from 'react';
 import './DayTracker.module.scss';
 
 const DayTracker: React.FC = () => {
@@ -39,4 +40,27 @@ const DayTracker: React.FC = () => {
   );
 };
 
+export default DayTracker;*/
+
+
+import React from 'react';
+import './DayTracker.module.scss';
+import { useDayNight } from '../DayNightContext/DayNightContext.tsx'; // Importuojame kontekstą
+
+const DayTracker: React.FC = () => {
+  const { isDay, timeRemaining } = useDayNight(); // Paimame būseną iš konteksto
+
+  return (
+    <div>
+      <div className={`circle ${isDay ? 'day' : 'night'}`}>
+        <p className="phase-text">
+          {isDay ? `Day` : `Night`}
+        </p>
+        <p className="timer-text">{timeRemaining}</p>
+      </div>
+    </div>
+  );
+};
+
 export default DayTracker;
+
