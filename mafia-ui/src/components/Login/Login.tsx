@@ -3,14 +3,14 @@ import WaitingLobby from '../WaitingLobby/WaitingLobby.tsx';
 import classNames from 'classnames/bind';
 import styles from './Login.module.scss';
 import { useNavigate } from 'react-router-dom';
-import { WebSocketContext } from '../../contexts/WebSocketContext/WebsocketContext.tsx';
 import { Message } from '../../contexts/WebSocketContext/types.ts';
+import WebsocketContext from '../../contexts/WebSocketContext/WebsocketContext.ts';
 
 const cn = classNames.bind(styles);
 
 function Login() {
   // const { sendMessage, lastMessage, readyState } = useWebSocket(socketUrl);
-  const { sendMessage, subscribe, unsubscribe } = useContext(WebSocketContext);
+  const { sendMessage, subscribe, unsubscribe } = useContext(WebsocketContext);
   const [loggedIn, setLoggedIn] = useState(false);
   const [players, setPlayers] = useState<string[]>([]);
   const [username, setUsername] = useState(''); // Save username from input field

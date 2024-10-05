@@ -5,6 +5,8 @@ import { useContext } from 'react';
 import { GameStateContext } from '../../contexts/GameStateContext/GameStateContext.tsx';
 import { GameStage } from '../../contexts/GameStateContext/types.ts';
 import LoginV2 from '../Login/LoginV2.tsx';
+import WaitingLobbyV2 from '../WaitingLobby/WaitingLobbyV2.tsx';
+import MainGame from '../MainGame/MainGame.tsx';
 
 const cn = classNames.bind(styles);
 
@@ -19,6 +21,10 @@ const GameLayout = () => {
         return <p>Connecting...</p>;
       case GameStage.Login:
         return <LoginV2 />;
+      case GameStage.Lobby:
+        return <WaitingLobbyV2 />;
+      case GameStage.Running:
+        return <MainGame />;
       default:
         return <p>Unknown game stage</p>;
     }

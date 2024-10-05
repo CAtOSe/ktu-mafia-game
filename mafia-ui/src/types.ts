@@ -6,10 +6,13 @@ export interface Message {
 
 export enum RequestMessages {
   Login = 'login',
+  StartGame = 'start-game',
 }
 
 export enum ResponseMessages {
   Hello = 'hello',
   PlayerListUpdate = 'player-list-update',
   LoggedIn = 'logged-in',
+  GameStarted = 'game-started',
+  RoleAssigned = 'role-assigned',
 }

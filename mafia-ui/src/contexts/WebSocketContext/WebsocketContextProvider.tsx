@@ -1,17 +1,15 @@
-import { useEffect, useRef, createContext } from 'react';
+import { useEffect, useRef } from 'react';
 import {
   Subscription,
   WebsocketContextProps,
-  WebSocketContextValue,
+  WebsocketContextValue,
 } from './types.ts';
 import { Message } from '../../types.ts';
+import WebsocketContext from './WebsocketContext.ts';
 
-const WebSocketContext = createContext<WebSocketContextValue | undefined>(
-  undefined,
-);
 const socketUrl = 'ws://localhost:5141/ws';
 
-const WebSocketProvider = ({ children }: WebsocketContextProps) => {
+const WebsocketContextProvider = ({ children }: WebsocketContextProps) => {
   const websocket = useRef<WebSocket | null>(null);
   const subscribers = useRef<Subscription[]>([]);
 
@@ -60,6 +58,7 @@ const WebSocketProvider = ({ children }: WebsocketContextProps) => {
 
   const sendMessage = (message: string) => {
     if (websocket.current?.readyState === WebSocket.OPEN) {
+      console.log(`sent message '${message}'`);
       websocket.current.send(message);
     } else {
       console.error(
@@ -95,7 +94,7 @@ const WebSocketProvider = ({ children }: WebsocketContextProps) => {
     }
   };
 
-  const contextValue: WebSocketContextValue = {
+  const contextValue: WebsocketContextValue = {
     sendMessage,
     subscribe,
     unsubscribe,
@@ -103,10 +102,10 @@ const WebSocketProvider = ({ children }: WebsocketContextProps) => {
   };
 
   return (
-    <WebSocketContext.Provider value={contextValue}>
+    <WebsocketContext.Provider value={contextValue}>
       {children}
-    </WebSocketContext.Provider>
+    </WebsocketContext.Provider>
   );
 };
 
-export { WebSocketContext, WebSocketProvider };
+export default WebsocketContextProvider;

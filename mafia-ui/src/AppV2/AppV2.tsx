@@ -1,14 +1,14 @@
-import { WebSocketProvider } from '../contexts/WebSocketContext/WebsocketContext.tsx';
 import { GameStateContextProvider } from '../contexts/GameStateContext/GameStateContext.tsx';
 import GameLayout from '../components/GameLayout/GameLayout.tsx';
+import WebsocketContextProvider from '../contexts/WebSocketContext/WebsocketContextProvider.tsx';
 
 const AppV2 = () => {
   return (
-    <WebSocketProvider>
+    <WebsocketContextProvider>
       <GameStateContextProvider>
         <GameLayout />
       </GameStateContextProvider>
-    </WebSocketProvider>
+    </WebsocketContextProvider>
   );
 };
 

@@ -12,6 +12,7 @@ public class Player(WebSocket webSocket)
     public PlayerRole Role { get; set; } = PlayerRole.Unassigned;
     public string RoleName => Enum.GetName(typeof(PlayerRole), Role);
     public bool IsLoggedIn { get; set; } = false;
+    public bool IsHost { get; set; } = false;
 
     public async Task SendMessage(Message message)
     {

@@ -12,6 +12,7 @@ export interface GameState {
   username: string;
   role: string;
   players: string[];
+  isHost: boolean;
 }
 
 export interface GameStateContextProviderProps {

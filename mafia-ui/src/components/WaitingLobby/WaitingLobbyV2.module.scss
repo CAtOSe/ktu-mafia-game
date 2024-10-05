@@ -1,0 +1,43 @@
+@use '@/styles/common/containers';
+
+.waiting-lobby {
+  display: flex;
+  margin-top: 64px;
+
+  &__container {
+    @include containers.centered-container;
+
+    min-width: 400px;
+  }
+
+  &__status {
+    font-size: 18px;
+    margin: 0;
+  }
+
+  &__player-list {
+    list-style: none;
+    margin: 0;
+    padding: 16px;
+    border: 2px solid transparent; /* Use transparent for the base border */
+    border-image: linear-gradient(45deg, #ff6ec4, #7873f5) 1; /* Gradient border */
+  }
+
+  &__player {
+    padding: 8px;
+  }
+
+  &__counter {
+    font-size: 14px;
+
+    p {
+      margin: 0;
+    }
+  }
+
+  &__counter-time {
+    text-align: center;
+    font-size: 24px;
+    font-weight: bold;
+  }
+}

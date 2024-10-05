@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import Header from '../Header/Header.tsx';
 import { useNavigate } from 'react-router-dom'; // Import React Router's useNavigate
 import './WaitingLobby.scss';
-import { Message } from '../../contexts/WebSocketContext/types.ts';
+import { Message } from '../../types.ts';
 
 interface WaitingLobbyProps {
   players: string[];

@@ -1,7 +1,7 @@
 import React from 'react';
 import { Message } from '../../types.ts';
 
-export interface WebSocketContextValue {
+export interface WebsocketContextValue {
   sendMessage: (message: string) => void;
   subscribe: (subscription: Subscription) => string;
   unsubscribe: (subscriptionId: string) => void;

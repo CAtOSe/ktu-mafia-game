@@ -2,7 +2,7 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Login from '../components/Login/Login';
 import WaitingLobby from '../components/WaitingLobby/WaitingLobby';
 import Game from '../components/Game/Game';
-import { WebSocketProvider } from '../contexts/WebSocketContext/WebsocketContext.tsx';
+import { WebsocketContextProvider } from '../contexts/WebSocketContext/WebsocketContextProvider.tsx';
 
 function App() {
   return (

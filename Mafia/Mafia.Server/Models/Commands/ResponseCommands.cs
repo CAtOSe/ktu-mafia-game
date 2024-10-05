@@ -8,4 +8,5 @@ public static class ResponseCommands
     public const string GameStarted = "game-started";
     public const string PlayerListUpdate = "player-list-update";
     public const string Hello = "hello";
+    public const string StartCountdown = "start-countdown";
 }

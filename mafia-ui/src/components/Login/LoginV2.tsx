@@ -3,11 +3,11 @@ import classNames from 'classnames/bind';
 import Button from '../Button/Button.tsx';
 import { ButtonStyle } from '../Button/types.ts';
 import { useContext } from 'react';
-import { WebSocketContext } from '../../contexts/WebSocketContext/WebsocketContext.tsx';
 import { SubmitHandler, useForm } from 'react-hook-form';
 import createMessage from '../../helpers/createMessage.ts';
 import { RequestMessages } from '../../types.ts';
 import { GameStateContext } from '../../contexts/GameStateContext/GameStateContext.tsx';
+import WebsocketContext from '../../contexts/WebSocketContext/WebsocketContext.ts';
 
 interface LoginForm {
   username: string;
@@ -16,7 +16,7 @@ interface LoginForm {
 const cn = classNames.bind(styles);
 
 const Login = () => {
-  const websocket = useContext(WebSocketContext);
+  const websocket = useContext(WebsocketContext);
   const { updateGameState } = useContext(GameStateContext);
   const { register, handleSubmit } = useForm<LoginForm>();
 

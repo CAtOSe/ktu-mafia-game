@@ -6,6 +6,9 @@ namespace Mafia.Server.Services.GameService;
 public class GameService : IGameService
 {
     private readonly List<Player> _currentPlayers = [];
+    
+    private bool GameStarted { get; set; } = false;
+    
     public async Task DisconnectPlayer(Player player)
     {
         _currentPlayers.Remove(player);
@@ -14,14 +17,31 @@ public class GameService : IGameService
             Base = RequestCommands.Disconnect
         });
         player.CloseConnection();
-        await SendPlayerList();
+
+        if (_currentPlayers.Count == 0)
+        {
+            ResetGame();
+        }
+        else
+        { 
+            await SendPlayerList();
+        }
     }
     
     public async Task TryAddPlayer(Player player, string username)
     {
+        if (player.IsLoggedIn)
+        {
+            await player.SendMessage(new Message
+            {
+                Base = ResponseCommands.Error,
+                Error = ErrorMessages.AlreadyLoggedIn,
+            });
+            return;
+        }
+        
         var usernameTaken = _currentPlayers.Any(p =>
             p.Name.Equals(username, StringComparison.OrdinalIgnoreCase));
-
         if (usernameTaken)
         {
             await player.SendMessage(new Message
@@ -32,11 +52,15 @@ public class GameService : IGameService
             return;
         }
 
+        player.IsLoggedIn = true;
         player.Name = username;
+        player.IsHost = _currentPlayers.Count == 0;
+        
         _currentPlayers.Add(player);
         await player.SendMessage(new Message
         {
-            Base = ResponseCommands.LoggedIn
+            Base = ResponseCommands.LoggedIn,
+            Arguments = player.IsHost ? ["host"] : null
         });
         await SendPlayerList();
     }
@@ -53,10 +77,31 @@ public class GameService : IGameService
     
     public async Task StartGame()
     {
+        if (GameStarted)
+        {
+            Console.WriteLine("Game already started");
+            return;
+        }
+        
         if (_currentPlayers.Count < 2)
         {
             throw new InvalidOperationException("There must be at least 3 players to start the game.");
         }
+
+        Console.WriteLine("Assigning roles and starting the countdown.");
+        
+        await NotifyAllPlayers(new Message
+        {
+            Base = ResponseCommands.StartCountdown,
+            Arguments = [GameConfiguration.BeginCountdown.ToString()]
+        });
+        var gameStartTask = Task.Delay(GameConfiguration.BeginCountdown).ContinueWith(async t =>
+        {
+            await NotifyAllPlayers(new Message
+            {
+                Base = ResponseCommands.GameStarted,
+            });
+        });
 
         // Randomly setting Killer role to 1 player
         var random = new Random();
@@ -80,11 +125,7 @@ public class GameService : IGameService
             });
         }
 
-        // Notify all players that the roles have been assigned
-        await NotifyAllPlayers(new Message
-        {
-            Base = ResponseCommands.GameStarted
-        });
+        await gameStartTask;
     }
 
     public List<Player> GetPlayers()
@@ -101,5 +142,10 @@ public class GameService : IGameService
     {
         var notifications = _currentPlayers.Select(p => p.SendMessage(message));
         return Task.WhenAll(notifications);
+    }
+
+    private void ResetGame()
+    {
+        GameStarted = false;
     }
 }

@@ -3,6 +3,7 @@ import {
   useCallback,
   useContext,
   useEffect,
+  useRef,
   useState,
 } from 'react';
 import {
@@ -11,14 +12,15 @@ import {
   GameStateContextProviderProps,
   GameStateContextValue,
 } from './types.ts';
-import { WebSocketContext } from '../WebSocketContext/WebsocketContext.tsx';
 import { Message, ResponseMessages } from '../../types.ts';
+import WebsocketContext from '../WebSocketContext/WebsocketContext.ts';
 
 const defaultState: GameState = {
   gameStage: GameStage.Connecting,
   username: '',
   role: '',
   players: [],
+  isHost: false,
 };
 
 export const GameStateContext = createContext<GameStateContextValue>({
@@ -29,12 +31,19 @@ export const GameStateContext = createContext<GameStateContextValue>({
 export const GameStateContextProvider = ({
   children,
 }: GameStateContextProviderProps) => {
-  const [gameState, setGameState] = useState<GameState>(defaultState);
-  const websocket = useContext(WebSocketContext);
+  const gameState = useRef<GameState>(defaultState);
+  const [exposedGameState, setExposedGameState] = useState<GameState>(
+    gameState.current,
+  );
+  const websocket = useContext(WebsocketContext);
 
-  const updateGameState = (partialGameState: Partial<GameState>) => {
-    setGameState({ ...gameState, ...partialGameState });
-  };
+  const updateGameState = useCallback(
+    (partialGameState: Partial<GameState>) => {
+      gameState.current = { ...gameState.current, ...partialGameState };
+      setExposedGameState(gameState.current);
+    },
+    [],
+  );
 
   const handleMessage = useCallback(
     (message: Message) => {
@@ -43,10 +52,19 @@ export const GameStateContextProvider = ({
           updateGameState({ gameStage: GameStage.Login });
           return;
         case ResponseMessages.LoggedIn:
-          updateGameState({ gameStage: GameStage.Lobby });
+          updateGameState({
+            gameStage: GameStage.Lobby,
+            isHost: message.arguments?.[0] === 'host',
+          });
           return;
         case ResponseMessages.PlayerListUpdate:
           updateGameState({ players: message.arguments ?? [] });
+          return;
+        case ResponseMessages.GameStarted:
+          updateGameState({ gameStage: GameStage.Running });
+          return;
+        case ResponseMessages.RoleAssigned:
+          updateGameState({ role: message.arguments?.[0] });
           return;
       }
     },
@@ -64,10 +82,10 @@ export const GameStateContextProvider = ({
     return () => {
       websocket.unsubscribe(subId);
     };
-  }, [websocket, updateGameState]);
+  }, [websocket, handleMessage]);
 
   const value = {
-    gameState,
+    gameState: exposedGameState,
     updateGameState,
   };
 

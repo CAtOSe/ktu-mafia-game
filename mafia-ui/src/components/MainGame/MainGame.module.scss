@@ -31,13 +31,13 @@
 }
 
 /* Style the list and player rows */
-ul {
+.main-game ul {
   list-style-type: none; /* No bullet points */
   padding: 0;
   margin: 0;
 }
 
-li {
+.main-game li {
   border-bottom: 1px solid rgb(255 255 255 / 10%); /* Separator line */
 }
 
