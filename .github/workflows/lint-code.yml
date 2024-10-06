@@ -34,11 +34,11 @@ jobs:
           node-version: '20.18.0'
 
       - name: Install packages
-        working-directory: ./mafia-app
+        working-directory: ./mafia-ui
         run: npm ci
 
       - name: Run Linters
-        working-directory: ./mafia-app
+        working-directory: ./mafia-ui
         env:
           SARIF_ESLINT_IGNORE_SUPPRESSED: "true"
         run: npm run lint
