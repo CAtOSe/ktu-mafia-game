@@ -96,7 +96,6 @@ public class GameService : IGameService
         }
 
         Console.WriteLine("Assigning roles and starting the countdown.");
-        
         await NotifyAllPlayers(new Message
         {
             Base = ResponseCommands.StartCountdown,
@@ -131,9 +130,10 @@ public class GameService : IGameService
                 Arguments = [player.RoleName]
             });
         }
-
         
         await gameStartTask;
+        GameStarted = true;
+        StartDayNightCycle();
     }
 
     public async Task ChangeDayPhase()
@@ -214,18 +214,23 @@ public class GameService : IGameService
 
         Task.Run(async () =>
         {
+            Console.WriteLine("Task.Run enabled");
             while (GameStarted && !token.IsCancellationRequested) 
             {
+                Console.WriteLine("While passed");
                 if (IsDayPhase)
                 {
+                    Console.WriteLine("Day phase day");
                     await Task.Delay(30000, token); // 30 seconds for day 
                 }
                 else
                 {
+                    Console.WriteLine("Day phase night");
                     await Task.Delay(15000, token); // 15 seconds for night 
                 }
 
                 IsDayPhase = !IsDayPhase; // Toggle between day and night 
+                Console.WriteLine("Changing day phase");
                 await ChangeDayPhase();
             }
         }, token); 

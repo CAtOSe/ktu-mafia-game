@@ -15,4 +15,6 @@ export enum ResponseMessages {
   LoggedIn = 'logged-in',
   GameStarted = 'game-started',
   RoleAssigned = 'role-assigned',
+  AlivePlayerListUpdate = 'alive_player_list_update',
 }
+
