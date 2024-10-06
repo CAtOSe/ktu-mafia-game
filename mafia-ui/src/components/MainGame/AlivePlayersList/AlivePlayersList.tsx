@@ -9,7 +9,9 @@ import { RequestMessages } from '../../../types.ts';
 const cn = classNames.bind(styles);
 
 const AlivePlayersList: React.FC = () => {
-  const { gameState } = useContext(GameStateContext);
+  const {
+    gameState: { alivePlayers, role, username },
+  } = useContext(GameStateContext);
   const websocket = useContext(WebsocketContext);
 
   const handleActionClick = (targetUsername: string) => {
@@ -22,27 +24,23 @@ const AlivePlayersList: React.FC = () => {
     }
   };
 
-  // The 'players' array directly contains the alive players
-  const players = gameState?.players ?? [];
-
   return (
     <div className={cn('alive-player-list')}>
       <h3>Alive Players</h3>
-      {players.length > 0 ? (
+      {alivePlayers.length > 0 ? (
         <ul>
-          {players.slice(0, 15).map((player, index) => (
-            <li key={index} className="player-row">
+          {alivePlayers.map((player) => (
+            <li key={player} className="player-row">
               <span className="player-info">{player}</span>
               {/* Check if the player's role is Killer before rendering the Action button */}
-              {gameState.role === 'Killer' &&
-                player !== gameState?.username && (
-                  <button
-                    className="action-button"
-                    onClick={() => handleActionClick(player)} // Pass the target player's username
-                  >
-                    Action
-                  </button>
-                )}
+              {role === 'Killer' && player !== username && (
+                <button
+                  className="action-button"
+                  onClick={() => handleActionClick(player)} // Pass the target player's username
+                >
+                  Action
+                </button>
+              )}
             </li>
           ))}
         </ul>
