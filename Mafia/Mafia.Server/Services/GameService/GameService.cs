@@ -34,6 +34,7 @@ public class GameService : IGameService
     {
         if (player.IsLoggedIn)
         {
+            player.IsAlive = true;
             await player.SendMessage(new Message
             {
                 Base = ResponseCommands.Error,
@@ -76,6 +77,7 @@ public class GameService : IGameService
         };
         return NotifyAllPlayers(message);
     }
+    
     
     public async Task StartGame()
     {
@@ -127,12 +129,18 @@ public class GameService : IGameService
             });
         }
 
+        SendAlivePlayerList();
         await gameStartTask;
     }
 
     public List<Player> GetPlayers()
     {
-        return _currentPlayers;
+        return _currentPlayers.ToList();
+    }
+
+    public string ReturnPlayers(List<Player> players)
+    {
+        return string.Join(", ", players.Select(p => p.Name));
     }
     
     public Dictionary<string, string> GetPlayerRoles()
@@ -167,6 +175,15 @@ public class GameService : IGameService
         }
     }
 
+    private Task SendAlivePlayerList()
+    {
+        var message = new Message
+        {
+            Base = ResponseCommands.PlayerListUpdate,
+            Arguments = _currentPlayers.Where(p=>p.IsAlive == true ).Select(p => p.Name).ToList(),
+        };
+        return NotifyAllPlayers(message);
+    }
     
     private Task NotifyAllPlayers(Message message)
     {

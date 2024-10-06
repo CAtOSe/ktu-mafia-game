@@ -21,6 +21,7 @@ const defaultState: GameState = {
   role: '',
   players: [],
   isHost: false,
+  
 };
 
 export const GameStateContext = createContext<GameStateContextValue>({
