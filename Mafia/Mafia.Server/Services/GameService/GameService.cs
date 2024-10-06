@@ -235,5 +235,34 @@ public class GameService : IGameService
             }
         }, token); 
     }
+
+    public async Task NightAction(string actionUser, string actionTarget, string actionType)
+    {
+        // Find the player initiating the action
+        var userPlayer = _currentPlayers.FirstOrDefault(p => p.Name.Equals(actionUser, StringComparison.OrdinalIgnoreCase));
+
+        // Find the target player
+        var targetPlayer = _currentPlayers.FirstOrDefault(p => p.Name.Equals(actionTarget, StringComparison.OrdinalIgnoreCase));
+
+        // Validate that both the action user and the target player exist
+        if (userPlayer == null || targetPlayer == null)
+        {
+            Console.WriteLine("Invalid action: Either the user or the target player does not exist.");
+            return;
+        }
+
+        // Check if the action type is "kill"
+        if (actionType.Equals("kill", StringComparison.OrdinalIgnoreCase))
+        {
+            // Perform the kill action
+            targetPlayer.IsAlive = false;
+
+            Console.WriteLine($"{targetPlayer.Name} has been killed by {userPlayer.Name}.");
+        }
+
+        // Send updated list of alive players
+        await SendAlivePlayerList();
+    }
+
 }
 
