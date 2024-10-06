@@ -67,12 +67,13 @@ export const GameStateContextProvider = ({
         case ResponseMessages.RoleAssigned:
           updateGameState({ role: message.arguments?.[0] });
           return;
-
-        // Handling AlivePlayerListUpdate
         case ResponseMessages.AlivePlayerListUpdate:
-          updateGameState({
-            players: message.arguments ?? [], // Simply update the players list with alive players
-          });
+          const alivePlayers = message.arguments ?? [];
+        console.log('Updated alive players list:', alivePlayers);
+
+        updateGameState({
+          players: alivePlayers,
+        });
           return;
       }
     },

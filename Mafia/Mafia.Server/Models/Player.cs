@@ -13,7 +13,7 @@ public class Player(WebSocket webSocket)
     public string RoleName => Enum.GetName(typeof(PlayerRole), Role);
     public bool IsLoggedIn { get; set; } = false;
     public bool IsHost { get; set; } = false;
-    public bool IsAlive { get; set; } = false;
+    public bool IsAlive { get; set; } = true;
 
     public async Task SendMessage(Message message)
     {

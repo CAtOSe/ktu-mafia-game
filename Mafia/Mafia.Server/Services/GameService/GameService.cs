@@ -186,10 +186,17 @@ public class GameService : IGameService
 
     private Task SendAlivePlayerList()
     {
+        var alivePlayers = _currentPlayers.Where(p => p.IsAlive).Select(p => p.Name).ToList();
+
+        foreach (var player in _currentPlayers)
+        {
+            Console.WriteLine($"{player.Name}: {player.IsAlive}");
+        }
+
         var message = new Message
         {
             Base = ResponseCommands.AlivePlayerListUpdate,
-            Arguments = _currentPlayers.Where(p=>p.IsAlive == true ).Select(p => p.Name).ToList(),
+            Arguments = alivePlayers,
         };
         return NotifyAllPlayers(message);
     }
@@ -214,18 +221,14 @@ public class GameService : IGameService
 
         Task.Run(async () =>
         {
-            Console.WriteLine("Task.Run enabled");
             while (GameStarted && !token.IsCancellationRequested) 
             {
-                Console.WriteLine("While passed");
                 if (IsDayPhase)
                 {
-                    Console.WriteLine("Day phase day");
                     await Task.Delay(30000, token); // 30 seconds for day 
                 }
                 else
                 {
-                    Console.WriteLine("Day phase night");
                     await Task.Delay(15000, token); // 15 seconds for night 
                 }
 

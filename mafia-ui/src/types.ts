@@ -7,6 +7,7 @@ export interface Message {
 export enum RequestMessages {
   Login = 'login',
   StartGame = 'start-game',
+  NightAction = 'night-action'
 }
 
 export enum ResponseMessages {
@@ -15,6 +16,6 @@ export enum ResponseMessages {
   LoggedIn = 'logged-in',
   GameStarted = 'game-started',
   RoleAssigned = 'role-assigned',
-  AlivePlayerListUpdate = 'alive_player_list_update',
+  AlivePlayerListUpdate = 'alive-player-list-update',
 }
 

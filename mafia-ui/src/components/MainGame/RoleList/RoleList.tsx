@@ -8,20 +8,9 @@ type RoleListProps = {
 const RoleList: React.FC<RoleListProps> = ({ roles }) => {
   roles = [
     'Killer',
-    'Consort',
-    'Townsfolk',
-    'Townsfolk',
-    'Townsfolk',
-    'Townsfolk',
-    'Townsfolk',
-    'Townsfolk',
-    'Sheriff',
-    'Escort',
-    'Doctor',
-    'Any',
-    'Any',
-    'Any',
-    'Serial Killer',
+    'Citizen',
+    'Citizen',
+    'Citizen',
   ];
   return (
     <div className="list-box alive-player-list">
