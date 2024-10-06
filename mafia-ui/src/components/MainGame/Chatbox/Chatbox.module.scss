@@ -24,7 +24,6 @@
 .chat-message {
   margin: 5px 0;
   padding: 5px;
-  background-color: #444;
   border-radius: 4px;
   font-size: 14px;
 }
@@ -57,4 +56,66 @@
 
 .send-button:hover {
   background-color: #7873f5;
+}
+
+.chat-username {
+  font-weight: bold;
+  color: #ff6ec4; 
+}
+
+.chat-username-dead {
+  font-weight: bold;
+  color: #a3a3a3; 
+}
+
+.chat-content {
+  color: white; 
+}
+
+.player-message {
+  background-color: #444;
+}
+
+.dead-player-message {
+  background-color: #222;
+}
+
+.night-start-message {
+  font-weight: bold;
+  color: #7873f5; 
+  text-align: center;
+  background-color: transparent;
+}
+
+.night-action-message {
+  color: #7873f5;
+  background-color: transparent; 
+}
+
+.night-notification-message {
+  color: white; 
+  background-color: #7873f5;
+}
+
+.day-start-message {
+  font-weight: bold;
+  color: #ff6ec4;
+  text-align: center;
+  background-color: transparent;
+}
+
+.day-action-message {
+  color: #ff6ec4;
+  background-color: transparent; 
+}
+
+.day-notification-message {
+  color: white; 
+  background-color: #ff6ec4;
+}
+
+.server-message {
+  font-weight: bold;
+  color: white; 
+  background-color: transparent;
 }
