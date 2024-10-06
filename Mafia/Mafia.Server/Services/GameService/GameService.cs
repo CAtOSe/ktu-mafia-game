@@ -1,4 +1,6 @@
-﻿using Mafia.Server.Models;
+﻿using System.Net.WebSockets;
+using System.Text;
+using Mafia.Server.Models;
 using Mafia.Server.Models.Commands;
 
 namespace Mafia.Server.Services.GameService;
@@ -137,6 +139,34 @@ public class GameService : IGameService
     {
         return _currentPlayers.ToDictionary(player => player.Name, player => player.RoleName);
     }
+    
+    //UPDATES:
+
+    public async Task HandleMessageFromPlayer(Player player, string messageContent)
+    {
+        var message = new Message
+        {
+            Base = "chat",
+            Arguments = new List<string> { $"{player.Name}: {messageContent}" }
+        };
+        await NotifyAllPlayers(message);
+    }
+    public async Task HandleIncomingMessages(WebSocket webSocket, Player player, CancellationToken stoppingToken)
+    {
+        var buffer = new byte[1024 * 4];
+        while (webSocket.State == WebSocketState.Open && !stoppingToken.IsCancellationRequested)
+        {
+            var result = await webSocket.ReceiveAsync(new ArraySegment<byte>(buffer), stoppingToken);
+            var receivedMessage = Encoding.UTF8.GetString(buffer, 0, result.Count);
+
+            // Handle received message
+            if (!string.IsNullOrEmpty(receivedMessage))
+            {
+                await HandleMessageFromPlayer(player, receivedMessage);
+            }
+        }
+    }
+
     
     private Task NotifyAllPlayers(Message message)
     {

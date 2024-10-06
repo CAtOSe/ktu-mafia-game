@@ -42,6 +42,13 @@ public class SessionHandler(
                 receiveResult.CloseStatusDescription,
                 cancellationToken);
         }
+        
+        //UPDATE
+        await gameService.TryAddPlayer(player, player.Name);
+        
+        await gameService.HandleIncomingMessages(webSocket, player, cancellationToken);
+
+        
         await gameService.DisconnectPlayer(player);
     }
 }

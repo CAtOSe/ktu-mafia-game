@@ -1,3 +1,4 @@
+using System.Net.WebSockets;
 using Mafia.Server.Models;
 
 namespace Mafia.Server.Services.GameService;
@@ -9,4 +10,6 @@ public interface IGameService
     public Task StartGame();
     public List<Player> GetPlayers();
     public Dictionary<string, string> GetPlayerRoles();
+    public Task HandleMessageFromPlayer(Player player, string messageContent);
+    public Task HandleIncomingMessages(WebSocket webSocket, Player player, CancellationToken stoppingToken);
 }
