@@ -11,14 +11,10 @@ const cn = classNames.bind(styles);
 const AlivePlayersList: React.FC = () => {
   const { gameState } = useContext(GameStateContext);
   const websocket = useContext(WebsocketContext);
-  //const { role } = gameState;
 
   const handleActionClick = (targetUsername: string) => {
-    const username = gameState?.username; // The username of the current player (the one who is clicking)
-
-    if (username && websocket) {
+    if (websocket) {
       const message = createMessage(RequestMessages.NightAction, [
-        username,
         targetUsername,
         'kill',
       ]); // Create the message
