@@ -10,7 +10,10 @@ public class GameService : IGameService
     private readonly List<Player> _currentPlayers = [];
     
     private bool GameStarted { get; set; } = false;
-    
+    private bool IsDayPhase { get; set; } = true; //  Track if it's currently day
+    private CancellationTokenSource? _cancellationTokenSource; //  Token for canceling the phase cycle
+
+
     public async Task DisconnectPlayer(Player player)
     {
         _currentPlayers.Remove(player);
@@ -129,8 +132,14 @@ public class GameService : IGameService
             });
         }
 
-        SendAlivePlayerList();
+        
         await gameStartTask;
+    }
+
+    public async Task ChangeDayPhase()
+    {
+        Console.WriteLine("Changing day phase.");
+        await SendAlivePlayerList();
     }
 
     public List<Player> GetPlayers()
@@ -179,7 +188,7 @@ public class GameService : IGameService
     {
         var message = new Message
         {
-            Base = ResponseCommands.PlayerListUpdate,
+            Base = ResponseCommands.AlivePlayerListUpdate,
             Arguments = _currentPlayers.Where(p=>p.IsAlive == true ).Select(p => p.Name).ToList(),
         };
         return NotifyAllPlayers(message);
@@ -194,5 +203,32 @@ public class GameService : IGameService
     private void ResetGame()
     {
         GameStarted = false;
+        _cancellationTokenSource?.Cancel(); // Stop the day/night cycle
+    }
+
+    // Timer logic for day/night cycle 
+    private void StartDayNightCycle()
+    {
+        _cancellationTokenSource = new CancellationTokenSource(); 
+        var token = _cancellationTokenSource.Token; 
+
+        Task.Run(async () =>
+        {
+            while (GameStarted && !token.IsCancellationRequested) 
+            {
+                if (IsDayPhase)
+                {
+                    await Task.Delay(30000, token); // 30 seconds for day 
+                }
+                else
+                {
+                    await Task.Delay(15000, token); // 15 seconds for night 
+                }
+
+                IsDayPhase = !IsDayPhase; // Toggle between day and night 
+                await ChangeDayPhase();
+            }
+        }, token); 
     }
 }
+
