@@ -42,10 +42,9 @@ const DayTracker: React.FC = () => {
 
 export default DayTracker;*/
 
-
 import React from 'react';
 import './DayTracker.module.scss';
-import { useDayNight } from '../DayNightContext/DayNightContext.tsx';
+import { useDayNight } from '../../../contexts/DayNightContext/DayNightProvider.tsx';
 
 const DayTracker: React.FC = () => {
   const { isDay, timeRemaining, phase } = useDayNight(); // Get phase from context
@@ -63,7 +62,3 @@ const DayTracker: React.FC = () => {
 };
 
 export default DayTracker;
-
-
-
-

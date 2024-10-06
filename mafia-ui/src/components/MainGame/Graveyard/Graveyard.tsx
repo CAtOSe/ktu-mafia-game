@@ -1,5 +1,4 @@
 import React from 'react';
-import '../MainGame.module.scss';
 
 type RoleListProps = {
   deadPlayers: string[];
