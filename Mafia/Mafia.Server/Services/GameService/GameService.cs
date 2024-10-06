@@ -9,9 +9,11 @@ public class GameService : IGameService
 {
     private readonly List<Player> _currentPlayers = [];
     
+    private CancellationTokenSource _cancellationTokenSource; //  Token for canceling the phase cycle
     private bool GameStarted { get; set; } = false;
-    private bool IsDayPhase { get; set; } = true; //  Track if it's currently day
-    private CancellationTokenSource? _cancellationTokenSource; //  Token for canceling the phase cycle
+
+    private volatile int _phaseCounter = 1;
+    private volatile bool _isDayPhase = false;
 
 
     public async Task DisconnectPlayer(Player player)
@@ -37,7 +39,6 @@ public class GameService : IGameService
     {
         if (player.IsLoggedIn)
         {
-            player.IsAlive = true;
             await player.SendMessage(new Message
             {
                 Base = ResponseCommands.Error,
@@ -80,8 +81,8 @@ public class GameService : IGameService
         };
         return NotifyAllPlayers(message);
     }
-    
-    
+
+
     public async Task StartGame()
     {
         if (GameStarted)
@@ -89,7 +90,7 @@ public class GameService : IGameService
             Console.WriteLine("Game already started");
             return;
         }
-        
+
         if (_currentPlayers.Count < 2)
         {
             throw new InvalidOperationException("There must be at least 3 players to start the game.");
@@ -114,7 +115,7 @@ public class GameService : IGameService
         var killerIndex = random.Next(_currentPlayers.Count);
         var killer = _currentPlayers[killerIndex];
         killer.Role = PlayerRole.Killer;
-    
+
         // Setting Citizen role for other players
         foreach (var player in _currentPlayers)
         {
@@ -130,26 +131,15 @@ public class GameService : IGameService
                 Arguments = [player.RoleName]
             });
         }
-        
+
         await gameStartTask;
         GameStarted = true;
         StartDayNightCycle();
     }
 
-    public async Task ChangeDayPhase()
-    {
-        Console.WriteLine("Changing day phase.");
-        await SendAlivePlayerList();
-    }
-
     public List<Player> GetPlayers()
     {
         return _currentPlayers.ToList();
-    }
-
-    public string ReturnPlayers(List<Player> players)
-    {
-        return string.Join(", ", players.Select(p => p.Name));
     }
     
     public Dictionary<string, string> GetPlayerRoles()
@@ -183,11 +173,37 @@ public class GameService : IGameService
             }
         }
     }
+    
+    public async Task NightAction(Player actionUser, string actionTarget, string actionType)
+    {
+        // Find the target player
+        var targetPlayer = _currentPlayers.FirstOrDefault(p => p.Name.Equals(actionTarget, StringComparison.OrdinalIgnoreCase));
+
+        // Validate that both the action user and the target player exist
+        if (targetPlayer == null)
+        {
+            Console.WriteLine("Invalid action: Either the user or the target player does not exist.");
+            return;
+        }
+
+        // Check if the action type is "kill"
+        if (actionType.Equals("kill", StringComparison.OrdinalIgnoreCase))
+        {
+            // Perform the kill action
+            targetPlayer.IsAlive = false;
+
+            Console.WriteLine($"{targetPlayer.Name} has been killed by {actionUser.Name}.");
+        }
+
+        // Send updated list of alive players
+        await SendAlivePlayerList();
+    }
 
     private Task SendAlivePlayerList()
     {
         var alivePlayers = _currentPlayers.Where(p => p.IsAlive).Select(p => p.Name).ToList();
 
+        Console.WriteLine("Player status:");
         foreach (var player in _currentPlayers)
         {
             Console.WriteLine($"{player.Name}: {player.IsAlive}");
@@ -210,6 +226,7 @@ public class GameService : IGameService
     private void ResetGame()
     {
         GameStarted = false;
+        _phaseCounter = 1;
         _cancellationTokenSource?.Cancel(); // Stop the day/night cycle
     }
 
@@ -223,49 +240,34 @@ public class GameService : IGameService
         {
             while (GameStarted && !token.IsCancellationRequested) 
             {
-                if (IsDayPhase)
+                if (_isDayPhase)
                 {
-                    await Task.Delay(30000, token); // 30 seconds for day 
+                    await Task.Delay(GameConfiguration.DayPhaseDuration, token);
+                    _phaseCounter = _phaseCounter + 1;
                 }
                 else
                 {
-                    await Task.Delay(15000, token); // 15 seconds for night 
+                    await Task.Delay(GameConfiguration.NightPhaseDuration, token);
                 }
 
-                IsDayPhase = !IsDayPhase; // Toggle between day and night 
-                Console.WriteLine("Changing day phase");
+                _isDayPhase = !_isDayPhase; // Toggle between day and night 
+                Console.WriteLine("Changing phase");
                 await ChangeDayPhase();
             }
         }, token); 
     }
-
-    public async Task NightAction(string actionUser, string actionTarget, string actionType)
+    
+    private async Task ChangeDayPhase()
     {
-        // Find the player initiating the action
-        var userPlayer = _currentPlayers.FirstOrDefault(p => p.Name.Equals(actionUser, StringComparison.OrdinalIgnoreCase));
-
-        // Find the target player
-        var targetPlayer = _currentPlayers.FirstOrDefault(p => p.Name.Equals(actionTarget, StringComparison.OrdinalIgnoreCase));
-
-        // Validate that both the action user and the target player exist
-        if (userPlayer == null || targetPlayer == null)
-        {
-            Console.WriteLine("Invalid action: Either the user or the target player does not exist.");
-            return;
-        }
-
-        // Check if the action type is "kill"
-        if (actionType.Equals("kill", StringComparison.OrdinalIgnoreCase))
-        {
-            // Perform the kill action
-            targetPlayer.IsAlive = false;
-
-            Console.WriteLine($"{targetPlayer.Name} has been killed by {userPlayer.Name}.");
-        }
-
-        // Send updated list of alive players
         await SendAlivePlayerList();
+        var phaseName = _isDayPhase ? "day" : "night";
+        var timeoutDuration = _isDayPhase ? GameConfiguration.DayPhaseDuration : GameConfiguration.NightPhaseDuration;
+        Console.WriteLine($"\nNew phase: {phaseName} {_phaseCounter}");
+        await NotifyAllPlayers(new Message
+        {
+            Base = ResponseCommands.PhaseChange,
+            Arguments = [phaseName, timeoutDuration.ToString(), _phaseCounter.ToString()]
+        });
     }
-
 }
 

@@ -23,10 +23,9 @@ public class MessageResolver(IGameService gameService) : IMessageResolver
                 await gameService.StartGame();
                 return;
             case RequestCommands.NightAction when command.Arguments.Count == 3:
-                var actionUser = command.Arguments[0];
-                var actionTarget = command.Arguments[1];
-                var actionType = command.Arguments[2];
-                await gameService.NightAction(actionUser, actionTarget, actionType);
+                var actionTarget = command.Arguments[0];
+                var actionType = command.Arguments[1];
+                await gameService.NightAction(player, actionTarget, actionType);
                 return;
         }
     }

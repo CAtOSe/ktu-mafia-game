@@ -13,5 +13,5 @@ public interface IGameService
     public Task HandleMessageFromPlayer(Player player, string messageContent);
     public Task HandleIncomingMessages(WebSocket webSocket, Player player, CancellationToken stoppingToken);
 
-    public Task NightAction(string actionUser, string actionTarget, string actionType);
+    public Task NightAction(Player actionUser, string actionTarget, string actionType);
 }
