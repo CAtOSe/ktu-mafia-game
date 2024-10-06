@@ -1,16 +1,31 @@
-//ORIGINAL VERSION
-/*import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
 import styles from './Chatbox.module.scss';
 import classNames from 'classnames/bind';
+import { GameStateContext } from '../../../contexts/GameStateContext/GameStateContext.tsx'; 
+import { useDayNight } from '../DayNightContext/DayNightContext.tsx'; 
 
 const cn = classNames.bind(styles);
 
+interface ChatMessage {
+  sender?: string; // Optional, since server messages may not have a sender
+  content: string;
+  recipient?: string; // If sending to everyone, is left empty
+  timeSent?: number; // Time in seconds since the game started
+  category: 'player' | 'dead-player' | 'night-start' | 'night-action' | 'night-notification' | 'day-start' | 'day-action' | 'day-notification' | 'server';
+}
+
 const Chatbox: React.FC = () => {
-  // State to store chat messages
-  const [messages, setMessages] = useState<string[]>([]);
+  const {
+    gameState: { username },
+  } = useContext(GameStateContext); 
+
+  // State to store chat messages as an array of Message objects
+  const [messages, setMessages] = useState<ChatMessage[]>([]);
 
   // State to store the current input value
   const [inputValue, setInputValue] = useState('');
+
+  const { isDay } = useDayNight(); 
 
   // Handle input change
   const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -19,8 +34,13 @@ const Chatbox: React.FC = () => {
 
   // Handle sending a message
   const handleSendMessage = () => {
-    if (inputValue.trim()) {
-      setMessages([...messages, inputValue]); // Add the message to the chat
+    if (inputValue.trim() && isDay) {
+      const newMessage: ChatMessage = {
+        sender: username,
+        content: inputValue, 
+        category: 'player'
+      };
+      setMessages([...messages, newMessage]); 
       setInputValue(''); // Clear the input after sending
     }
   };
@@ -29,61 +49,36 @@ const Chatbox: React.FC = () => {
     <div className={cn('chatbox')}>
       <div className={cn('chat-display')}>
         {messages.map((message, index) => (
-          <p key={index} className={cn('chat-message')}>
-            {message}
-          </p>
-        ))}
-      </div>
-      <div className={cn('chat-input-area')}>
-        <input
-          type="text"
-          value={inputValue}
-          onChange={handleInputChange}
-          placeholder="Type a message..."
-          className={cn('chat-input')}
-        />
-        <button onClick={handleSendMessage} className={cn('send-button')}>
-          Send
-        </button>
-      </div>
-    </div>
-  );
-};
-
-export default Chatbox;*/
-
-
-
-import React, { useState } from 'react';
-import styles from './Chatbox.module.scss';
-import classNames from 'classnames/bind';
-import { useDayNight } from '../DayNightContext/DayNightContext.tsx'; 
-
-const cn = classNames.bind(styles);
-
-const Chatbox: React.FC = () => {
-  const { isDay } = useDayNight(); 
-  const [messages, setMessages] = useState<string[]>([]);
-  const [inputValue, setInputValue] = useState('');
-
-  const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setInputValue(event.target.value);
-  };
-
-  const handleSendMessage = () => {
-    if (inputValue.trim() && isDay) {
-      setMessages([...messages, inputValue]);
-      setInputValue('');
-    }
-  };
-
-  return (
-    <div className={cn('chatbox')}>
-      <div className={cn('chat-display')}>
-        {messages.map((message, index) => (
-          <p key={index} className={cn('chat-message')}>
-            {message}
-          </p>
+          <p
+          key={index}
+          className={cn('chat-message', {
+            'player-message': message.category === 'player', // (Alive players messages)
+            'dead-player-message': message.category === 'dead-player', // (Dead players messages)
+            'night-start-message': message.category === 'night-start',   // (NIGHT 1)
+            'night-action-message': message.category === 'night-action',   // (You have chosen to heal John)
+            'night-notification-message': message.category === 'night-notification',   // (You have been killed by the killer)
+            'day-start-message': message.category === 'day-start',       // (DAY 1)
+            'day-action-message': message.category === 'day-action',   // (You have voted for John)
+            'day-notification-message': message.category === 'day-notification',   // (John has been executed by the town)
+            'server-message': message.category === 'server', // (Other server messages)
+          })}
+        >
+          {message.category === 'player' && (
+            <>
+              <span className={cn('chat-username')}>{message.sender}</span> {/* (Player username) */}
+              : <span className={cn('chat-content')}>{message.content}</span> {/* (Player message content) */}
+            </>
+          )}
+          {message.category === 'dead-player' && (
+            <>
+              <span className={cn('chat-username-dead')}>{message.sender}</span> {/* (Dead player username) */}
+              : <span className={cn('chat-content')}>{message.content}</span> {/* (Player message content) */}
+            </>
+          )}
+          {message.category !== 'player' && message.category !== 'dead-player' && (
+            <span className={cn('')}>{message.content}</span> // (Other categories display content only)
+          )}
+        </p>
         ))}
       </div>
       <div className={cn('chat-input-area')}>
@@ -104,142 +99,3 @@ const Chatbox: React.FC = () => {
 };
 
 export default Chatbox;
-
-
-
-
-
-
-//SECOND VERSION
-/*import React, { useState, useEffect, useRef } from 'react';
-import styles from './Chatbox.module.scss';
-import classNames from 'classnames/bind';
-
-const cn = classNames.bind(styles);
-
-const Chatbox: React.FC = () => {
-  const [messages, setMessages] = useState<string[]>([]);
-  const [inputValue, setInputValue] = useState('');
-  const ws = useRef<WebSocket | null>(null); // WebSocket reference
-
-  // Initialize WebSocket connection
-  useEffect(() => {
-    ws.current = new WebSocket('ws://localhost:5000/ws'); // adjust the URL according to your server
-
-    ws.current.onmessage = (event) => {
-      const message = event.data;
-      setMessages((prevMessages) => [...prevMessages, message]); // Add incoming messages to chat
-    };
-
-    return () => {
-      ws.current?.close();
-    };
-  }, []);
-
-  // Handle input change
-  const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setInputValue(event.target.value);
-  };
-
-  // Handle sending a message
-  const handleSendMessage = () => {
-    if (inputValue.trim() && ws.current?.readyState === WebSocket.OPEN) {
-      ws.current.send(inputValue); // Send message to server
-      setInputValue(''); // Clear the input after sending
-    }
-  };
-
-  return (
-    <div className={cn('chatbox')}>
-      <div className={cn('chat-display')}>
-        {messages.map((message, index) => (
-          <p key={index} className={cn('chat-message')}>
-            {message}
-          </p>
-        ))}
-      </div>
-      <div className={cn('chat-input-area')}>
-        <input
-          type="text"
-          value={inputValue}
-          onChange={handleInputChange}
-          placeholder="Type a message..."
-          className={cn('chat-input')}
-        />
-        <button onClick={handleSendMessage} className={cn('send-button')}>
-          Send
-        </button>
-      </div>
-    </div>
-  );
-};
-
-export default Chatbox;*/
-
-/*import React, { useState, useEffect, useRef } from 'react';
-import styles from './Chatbox.module.scss';
-import classNames from 'classnames/bind';
-
-const cn = classNames.bind(styles);
-
-const Chatbox: React.FC = () => {
-  // State to store chat messages
-  const [messages, setMessages] = useState<string[]>([]);
-  const [inputValue, setInputValue] = useState('');
-  const webSocket = useRef<WebSocket | null>(null); // WebSocket reference
-
-  // Initialize WebSocket connection when the component mounts
-  useEffect(() => {
-    webSocket.current = new WebSocket('ws://localhost:your_port/ws');
-
-    // When receiving a message from the WebSocket server
-    webSocket.current.onmessage = (event) => {
-      const message = event.data;
-      setMessages((prevMessages) => [...prevMessages, message]); // Update messages state
-    };
-
-    return () => {
-      webSocket.current?.close(); // Cleanup WebSocket on component unmount
-    };
-  }, []);
-
-  // Handle input change
-  const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setInputValue(event.target.value);
-  };
-
-  // Handle sending a message
-  const handleSendMessage = () => {
-    if (inputValue.trim() && webSocket.current?.readyState === WebSocket.OPEN) {
-      webSocket.current.send(inputValue); // Send message to WebSocket server
-      setInputValue(''); // Clear input after sending
-    }
-  };
-
-  return (
-    <div className={cn('chatbox')}>
-      <div className={cn('chat-display')}>
-        {messages.map((message, index) => (
-          <p key={index} className={cn('chat-message')}>
-            {message}
-          </p>
-        ))}
-      </div>
-      <div className={cn('chat-input-area')}>
-        <input
-          type="text"
-          value={inputValue}
-          onChange={handleInputChange}
-          placeholder="Type a message..."
-          className={cn('chat-input')}
-        />
-        <button onClick={handleSendMessage} className={cn('send-button')}>
-          Send
-        </button>
-      </div>
-    </div>
-  );
-};
-
-export default Chatbox;*/
-
