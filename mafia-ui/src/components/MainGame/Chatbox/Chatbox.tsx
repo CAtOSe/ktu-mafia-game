@@ -38,7 +38,7 @@ const Chatbox: React.FC = () => {
       const newMessage: ChatMessage = {
         sender: username,
         content: inputValue, 
-        category: 'dead-player'
+        category: 'player'
       };
       setMessages([...messages, newMessage]); 
       setInputValue(''); // Clear the input after sending
