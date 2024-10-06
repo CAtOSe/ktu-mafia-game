@@ -2,6 +2,7 @@ import React, { useState, useContext } from 'react';
 import styles from './Chatbox.module.scss';
 import classNames from 'classnames/bind';
 import { GameStateContext } from '../../../contexts/GameStateContext/GameStateContext.tsx'; 
+import { useDayNight } from '../DayNightContext/DayNightContext.tsx'; 
 
 const cn = classNames.bind(styles);
 
@@ -24,6 +25,8 @@ const Chatbox: React.FC = () => {
   // State to store the current input value
   const [inputValue, setInputValue] = useState('');
 
+  const { isDay } = useDayNight(); 
+
   // Handle input change
   const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setInputValue(event.target.value);
@@ -31,7 +34,7 @@ const Chatbox: React.FC = () => {
 
   // Handle sending a message
   const handleSendMessage = () => {
-    if (inputValue.trim()) {
+    if (inputValue.trim() && isDay) {
       const newMessage: ChatMessage = {
         sender: username,
         content: inputValue, 
@@ -83,10 +86,11 @@ const Chatbox: React.FC = () => {
           type="text"
           value={inputValue}
           onChange={handleInputChange}
-          placeholder="Type a message..."
+          placeholder={isDay ? "Type a message..." : "You can't chat during the night!"}
           className={cn('chat-input')}
+          disabled={!isDay}
         />
-        <button onClick={handleSendMessage} className={cn('send-button')}>
+        <button onClick={handleSendMessage} className={cn('send-button')} disabled={!isDay}>
           Send
         </button>
       </div>
