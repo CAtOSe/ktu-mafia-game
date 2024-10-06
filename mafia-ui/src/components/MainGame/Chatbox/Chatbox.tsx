@@ -86,7 +86,7 @@ const Chatbox: React.FC = () => {
           type="text"
           value={inputValue}
           onChange={handleInputChange}
-          placeholder={isDay ? "Type a message..." : "You can't chat during the night!"}
+          placeholder={isDay ? 'Type a message...' : "You can't chat during the night!"}
           className={cn('chat-input')}
           disabled={!isDay}
         />

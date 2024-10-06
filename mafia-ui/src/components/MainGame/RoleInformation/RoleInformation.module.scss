@@ -19,26 +19,26 @@
 
 .info-list {
   display: grid;
-  grid-template-columns: auto 1fr;  
-  gap: 5px 10px;                  
+  grid-template-columns: auto 1fr;
+  gap: 5px 10px;
   padding: 0;
   margin: 10px 0;
-  font-size: 12px;                 
+  font-size: 12px;
 }
 
 .info-list li {
-  display: contents;               
+  display: contents;
 }
 
 .info-list li strong {
-  text-align: left;                
-  padding-right: 10px;            
+  text-align: left;
+  padding-right: 10px;
 }
 
 .info-list li:nth-child(odd) {
-  text-align: right;    
-}           
+  text-align: right;
+}
 
 .info-list li:nth-child(even) {
-  text-align: left;                
+  text-align: left;
 }

@@ -70,7 +70,7 @@ const AlivePlayersList: React.FC = () => {
             <li key={index} className="player-row">
               <span className="player-info">{player}</span>
               {/* Check if the player's role is Killer before rendering the Action button */}
-              {gameState.role === "Killer" && player !== gameState?.username &&(
+              {gameState.role === 'Killer' && player !== gameState?.username &&(
                 <button
                   className="action-button"
                   onClick={() => handleActionClick(player)} // Pass the target player's username
