@@ -186,10 +186,17 @@ public class GameService : IGameService
 
     private Task SendAlivePlayerList()
     {
+        var alivePlayers = _currentPlayers.Where(p => p.IsAlive).Select(p => p.Name).ToList();
+
+        foreach (var player in _currentPlayers)
+        {
+            Console.WriteLine($"{player.Name}: {player.IsAlive}");
+        }
+
         var message = new Message
         {
             Base = ResponseCommands.AlivePlayerListUpdate,
-            Arguments = _currentPlayers.Where(p=>p.IsAlive == true ).Select(p => p.Name).ToList(),
+            Arguments = alivePlayers,
         };
         return NotifyAllPlayers(message);
     }
@@ -214,18 +221,14 @@ public class GameService : IGameService
 
         Task.Run(async () =>
         {
-            Console.WriteLine("Task.Run enabled");
             while (GameStarted && !token.IsCancellationRequested) 
             {
-                Console.WriteLine("While passed");
                 if (IsDayPhase)
                 {
-                    Console.WriteLine("Day phase day");
                     await Task.Delay(30000, token); // 30 seconds for day 
                 }
                 else
                 {
-                    Console.WriteLine("Day phase night");
                     await Task.Delay(15000, token); // 15 seconds for night 
                 }
 
@@ -235,5 +238,34 @@ public class GameService : IGameService
             }
         }, token); 
     }
+
+    public async Task NightAction(string actionUser, string actionTarget, string actionType)
+    {
+        // Find the player initiating the action
+        var userPlayer = _currentPlayers.FirstOrDefault(p => p.Name.Equals(actionUser, StringComparison.OrdinalIgnoreCase));
+
+        // Find the target player
+        var targetPlayer = _currentPlayers.FirstOrDefault(p => p.Name.Equals(actionTarget, StringComparison.OrdinalIgnoreCase));
+
+        // Validate that both the action user and the target player exist
+        if (userPlayer == null || targetPlayer == null)
+        {
+            Console.WriteLine("Invalid action: Either the user or the target player does not exist.");
+            return;
+        }
+
+        // Check if the action type is "kill"
+        if (actionType.Equals("kill", StringComparison.OrdinalIgnoreCase))
+        {
+            // Perform the kill action
+            targetPlayer.IsAlive = false;
+
+            Console.WriteLine($"{targetPlayer.Name} has been killed by {userPlayer.Name}.");
+        }
+
+        // Send updated list of alive players
+        await SendAlivePlayerList();
+    }
+
 }
 
