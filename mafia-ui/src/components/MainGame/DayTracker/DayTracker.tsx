@@ -45,15 +45,16 @@ export default DayTracker;*/
 
 import React from 'react';
 import './DayTracker.module.scss';
-import { useDayNight } from '../DayNightContext/DayNightContext.tsx'; 
+import { useDayNight } from '../DayNightContext/DayNightContext.tsx';
 
 const DayTracker: React.FC = () => {
-  const { isDay, timeRemaining } = useDayNight(); 
+  const { isDay, timeRemaining, phase } = useDayNight(); // Get phase from context
+
   return (
     <div>
       <div className={`circle ${isDay ? 'day' : 'night'}`}>
         <p className="phase-text">
-          {isDay ? `Day` : `Night`}
+          {isDay ? `Day ${phase}` : `Night ${phase}`}
         </p>
         <p className="timer-text">{timeRemaining}</p>
       </div>
@@ -62,4 +63,7 @@ const DayTracker: React.FC = () => {
 };
 
 export default DayTracker;
+
+
+
 

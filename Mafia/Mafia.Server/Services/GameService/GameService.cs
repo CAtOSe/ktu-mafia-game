@@ -10,7 +10,10 @@ public class GameService : IGameService
     private readonly List<Player> _currentPlayers = [];
     
     private bool GameStarted { get; set; } = false;
-    
+    private bool IsDayPhase { get; set; } = true; //  Track if it's currently day
+    private CancellationTokenSource? _cancellationTokenSource; //  Token for canceling the phase cycle
+
+
     public async Task DisconnectPlayer(Player player)
     {
         _currentPlayers.Remove(player);
@@ -34,6 +37,7 @@ public class GameService : IGameService
     {
         if (player.IsLoggedIn)
         {
+            player.IsAlive = true;
             await player.SendMessage(new Message
             {
                 Base = ResponseCommands.Error,
@@ -77,6 +81,7 @@ public class GameService : IGameService
         return NotifyAllPlayers(message);
     }
     
+    
     public async Task StartGame()
     {
         if (GameStarted)
@@ -91,7 +96,6 @@ public class GameService : IGameService
         }
 
         Console.WriteLine("Assigning roles and starting the countdown.");
-        
         await NotifyAllPlayers(new Message
         {
             Base = ResponseCommands.StartCountdown,
@@ -126,13 +130,26 @@ public class GameService : IGameService
                 Arguments = [player.RoleName]
             });
         }
-
+        
         await gameStartTask;
+        GameStarted = true;
+        StartDayNightCycle();
+    }
+
+    public async Task ChangeDayPhase()
+    {
+        Console.WriteLine("Changing day phase.");
+        await SendAlivePlayerList();
     }
 
     public List<Player> GetPlayers()
     {
-        return _currentPlayers;
+        return _currentPlayers.ToList();
+    }
+
+    public string ReturnPlayers(List<Player> players)
+    {
+        return string.Join(", ", players.Select(p => p.Name));
     }
     
     public Dictionary<string, string> GetPlayerRoles()
@@ -167,6 +184,15 @@ public class GameService : IGameService
         }
     }
 
+    private Task SendAlivePlayerList()
+    {
+        var message = new Message
+        {
+            Base = ResponseCommands.AlivePlayerListUpdate,
+            Arguments = _currentPlayers.Where(p=>p.IsAlive == true ).Select(p => p.Name).ToList(),
+        };
+        return NotifyAllPlayers(message);
+    }
     
     private Task NotifyAllPlayers(Message message)
     {
@@ -177,5 +203,37 @@ public class GameService : IGameService
     private void ResetGame()
     {
         GameStarted = false;
+        _cancellationTokenSource?.Cancel(); // Stop the day/night cycle
+    }
+
+    // Timer logic for day/night cycle 
+    private void StartDayNightCycle()
+    {
+        _cancellationTokenSource = new CancellationTokenSource(); 
+        var token = _cancellationTokenSource.Token; 
+
+        Task.Run(async () =>
+        {
+            Console.WriteLine("Task.Run enabled");
+            while (GameStarted && !token.IsCancellationRequested) 
+            {
+                Console.WriteLine("While passed");
+                if (IsDayPhase)
+                {
+                    Console.WriteLine("Day phase day");
+                    await Task.Delay(30000, token); // 30 seconds for day 
+                }
+                else
+                {
+                    Console.WriteLine("Day phase night");
+                    await Task.Delay(15000, token); // 15 seconds for night 
+                }
+
+                IsDayPhase = !IsDayPhase; // Toggle between day and night 
+                Console.WriteLine("Changing day phase");
+                await ChangeDayPhase();
+            }
+        }, token); 
     }
 }
+

@@ -19,8 +19,9 @@ const defaultState: GameState = {
   gameStage: GameStage.Connecting,
   username: '',
   role: '',
-  players: [],
+  players: [],    // We will use this to represent alive players
   isHost: false,
+  isAlive: false, // Can use this for the current player if needed
 };
 
 export const GameStateContext = createContext<GameStateContextValue>({
@@ -29,11 +30,11 @@ export const GameStateContext = createContext<GameStateContextValue>({
 });
 
 export const GameStateContextProvider = ({
-  children,
-}: GameStateContextProviderProps) => {
+                                           children,
+                                         }: GameStateContextProviderProps) => {
   const gameState = useRef<GameState>(defaultState);
   const [exposedGameState, setExposedGameState] = useState<GameState>(
-    gameState.current,
+    gameState.current
   );
   const websocket = useContext(WebsocketContext);
 
@@ -42,7 +43,7 @@ export const GameStateContextProvider = ({
       gameState.current = { ...gameState.current, ...partialGameState };
       setExposedGameState(gameState.current);
     },
-    [],
+    []
   );
 
   const handleMessage = useCallback(
@@ -66,9 +67,16 @@ export const GameStateContextProvider = ({
         case ResponseMessages.RoleAssigned:
           updateGameState({ role: message.arguments?.[0] });
           return;
+
+        // Handling AlivePlayerListUpdate
+        case ResponseMessages.AlivePlayerListUpdate:
+          updateGameState({
+            players: message.arguments ?? [], // Simply update the players list with alive players
+          });
+          return;
       }
     },
-    [updateGameState],
+    [updateGameState]
   );
 
   useEffect(() => {

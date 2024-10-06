@@ -13,6 +13,7 @@ export interface GameState {
   role: string;
   players: string[];
   isHost: boolean;
+  isAlive: boolean;
 }
 
 export interface GameStateContextProviderProps {
