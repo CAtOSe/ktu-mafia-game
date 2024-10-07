@@ -14,6 +14,7 @@ public class Player(WebSocket webSocket)
     public bool IsLoggedIn { get; set; } = false;
     public bool IsHost { get; set; } = false;
     public bool IsAlive { get; set; } = true;
+    public List<Item> Inventory { get; set; } = new();
 
     public async Task SendMessage(Message message)
     {
