@@ -9,9 +9,5 @@ public interface IGameService
     public Task TryAddPlayer(Player player, string username);
     public Task StartGame();
     public List<Player> GetPlayers();
-    public Dictionary<string, string> GetPlayerRoles();
-    public Task HandleMessageFromPlayer(Player player, string messageContent);
-    public Task HandleIncomingMessages(WebSocket webSocket, Player player, CancellationToken stoppingToken);
-
-    public Task NightAction(string actionUser, string actionTarget, string actionType);
+    public Task NightAction(Player actionUser, string actionTarget, string actionType);
 }

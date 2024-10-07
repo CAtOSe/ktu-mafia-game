@@ -6,4 +6,5 @@ public static class RequestCommands
     public const string Disconnect = "disconnect";
     public const string StartGame = "start-game";
     public const string NightAction = "night-action";
+    public const string Chat = "chat";
 }

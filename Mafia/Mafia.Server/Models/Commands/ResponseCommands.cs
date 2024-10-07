@@ -10,4 +10,5 @@ public static class ResponseCommands
     public const string AlivePlayerListUpdate = "alive-player-list-update";
     public const string Hello = "hello";
     public const string StartCountdown = "start-countdown";
+    public const string PhaseChange = "phase-change";
 }

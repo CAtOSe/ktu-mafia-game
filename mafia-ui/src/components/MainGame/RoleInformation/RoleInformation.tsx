@@ -13,7 +13,7 @@ const RoleInformation: React.FC = () => {
   let alignment: string;
   let goal: string;
   let primaryAbility: string;
-  let item: string = "None";
+  const item: string = 'None';
 
   if (role === 'Citizen') {
     alignment = 'Town';

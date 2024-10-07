@@ -17,7 +17,7 @@ const MainGame: React.FC = () => {
         <RoleList roles={[]} />
       </div>
       <div className={cn('role-list')}>
-        <Graveyard deadPlayers={[]} />
+        <Graveyard />
       </div>
       <div className={cn('day-tracker')}>
         <DayTracker />
@@ -26,7 +26,7 @@ const MainGame: React.FC = () => {
         <RoleInformation />
       </div>
       <div className={cn('alive-players-list')}>
-        <AlivePlayersList players={[]} />
+        <AlivePlayersList />
       </div>
       <div className={cn('chatbox-container')}>
         <Chatbox />

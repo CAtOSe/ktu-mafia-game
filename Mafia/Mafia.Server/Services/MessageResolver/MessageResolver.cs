@@ -1,10 +1,11 @@
 using Mafia.Server.Models;
 using Mafia.Server.Models.Commands;
+using Mafia.Server.Services.ChatService;
 using Mafia.Server.Services.GameService;
 
 namespace Mafia.Server.Services.MessageResolver;
 
-public class MessageResolver(IGameService gameService) : IMessageResolver
+public class MessageResolver(IGameService gameService, IChatService chatService) : IMessageResolver
 {
     public async Task HandleMessage(Player player, string message)
     {
@@ -22,11 +23,13 @@ public class MessageResolver(IGameService gameService) : IMessageResolver
             case RequestCommands.StartGame:
                 await gameService.StartGame();
                 return;
-            case RequestCommands.NightAction when command.Arguments.Count == 3:
-                var actionUser = command.Arguments[0];
-                var actionTarget = command.Arguments[1];
-                var actionType = command.Arguments[2];
-                await gameService.NightAction(actionUser, actionTarget, actionType);
+            case RequestCommands.NightAction when command.Arguments.Count == 2:
+                var actionTarget = command.Arguments[0];
+                var actionType = command.Arguments[1];
+                await gameService.NightAction(player, actionTarget, actionType);
+                return;
+            case RequestCommands.Chat:
+                await chatService.HandleIncomingMessage(player, command);
                 return;
         }
     }
