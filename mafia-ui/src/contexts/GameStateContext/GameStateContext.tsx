@@ -23,6 +23,7 @@ const defaultState: GameState = {
   alivePlayers: [], // We will use this to represent alive players
   isHost: false,
   isAlive: false, // Can use this for the current player if needed
+  inventory: [],
 };
 
 export const GameStateContext = createContext<GameStateContextValue>({
@@ -77,6 +78,9 @@ export const GameStateContextProvider = ({
           });
           return;
         }
+        case ResponseMessages.AssignedItem:
+          updateGameState({ inventory: message.arguments ?? [] });
+          return;
       }
     },
     [updateGameState],

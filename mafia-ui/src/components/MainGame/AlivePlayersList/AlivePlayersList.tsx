@@ -5,6 +5,8 @@ import { GameStateContext } from '../../../contexts/GameStateContext/GameStateCo
 import WebsocketContext from '../../../contexts/WebSocketContext/WebsocketContext.ts';
 import createMessage from '../../../helpers/createMessage.ts';
 import { RequestMessages } from '../../../types.ts';
+import { useDayNight } from '../../../contexts/DayNightContext/useDayNight.ts';
+import Button from '../../Button/Button.tsx';
 
 const cn = classNames.bind(styles);
 
@@ -13,6 +15,7 @@ const AlivePlayersList: React.FC = () => {
     gameState: { alivePlayers, role, username },
   } = useContext(GameStateContext);
   const websocket = useContext(WebsocketContext);
+  const { isDay } = useDayNight();
 
   const handleActionClick = (targetUsername: string) => {
     if (websocket) {
@@ -33,13 +36,13 @@ const AlivePlayersList: React.FC = () => {
             <li key={player} className="player-row">
               <span className="player-info">{player}</span>
               {/* Check if the player's role is Killer before rendering the Action button */}
-              {role === 'Killer' && player !== username && (
-                <button
+              {!isDay && role === 'Killer' && player !== username && (
+                <Button
                   className="action-button"
                   onClick={() => handleActionClick(player)} // Pass the target player's username
                 >
-                  Action
-                </button>
+                  Kill
+                </Button>
               )}
             </li>
           ))}

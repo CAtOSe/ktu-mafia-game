@@ -1,6 +1,4 @@
-﻿using System.Net.WebSockets;
-using System.Text;
-using Mafia.Server.Models;
+﻿using Mafia.Server.Models;
 using Mafia.Server.Models.Commands;
 
 namespace Mafia.Server.Services.GameService;
@@ -13,8 +11,10 @@ public class GameService : IGameService
     private bool GameStarted { get; set; } = false;
 
     private volatile int _phaseCounter = 1;
-    private volatile bool _isDayPhase = false;
+    private volatile bool _isDayPhase = true;
+    private volatile bool _hasExecutedNightAction = false;
 
+    public List<Player> GetPlayers() => _currentPlayers;
 
     public async Task DisconnectPlayer(Player player)
     {
@@ -110,72 +110,18 @@ public class GameService : IGameService
             });
         });
 
-        // Randomly setting Killer role to 1 player
-        var random = new Random();
-        var killerIndex = random.Next(_currentPlayers.Count);
-        var killer = _currentPlayers[killerIndex];
-        killer.Role = PlayerRole.Killer;
-
-        // Setting Citizen role for other players
-        foreach (var player in _currentPlayers)
-        {
-            if (player != killer)
-            {
-                player.Role = PlayerRole.Citizen;
-            }
-
-            // Notify each player of their role
-            await player.SendMessage(new Message
-            {
-                Base = ResponseCommands.RoleAssigned,
-                Arguments = [player.RoleName]
-            });
-        }
+        await AssignRoles();
+        await AssignItems();
 
         await gameStartTask;
         GameStarted = true;
         StartDayNightCycle();
     }
 
-    public List<Player> GetPlayers()
-    {
-        return _currentPlayers.ToList();
-    }
-    
-    public Dictionary<string, string> GetPlayerRoles()
-    {
-        return _currentPlayers.ToDictionary(player => player.Name, player => player.RoleName);
-    }
-    
-    //UPDATES:
-
-    public async Task HandleMessageFromPlayer(Player player, string messageContent)
-    {
-        var message = new Message
-        {
-            Base = "chat",
-            Arguments = new List<string> { $"{player.Name}: {messageContent}" }
-        };
-        await NotifyAllPlayers(message);
-    }
-    public async Task HandleIncomingMessages(WebSocket webSocket, Player player, CancellationToken stoppingToken)
-    {
-        var buffer = new byte[1024 * 4];
-        while (webSocket.State == WebSocketState.Open && !stoppingToken.IsCancellationRequested)
-        {
-            var result = await webSocket.ReceiveAsync(new ArraySegment<byte>(buffer), stoppingToken);
-            var receivedMessage = Encoding.UTF8.GetString(buffer, 0, result.Count);
-
-            // Handle received message
-            if (!string.IsNullOrEmpty(receivedMessage))
-            {
-                await HandleMessageFromPlayer(player, receivedMessage);
-            }
-        }
-    }
-    
     public async Task NightAction(Player actionUser, string actionTarget, string actionType)
     {
+        if (_isDayPhase || _hasExecutedNightAction) return;
+        
         // Find the target player
         var targetPlayer = _currentPlayers.FirstOrDefault(p => p.Name.Equals(actionTarget, StringComparison.OrdinalIgnoreCase));
 
@@ -194,6 +140,8 @@ public class GameService : IGameService
 
             Console.WriteLine($"{targetPlayer.Name} has been killed by {actionUser.Name}.");
         }
+
+        _hasExecutedNightAction = true;
 
         // Send updated list of alive players
         await SendAlivePlayerList();
@@ -238,26 +186,29 @@ public class GameService : IGameService
 
         Task.Run(async () =>
         {
+            await UpdateDayNightPhase();
+            
             while (GameStarted && !token.IsCancellationRequested) 
             {
                 if (_isDayPhase)
                 {
                     await Task.Delay(GameConfiguration.DayPhaseDuration, token);
-                    _phaseCounter = _phaseCounter + 1;
                 }
                 else
                 {
+                    _hasExecutedNightAction = false;
                     await Task.Delay(GameConfiguration.NightPhaseDuration, token);
+                    _phaseCounter = _phaseCounter + 1;
                 }
 
                 _isDayPhase = !_isDayPhase; // Toggle between day and night 
                 Console.WriteLine("Changing phase");
-                await ChangeDayPhase();
+                await UpdateDayNightPhase();
             }
         }, token); 
     }
     
-    private async Task ChangeDayPhase()
+    private async Task UpdateDayNightPhase()
     {
         await SendAlivePlayerList();
         var phaseName = _isDayPhase ? "day" : "night";
@@ -268,6 +219,49 @@ public class GameService : IGameService
             Base = ResponseCommands.PhaseChange,
             Arguments = [phaseName, timeoutDuration.ToString(), _phaseCounter.ToString()]
         });
+    }
+
+    private async Task AssignRoles()
+    {
+        // Randomly setting Killer role to 1 player
+        var random = new Random();
+        var killerIndex = random.Next(_currentPlayers.Count);
+        var killer = _currentPlayers[killerIndex];
+        killer.Role = PlayerRole.Killer;
+
+        // Setting Citizen role for other players
+        foreach (var player in _currentPlayers)
+        {
+            if (player != killer)
+            {
+                player.Role = PlayerRole.Citizen;
+            }
+
+            // Notify each player of their role
+            await player.SendMessage(new Message
+            {
+                Base = ResponseCommands.RoleAssigned,
+                Arguments = [player.RoleName]
+            });
+        }
+    }
+
+    private async Task AssignItems()
+    {
+        foreach (var player in _currentPlayers)
+        {
+            player.Inventory.Add(new Item { Name = "Radio" });
+            if (player.Role == PlayerRole.Killer)
+            {
+                player.Inventory.Add(new Item { Name = "Knife" });
+            }
+            
+            await player.SendMessage(new Message
+            {
+                Base = ResponseCommands.AssignItem,
+                Arguments = player.Inventory.Select(x => x.Name).ToList()
+            });
+        }
     }
 }
 

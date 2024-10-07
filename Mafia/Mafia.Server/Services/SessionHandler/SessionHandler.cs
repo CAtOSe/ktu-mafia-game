@@ -2,15 +2,11 @@ using System.Net.WebSockets;
 using System.Text;
 using Mafia.Server.Models;
 using Mafia.Server.Models.Commands;
-using Mafia.Server.Services.GameService;
 using Mafia.Server.Services.MessageResolver;
 
 namespace Mafia.Server.Services.SessionHandler;
 
-public class SessionHandler(
-    IMessageResolver messageResolver,
-    IGameService gameService
-    ) : ISessionHandler
+public class SessionHandler(IMessageResolver messageResolver) : ISessionHandler
 {
 
     public async Task HandleConnection(WebSocket webSocket, CancellationToken cancellationToken)
@@ -42,13 +38,5 @@ public class SessionHandler(
                 receiveResult.CloseStatusDescription,
                 cancellationToken);
         }
-        
-        //UPDATE
-        await gameService.TryAddPlayer(player, player.Name);
-        
-        await gameService.HandleIncomingMessages(webSocket, player, cancellationToken);
-
-        
-        await gameService.DisconnectPlayer(player);
     }
 }

@@ -18,4 +18,5 @@ export enum ResponseMessages {
   RoleAssigned = 'role-assigned',
   AlivePlayerListUpdate = 'alive-player-list-update',
   PhaseChange = 'phase-change',
+  AssignedItem = 'assign-item',
 }

@@ -1,17 +1,17 @@
-import React from 'react';
+import { useContext } from 'react';
+import { GameStateContext } from '../../../contexts/GameStateContext/GameStateContext.tsx';
 
-type RoleListProps = {
-  roles: string[];
-};
+const RoleList = () => {
+  const {
+    gameState: { inventory },
+  } = useContext(GameStateContext);
 
-const RoleList: React.FC<RoleListProps> = ({ roles }) => {
-  roles = ['Killer', 'Citizen', 'Citizen', 'Citizen'];
   return (
     <div className="list-box alive-player-list">
-      <h3>Role List</h3>
+      <h3>Inventory</h3>
       <ul>
-        {roles.slice(0, 15).map((role, index) => (
-          <li key={index}>{role}</li>
+        {inventory.map((item, index) => (
+          <li key={index}>{item}</li>
         ))}
       </ul>
     </div>

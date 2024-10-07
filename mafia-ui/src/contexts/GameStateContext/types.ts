@@ -15,6 +15,7 @@ export interface GameState {
   alivePlayers: string[];
   isHost: boolean;
   isAlive: boolean;
+  inventory: string[];
 }
 
 export interface GameStateContextProviderProps {
