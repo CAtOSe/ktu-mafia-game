@@ -18,6 +18,11 @@ const WebsocketContextProvider = ({ children }: WebsocketContextProps) => {
   useEffect(() => {
     const socket = new WebSocket(socketUrl);
     websocket.current = socket;
+
+    socket.onmessage = (event) => {
+      console.log('Raw WebSocket message received:', event.data);
+      handleMessage(event.data);
+    };
     websocket.current.onopen = () => {
       console.log('Connection to WebServer established');
     };

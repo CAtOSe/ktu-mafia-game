@@ -26,3 +26,9 @@ export interface GameStateContextValue {
   gameState: GameState;
   updateGameState: (partialGameState: Partial<GameState>) => void;
 }
+
+export interface ChatMessage {
+  sender: string; 
+  content: string; 
+  category: 'player' | 'dead-player' | 'night-start' | 'night-action' | 'night-notification' | 'day-start' | 'day-action' | 'day-notification' | 'server'; 
+}

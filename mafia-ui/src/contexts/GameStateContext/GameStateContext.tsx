@@ -11,9 +11,11 @@ import {
   GameState,
   GameStateContextProviderProps,
   GameStateContextValue,
+  ChatMessage,
 } from './types.ts';
 import { Message, ResponseMessages } from '../../types.ts';
 import WebsocketContext from '../WebSocketContext/WebsocketContext.ts';
+import { ResponseCommands } from './ResponseCommands.ts';
 
 const defaultState: GameState = {
   gameStage: GameStage.Connecting,
@@ -32,12 +34,13 @@ export const GameStateContext = createContext<GameStateContextValue>({
 });
 
 export const GameStateContextProvider = ({
-  children,
-}: GameStateContextProviderProps) => {
+                                           children,
+                                         }: GameStateContextProviderProps) => {
   const gameState = useRef<GameState>(defaultState);
   const [exposedGameState, setExposedGameState] = useState<GameState>(
     gameState.current,
   );
+  const [messages, setMessages] = useState<ChatMessage[]>([]); 
   const websocket = useContext(WebsocketContext);
 
   const updateGameState = useCallback(
@@ -50,6 +53,8 @@ export const GameStateContextProvider = ({
 
   const handleMessage = useCallback(
     (message: Message) => {
+      console.log('GAMESTATE Received message:', message); 
+      
       switch (message.base) {
         case ResponseMessages.Hello:
           updateGameState({ gameStage: GameStage.Login });
@@ -71,16 +76,26 @@ export const GameStateContextProvider = ({
           return;
         case ResponseMessages.AlivePlayerListUpdate: {
           const alivePlayers = message.arguments ?? [];
-          console.log('Updated alive players list:', alivePlayers);
-
-          updateGameState({
-            alivePlayers: alivePlayers,
-          });
+          updateGameState({ alivePlayers: alivePlayers });
           return;
         }
-        case ResponseMessages.AssignedItem:
-          updateGameState({ inventory: message.arguments ?? [] });
+        case ResponseCommands.Chat: {
+          console.log('GAMESTATE Handling Chat response');
+        
+          if (message.arguments && message.arguments.length >= 2) {
+            const newChatMessage: ChatMessage = {
+              sender: message.arguments[0], 
+              content: message.arguments[1], 
+              category: 'player',
+            };
+            console.log('GAMESTATE New chat message:', newChatMessage); 
+
+            setMessages((prevMessages: ChatMessage[]) => [...prevMessages, newChatMessage]);
+          }else {
+            console.error('GAMESTATE Invalid chat message format');
+          }
           return;
+        }
       }
     },
     [updateGameState],
@@ -102,6 +117,8 @@ export const GameStateContextProvider = ({
   const value = {
     gameState: exposedGameState,
     updateGameState,
+    messages, 
+    setMessages, 
   };
 
   return (
