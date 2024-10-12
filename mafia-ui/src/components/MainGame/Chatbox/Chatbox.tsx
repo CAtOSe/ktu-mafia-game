@@ -132,14 +132,13 @@ import { GameStateContext } from '../../../contexts/GameStateContext/GameStateCo
 import { useDayNight } from '../../../contexts/DayNightContext/useDayNight.ts';
 import WebsocketContext from '../../../contexts/WebSocketContext/WebsocketContext.ts'; // Import WebSocket context
 
-
 const cn = classNames.bind(styles);
 
 interface ChatMessage {
-  sender?: string; // Optional, since server messages may not have a sender
+  sender?: string;
   content: string;
-  recipient?: string; // If sending to everyone, is left empty
-  timeSent?: number; // Time in seconds since the game started
+  recipient?: string;
+  timeSent?: number;
   category:
     | 'player'
     | 'dead-player'
@@ -162,23 +161,45 @@ const Chatbox: React.FC = () => {
   const [inputValue, setInputValue] = useState('');
   const { isDay } = useDayNight();
 
-  // Handle input change
   const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setInputValue(event.target.value);
   };
 
-  // Function to handle incoming WebSocket messages
   const handleWebSocketMessage = useCallback(
-    (data: any) => {
+    (event: any) => {
       try {
-        const receivedMessage: ChatMessage = JSON.parse(data);
-        console.log('Received WebSocket message:', receivedMessage);
+        console.log('Raw WebSocket message:', event);
+        const data = event.data;
 
-        // Checking if the message are player
-        if (receivedMessage.category === 'player') {
-          setMessages((prevMessages) => [...prevMessages, receivedMessage]);
+        // Log to check if data is undefined
+        console.log('Received WebSocket message:', data);
+
+        if (data === undefined || data === null) {
+          console.warn('WebSocket data is undefined or null.');
+          return; // Skip further processing if the data is invalid
+        }
+        console.log('Received WebSocket message:', data);
+
+        if (typeof data !== 'string') {
+          console.log('Data is not a string. Converting it to string...');
+          if (data instanceof Blob) {
+            const reader = new FileReader();
+            reader.onload = () => {
+              const text = reader.result as string;
+              handleParsedMessage(text);
+            };
+            reader.readAsText(data);
+            return;
+          } else if (data instanceof ArrayBuffer) {
+            const text = new TextDecoder('utf-8').decode(data);
+            handleParsedMessage(text);
+            return;
+          } else {
+            console.warn('Unhandled WebSocket data type:', data);
+            return; // Log and return to handle unknown types
+          }
         } else {
-          console.log('Received non-player message:', receivedMessage);
+          handleParsedMessage(data); // Process the string message
         }
       } catch (error) {
         console.error('Failed to parse WebSocket message:', error);
@@ -187,7 +208,48 @@ const Chatbox: React.FC = () => {
     []
   );
 
-  // Subscribe to WebSocket messages
+  const sendTestMessage = () => {
+    if (websocket && websocket.isOpen) {
+      websocket.sendMessage(JSON.stringify({ test: 'Hello, world!' }));
+    }
+  };
+
+  // Add a button to your render method
+  <button onClick={sendTestMessage}>Send Test Message</button>
+
+
+  const handleParsedMessage = (data: string) => {
+    try {
+      let receivedMessage: ChatMessage;
+
+      try {
+        receivedMessage = JSON.parse(data);
+      } catch (jsonError) {
+        const parts = data.split(':');
+        if (parts.length > 1) {
+          const base = parts[0];
+          const args = parts[1].split(';').filter(x => x);
+
+          receivedMessage = {
+            category: base === 'Chat' ? 'player' : 'server',
+            sender: args[0] || 'Server',
+            content: args[1] || '',
+          };
+        } else {
+          throw new Error('Invalid message format');
+        }
+      }
+
+      if (receivedMessage && receivedMessage.category === 'player') {
+        setMessages((prevMessages) => [...prevMessages, receivedMessage]);
+      } else {
+        console.log('Received non-player message:', receivedMessage);
+      }
+    } catch (error) {
+      console.error('Failed to handle parsed message:', error);
+    }
+  };
+
   useEffect(() => {
     if (!websocket) return;
 
@@ -201,46 +263,35 @@ const Chatbox: React.FC = () => {
     };
   }, [websocket, handleWebSocketMessage]);
 
-  // Handle sending a message
-  /*const handleSendMessage = () => {
-    if (inputValue.trim() && isDay) {
-      const newMessage: ChatMessage = {
-        sender: username,
-        content: inputValue,
-        category: 'player',
-      };
-      
-      // Add message to local state
-      setMessages([...messages, newMessage]);
-
-      // Send message through WebSocket to other players
-      if (websocket && websocket.isOpen) {
-        websocket.sendMessage(JSON.stringify(newMessage));
-      }
-
-      // Clear the input after sending
-      setInputValue('');
-    }
-  };*/
   const handleSendMessage = () => {
     if (inputValue.trim() && isDay) {
-      const newMessage: ChatMessage = {
-        sender: username,
-        content: inputValue,
+      /*const newMessage = {
+        Base: 'Chat',
+        Arguments: [username, inputValue],
+      };*/
+      const message = JSON.stringify({
         category: 'player',
-      };
-      console.log('CHATBOX Sending message:', newMessage); 
+        sender: 'Server',
+        content: 'This is a test message.',
+      });
 
-      setMessages((prevMessages) => [...prevMessages, newMessage]);
+      console.log('CHATBOX Sending message:', message);
+
+      setMessages((prevMessages) => [
+        ...prevMessages,
+        { sender: username, content: inputValue, category: 'player' },
+      ]);
+
       if (websocket && websocket.isOpen) {
-        websocket.sendMessage(JSON.stringify(newMessage)); 
+        console.log('CHATBOX WebSocket is connected.');
+        websocket.sendMessage(message);
       } else {
-        console.log('CHATBOX WebSocket is not open'); 
+        console.log('CHATBOX WebSocket is not connected.');
       }
 
-      setInputValue(''); 
+      setInputValue('');
     } else {
-      console.warn('CHATBOX Input value is empty or it is night'); 
+      console.warn('CHATBOX Input value is empty or it is night');
     }
   };
 
@@ -251,25 +302,23 @@ const Chatbox: React.FC = () => {
           <p
             key={index}
             className={cn('chat-message', {
-              'player-message': message.category === 'player', // (Alive players messages)
-              'dead-player-message': message.category === 'dead-player', // (Dead players messages)
-              'night-start-message': message.category === 'night-start', // (NIGHT 1)
-              'night-action-message': message.category === 'night-action', // (You have chosen to heal John)
+              'player-message': message.category === 'player',
+              'dead-player-message': message.category === 'dead-player',
+              'night-start-message': message.category === 'night-start',
+              'night-action-message': message.category === 'night-action',
               'night-notification-message':
-                message.category === 'night-notification', // (You have been killed by the killer)
-              'day-start-message': message.category === 'day-start', // (DAY 1)
-              'day-action-message': message.category === 'day-action', // (You have voted for John)
+                message.category === 'night-notification',
+              'day-start-message': message.category === 'day-start',
+              'day-action-message': message.category === 'day-action',
               'day-notification-message':
-                message.category === 'day-notification', // (John has been executed by the town)
-              'server-message': message.category === 'server', // (Other server messages)
+                message.category === 'day-notification',
+              'server-message': message.category === 'server',
             })}
           >
             {message.category === 'player' && (
               <>
                 <span className={cn('chat-username')}>{message.sender}</span>{' '}
-                
                 <span className={cn('chat-content')}>{message.content}</span>{' '}
-                
               </>
             )}
             {message.category === 'dead-player' && (
@@ -282,10 +331,9 @@ const Chatbox: React.FC = () => {
                 (Player message content)
               </>
             )}
-            {message.category !== 'player' &&
-              message.category !== 'dead-player' && (
-                <span className={cn('')}>{message.content}</span> // (Other categories display content only)
-              )}
+            {message.category !== 'player' && message.category !== 'dead-player' && (
+              <span className={cn('')}>{message.content}</span>
+            )}
           </p>
         ))}
       </div>
@@ -313,5 +361,6 @@ const Chatbox: React.FC = () => {
 };
 
 export default Chatbox;
+
 
 

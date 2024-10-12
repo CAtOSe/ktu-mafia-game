@@ -1,4 +1,5 @@
 using System.Text;
+using System.Text.Json;
 using Microsoft.Extensions.Primitives;
 
 namespace Mafia.Server.Models;
@@ -32,6 +33,16 @@ public record Message
                 .ToArray(),
         };
     }
+    /*public static Message FromString(string message)
+    {
+        var parsedMessage = JsonSerializer.Deserialize<Message>(message);
+        if (parsedMessage == null)
+        {
+            throw new FormatException("Failed to parse message");
+        }
+        return parsedMessage;
+    }*/
+
 
     public override string ToString()
     {
