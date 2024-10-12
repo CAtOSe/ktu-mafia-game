@@ -1,4 +1,8 @@
 ﻿using Mafia.Server.Models;
+using Mafia.Server.Models.AbstractFactory;
+using Mafia.Server.Models.AbstractFactory.Roles;
+using Mafia.Server.Models.AbstractFactory.Roles.Accomplices;
+using Mafia.Server.Models.AbstractFactory.Roles.Citizens;
 using Mafia.Server.Models.Commands;
 
 namespace Mafia.Server.Services.GameService;
@@ -111,7 +115,7 @@ public class GameService : IGameService
         });
 
         await AssignRoles();
-        await AssignItems();
+        //await AssignItems();
 
         await gameStartTask;
         GameStarted = true;
@@ -221,7 +225,7 @@ public class GameService : IGameService
         });
     }
 
-    private async Task AssignRoles()
+    /*private async Task AssignRoles()
     {
         // Randomly setting Killer role to 1 player
         var random = new Random();
@@ -244,9 +248,114 @@ public class GameService : IGameService
                 Arguments = [player.RoleName]
             });
         }
+    }*/
+    private async Task AssignRoles()
+    {
+        string preset = "Basic";
+        RoleFactorySelector roleFactorySelector = new RoleFactorySelector();
+        RoleFactory roleFactory = roleFactorySelector.factoryMethod(preset);
+
+        List<Role> killerRoles = roleFactory.GetKillerRoles();
+        List<Role> accompliceRoles = roleFactory.GetAccompliceRoles();
+        List<Role> citizenRoles = roleFactory.GetCitizenRoles();
+        // Store the original citizen roles for duplication purposes
+        List<Role> originalCitizenRoles = new List<Role>(citizenRoles);
+
+        int accompliceCount = GetAccompliceCount(_currentPlayers.Count);
+
+        var random = new Random();
+
+        // Create a list to track unassigned players by index
+        List<int> unassignedIndexes = Enumerable.Range(0, _currentPlayers.Count).ToList();
+
+        // 1. Assign a random Killer role to one player
+        int killerIndex = random.Next(unassignedIndexes.Count);
+        var killerPlayer = _currentPlayers[unassignedIndexes[killerIndex]];
+
+        // Get a random killer role from the killerRoles list
+        var killerRole = killerRoles[random.Next(killerRoles.Count)];
+        killerPlayer.Role = killerRole;
+
+        // Remove the assigned killer role and the player index from the tracking list
+        killerRoles.Remove(killerRole);
+        unassignedIndexes.RemoveAt(killerIndex);
+
+        // 2. Assign accomplice roles
+        for (int i = 0; i < accompliceCount; i++)
+        {
+            if (unassignedIndexes.Count == 0) break;  // Safety check: stop if no players are left to assign
+
+            if (accompliceRoles.Count > 0) // If there are accomplice roles available
+            {
+                var accompliceRole = accompliceRoles[random.Next(accompliceRoles.Count)];
+                int accompliceIndex = random.Next(unassignedIndexes.Count);
+                var accomplicePlayer = _currentPlayers[unassignedIndexes[accompliceIndex]];
+
+                accomplicePlayer.Role = accompliceRole;
+                accompliceRoles.Remove(accompliceRole);
+                unassignedIndexes.RemoveAt(accompliceIndex);  // Remove the player index
+            }
+            else // If no more accomplice roles, assign Lackey
+            {
+                int accompliceIndex = random.Next(unassignedIndexes.Count);
+                var accomplicePlayer = _currentPlayers[unassignedIndexes[accompliceIndex]];
+                accomplicePlayer.Role = new Lackey();  // Assign Lackey
+                unassignedIndexes.RemoveAt(accompliceIndex);  // Remove the player index
+            }
+        }
+
+        // 3. Randomly assign 0 to 2 players the Bystander role
+        int bystanderCount = random.Next(3);  // Random number between 0 and 2
+        for (int i = 0; i < bystanderCount && unassignedIndexes.Count > 0; i++)
+        {
+            int bystanderIndex = random.Next(unassignedIndexes.Count);
+            var bystanderPlayer = _currentPlayers[unassignedIndexes[bystanderIndex]];
+            bystanderPlayer.Role = new Bystander();  // Assign Bystander
+            unassignedIndexes.RemoveAt(bystanderIndex);  // Remove the player index
+        }
+
+        // 4. Assign remaining players random roles from citizenRoles
+        foreach (var playerIndex in unassignedIndexes.ToList())  // Iterate over unassigned players
+        {
+            var player = _currentPlayers[playerIndex];
+            if (citizenRoles.Count > 0) // If there are citizen roles available
+            {
+                var citizenRole = citizenRoles[random.Next(citizenRoles.Count)];
+                player.Role = citizenRole;
+                citizenRoles.Remove(citizenRole);  // Remove assigned role
+            }
+            else
+            {
+                // If citizenRoles run out, assign a random role from the original citizenRoles list (allow duplicates)
+            var randomCitizenRole = originalCitizenRoles[random.Next(originalCitizenRoles.Count)];
+            player.Role = randomCitizenRole;  // Allow duplicates now
+            }
+        }
+
+        // Notify each player of their assigned role
+        foreach (var player in _currentPlayers)
+        {
+            Console.WriteLine($"{player.Name} | {player.RoleName}");
+            await player.SendMessage(new Message
+            {
+                Base = ResponseCommands.RoleAssigned,
+                Arguments = new string[] { player.RoleName }
+            });
+        }
     }
 
-    private async Task AssignItems()
+
+    private int GetAccompliceCount(int playerCount)
+    {
+        if (playerCount <= 5) return 0;
+        if (playerCount >= 6 && playerCount <= 9) return 1;
+        if (playerCount >= 10 && playerCount <= 12) return 2;
+        if (playerCount >= 13) return 3;
+
+        return 0;
+    }
+
+   /* private async Task AssignItems()
     {
         foreach (var player in _currentPlayers)
         {
@@ -262,6 +371,6 @@ public class GameService : IGameService
                 Arguments = player.Inventory.Select(x => x.Name).ToList()
             });
         }
-    }
+    }*/
 }
 
