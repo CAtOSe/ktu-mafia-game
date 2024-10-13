@@ -9,5 +9,5 @@ public interface IGameService
     public Task TryAddPlayer(Player player, string username);
     public Task StartGame();
     public List<Player> GetPlayers();
-    public Task NightAction(Player actionUser, string actionTarget, string actionType);
+    public Task AddNightActionToList(Player actionUser, string actionTarget, string actionType);
 }

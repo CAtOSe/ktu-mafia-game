@@ -4,6 +4,7 @@ using Mafia.Server.Models.AbstractFactory.Roles;
 using Mafia.Server.Models.AbstractFactory.Roles.Accomplices;
 using Mafia.Server.Models.AbstractFactory.Roles.Citizens;
 using Mafia.Server.Models.Commands;
+using System.Runtime.CompilerServices;
 
 namespace Mafia.Server.Services.GameService;
 
@@ -17,6 +18,8 @@ public class GameService : IGameService
     private volatile int _phaseCounter = 1;
     private volatile bool _isDayPhase = true;
     private volatile bool _hasExecutedNightAction = false;
+
+    private List<NightAction> nightActions = new List<NightAction>();
 
     public List<Player> GetPlayers() => _currentPlayers;
 
@@ -122,12 +125,16 @@ public class GameService : IGameService
         StartDayNightCycle();
     }
 
-    public async Task NightAction(Player actionUser, string actionTarget, string actionType)
+    public async Task AddNightActionToList(Player actionUser, string actionTarget, string actionType)
     {
-        if (_isDayPhase || _hasExecutedNightAction) return;
-        
+        //if (_isDayPhase || _hasExecutedNightAction) return;
+
+        //if (_isDayPhase) return;
+
         // Find the target player
         var targetPlayer = _currentPlayers.FirstOrDefault(p => p.Name.Equals(actionTarget, StringComparison.OrdinalIgnoreCase));
+
+        Console.WriteLine("Received NIGHT ACTION: " + actionUser.Name + ", " + targetPlayer.Name);
 
         // Validate that both the action user and the target player exist
         if (targetPlayer == null)
@@ -135,7 +142,20 @@ public class GameService : IGameService
             Console.WriteLine("Invalid action: Either the user or the target player does not exist.");
             return;
         }
+        // If it is the same action that we already have, treat it as canceling action
+        NightAction previousAction = nightActions.FirstOrDefault(p => p.User == actionUser);
+        bool cancelAction = previousAction != null && previousAction.Target == targetPlayer;
 
+        // Remove any existing night actions from the same actionUser
+        nightActions.RemoveAll(action => action.User == actionUser);
+
+        // Add the new night action if it was not canceling the action
+        if (!cancelAction)
+        {
+            nightActions.Add(new NightAction(actionUser, targetPlayer, actionType));
+        }
+
+        /*
         // Check if the action type is "kill"
         if (actionType.Equals("kill", StringComparison.OrdinalIgnoreCase))
         {
@@ -146,20 +166,46 @@ public class GameService : IGameService
         }
 
         _hasExecutedNightAction = true;
-
+        */
         // Send updated list of alive players
         await SendAlivePlayerList();
     }
+    private async Task ExecuteNightActions()
+    {
+        // Define the custom order for roles
+        var actionOrder = new List<string>
+        {
+            "Poisoner", "Tavern Keeper", "Assassin", "Hemlock",
+            "Phantom", "Soldier", "Tracker", "Lookout"
+        };
 
+        // Sort nightActions by actionType based on the custom order
+        nightActions = nightActions.OrderBy(action => actionOrder.IndexOf(action.Target.RoleName)).ToList();
+
+        // Perform the night actions
+        foreach (var nightAction in nightActions)
+        {
+            nightAction.User.Role.NightAction(nightAction.User, nightAction.Target, nightActions); //Nebus problemos jei kas nors paremovins kito zaidejo veiksma?
+            nightAction.User.Role.AbilityUsesLeft--;
+        }    
+
+        // Issiusti chato zinutes apie tai kas ivyko nakti
+        // ...
+
+        await SendAlivePlayerList();
+
+        // Clear the nightActions list after processing all actions
+        nightActions.Clear();
+    }
     private Task SendAlivePlayerList()
     {
         var alivePlayers = _currentPlayers.Where(p => p.IsAlive).Select(p => p.Name).ToList();
 
-        Console.WriteLine("Player status:");
+        /*Console.WriteLine("Player status:");
         foreach (var player in _currentPlayers)
         {
             Console.WriteLine($"{player.Name}: {player.IsAlive}");
-        }
+        }*/
 
         var message = new Message
         {
@@ -206,6 +252,14 @@ public class GameService : IGameService
                 }
 
                 _isDayPhase = !_isDayPhase; // Toggle between day and night 
+
+
+                if (_isDayPhase) //If it is the end of the night (start of day)
+                {
+                    Console.WriteLine("Executing night actions");
+                    await ExecuteNightActions();
+                }
+
                 Console.WriteLine("Changing phase");
                 await UpdateDayNightPhase();
             }
@@ -215,15 +269,48 @@ public class GameService : IGameService
     private async Task UpdateDayNightPhase()
     {
         await SendAlivePlayerList();
+
         var phaseName = _isDayPhase ? "day" : "night";
         var timeoutDuration = _isDayPhase ? GameConfiguration.DayPhaseDuration : GameConfiguration.NightPhaseDuration;
         Console.WriteLine($"\nNew phase: {phaseName} {_phaseCounter}");
+        // Issiusti zinute visiems i chata 
+        // ...
         await NotifyAllPlayers(new Message
         {
             Base = ResponseCommands.PhaseChange,
             Arguments = [phaseName, timeoutDuration.ToString(), _phaseCounter.ToString()]
         });
+        string winnerTeam = DidAnyTeamWin();
+        if (winnerTeam != null)
+        {
+            Console.WriteLine(winnerTeam + " team has won the game!");
+            ResetGame();
+        }
     }
+
+    private string DidAnyTeamWin()
+    {
+        // Check if the Killer is dead for the Good team to win
+        var killerPlayer = _currentPlayers.FirstOrDefault(player => player.RoleType == "Killer");
+        if (killerPlayer != null && !killerPlayer.IsAlive)
+        {
+            return "Good";
+        }
+
+        // Count the number of alive Evil team members (Killer or Accomplice)
+        int evilAlivePlayersCount = _currentPlayers.Count(player => player.IsAlive && (player.RoleType == "Killer" || player.RoleType == "Accomplice"));
+        int totalAlivePlayersCount = _currentPlayers.Count(player => player.IsAlive);
+
+        // Check if the evil team has the majority
+        if (evilAlivePlayersCount > totalAlivePlayersCount / 2)
+        {
+            return "Evil";
+        }
+
+        // If no team has won yet
+        return null;
+    }
+
 
     /*private async Task AssignRoles()
     {

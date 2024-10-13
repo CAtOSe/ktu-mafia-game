@@ -8,5 +8,15 @@
             Ability = "At night, kill a player";
             AbilityUsesLeft = abilityUses;
         }
+
+        public override void NightAction(Player user, Player target, List<NightAction> nightActions)
+        {
+            target.IsAlive = false;
+
+            string messageToUser = "You killed " + target.Name + " tonight.";
+            string messageToTarget = "You were attacked by the Killer and died."; // Death Message
+
+            Console.Write(messageToUser);
+        }
     }
 }

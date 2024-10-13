@@ -26,7 +26,7 @@ public class MessageResolver(IGameService gameService, IChatService chatService)
             case RequestCommands.NightAction when command.Arguments.Count == 2:
                 var actionTarget = command.Arguments[0];
                 var actionType = command.Arguments[1];
-                await gameService.NightAction(player, actionTarget, actionType);
+                await gameService.AddNightActionToList(player, actionTarget, actionType);
                 return;
             case RequestCommands.Chat:
                 await chatService.HandleIncomingMessage(player, command);
