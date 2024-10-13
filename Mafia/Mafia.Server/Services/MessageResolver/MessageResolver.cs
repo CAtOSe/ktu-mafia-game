@@ -10,7 +10,6 @@ public class MessageResolver(IGameService gameService, IChatService chatService)
     public async Task HandleMessage(Player player, string message)
     {
         var command = Message.FromString(message);
-
         switch (command.Base)
         {
             case RequestCommands.Login when command.Arguments.Count == 1:
@@ -28,7 +27,7 @@ public class MessageResolver(IGameService gameService, IChatService chatService)
                 var actionType = command.Arguments[1];
                 await gameService.AddNightActionToList(player, actionTarget, actionType);
                 return;
-            case RequestCommands.Chat:
+            case RequestCommands.Chat when command.Arguments.Count == 3:
                 var content = command.Arguments[0];
                 var recipient = command.Arguments[1];
                 var category = command.Arguments[2];

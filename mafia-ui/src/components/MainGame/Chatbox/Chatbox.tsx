@@ -59,7 +59,7 @@ const Chatbox: React.FC = () => {
       if (websocket) {
         const message = createMessage(RequestMessages.Chat, [
           inputValue,
-          '',
+          'everyone',
           'player',
         ]); // Create the message
         websocket.sendMessage(message);
