@@ -28,7 +28,7 @@ interface ChatMessage {
 
 const Chatbox: React.FC = () => {
   const {
-    gameState: { username },
+    gameState: { username, chatMessages, isAlive },
   } = useContext(GameStateContext);
 
   // State to store chat messages as an array of Message objects
@@ -48,21 +48,25 @@ const Chatbox: React.FC = () => {
   // Handle sending a message
   const handleSendMessage = () => {
     if (inputValue.trim() && isDay) {
+      
       const newMessage: ChatMessage = {
         sender: username,
         content: inputValue,
         category: 'player',
       };
       setMessages([...messages, newMessage]);
-      setInputValue('');
+
+      const messageCategory = isAlive ? 'player' : 'deadPlayer';
       if (websocket) {
         const message = createMessage(RequestMessages.Chat, [
           inputValue,
           'everyone',
-          'player',
+          messageCategory,
         ]); // Create the message
         websocket.sendMessage(message);
       }
+
+      setInputValue('');
     }
   };
   
@@ -70,7 +74,7 @@ const Chatbox: React.FC = () => {
   return (
     <div className={cn('chatbox')}>
       <div className={cn('chat-display')}>
-        {messages.map((message, index) => (
+        {chatMessages.map((message, index) => (
           <p
             key={index}
             className={cn('chat-message', {

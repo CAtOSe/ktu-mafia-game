@@ -9,17 +9,19 @@
             AbilityUsesLeft = abilityUses;
         }
 
-        public override void NightAction(Player user, Player target, List<NightAction> nightActions)
+        public override void NightAction(Player user, Player target, List<NightAction> nightActions, List<ChatMessage> nightMessages)
         {
+            string messageToUser = "You used your shield to protect yourself tonight.";
+            ChatMessage chatMessageToUser = new ChatMessage("", messageToUser, user.Name, "nightNotification");
+            nightMessages.Add(chatMessageToUser);
+
             if (!target.IsAlive)
             {
                 target.IsAlive = true;
-                string messageToTarget = "You were attacked by the Killer, but your shield protected you!"; // Death Message
-                //Killer You attacked X at night, but they survived the attack.
+                string messageToTarget = "Your shield protected you from death.";
+                ChatMessage chatMessageToTarget = new ChatMessage("", messageToTarget, target.Name, "nightNotification");
+                nightMessages.Add(chatMessageToTarget);
             }
-
-            string messageToUser = "You used your shield to protect yourself tonight.";
-            Console.Write(messageToUser);
         }
     }
 }

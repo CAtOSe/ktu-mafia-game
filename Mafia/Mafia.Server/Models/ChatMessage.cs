@@ -14,18 +14,18 @@ public class ChatMessage
     public string? Recipient { get; set; } // Optional, if sending to everyone, is left empty
 
     [JsonPropertyName("timeSent")]
-    public double? TimeSent { get; set; } // Time in seconds since the game started (optional)
+    public int TimeSent { get; set; } // Time in seconds since the game started
 
     [JsonPropertyName("category")]
-    public ChatCategory ChatCategory { get; set; } // Required, type/category of the message
+    public string ChatCategory { get; set; } // Required, type/category of the message
     
 
-    public ChatMessage(string sender, string content, string recipient, string category)
+    public ChatMessage(string sender, string content, string recipient, string category, int timeSent = 0)
     {
         Sender = sender;
         Content = content;
         Recipient = recipient;
-        TimeSent = 0;
-        ChatCategory = (ChatCategory)Enum.Parse(typeof(ChatCategory), category, true);
+        TimeSent = timeSent;
+        ChatCategory = ((ChatCategory)Enum.Parse(typeof(ChatCategory), category, true)).ToString();
     }
 }

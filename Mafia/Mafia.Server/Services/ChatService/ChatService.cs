@@ -5,29 +5,54 @@ using Mafia.Server.Services.GameService;
 
 namespace Mafia.Server.Services.ChatService;
 
-public class ChatService(IGameService gameService) : IChatService
+public class ChatService : IChatService
 {
     List<ChatMessage> messages = new List<ChatMessage>();
-    public Task SendChatMessage(Player player, string content, string recipient, string category)
+
+    private List<Player> players; 
+
+    public void SetPlayers(List<Player> newPlayers)
     {
-        Console.WriteLine($"We added a message from: {player.Name} who has written to chat: {content}");
-        messages.Add(new ChatMessage(player.Name, content, recipient, category));
-        return SendChatList(gameService.GetPlayers()[0]);
+        players = newPlayers;
+    }
+    public Task SendChatMessage(string sender, string content, string recipient, string category)
+    {
+        Console.WriteLine($"We added a message from: {sender} who has written to chat: {content}");
+        messages.Add(new ChatMessage(sender, content, recipient, category, messages.Count));
+        return SendOutFilteredChats();
     }
 
-    public async Task SendChatList(Player player)
+    public Task SendChatMessage(ChatMessage chatMessage)
     {
-        string chatMessagesJson = JsonSerializer.Serialize(messages);
-        Console.WriteLine("Serialized chat messages: " + chatMessagesJson);
+        chatMessage.TimeSent = messages.Count;
+        messages.Add(chatMessage);
+        return SendOutFilteredChats();
+    }
+
+    public async Task SendOutFilteredChats()
+    {
+        foreach (Player p in players)
+        {
+            // 1. Only dead players should see "deadPlayer" messages
+            // 2. Player should only get messages that are sent to them or everyone
+            List<ChatMessage> filteredMessages = messages
+                .Where(msg => (!p.IsAlive || msg.ChatCategory != "deadPlayer") &&
+                              (msg.Recipient == p.Name || msg.Recipient == "everyone"))
+                .ToList();
+
+            await SendChatList(p, filteredMessages);
+
+        }
+    }
+    public async Task SendChatList(Player player, List<ChatMessage> chatList)
+    {
+        string chatMessagesJson = JsonSerializer.Serialize(chatList);
+        string customChatMessagesJson = chatMessagesJson.Replace(":", "|");
+        Console.WriteLine("Serialized chat messages: " + customChatMessagesJson);
         await player.SendMessage(new Message
         {
             Base = ResponseCommands.ReceiveChatList,
-            Arguments = new List<string> { chatMessagesJson }
+            Arguments = new List<string> { customChatMessagesJson }
         });
     } 
-    
-
-    private List<Player> GetAlivePlayers() => gameService.GetPlayers()
-        .Where(x => x.IsAlive)
-        .ToList();
 }

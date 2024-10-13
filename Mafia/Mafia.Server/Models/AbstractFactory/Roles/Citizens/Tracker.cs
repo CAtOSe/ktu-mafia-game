@@ -9,7 +9,7 @@
             AbilityUsesLeft = abilityUses;
         }
 
-        public override void NightAction(Player user, Player target, List<NightAction> nightActions)
+        public override void NightAction(Player user, Player target, List<NightAction> nightActions, List<ChatMessage> nightMessages)
         {
             var action = nightActions.FirstOrDefault(p => p.User.Name.Equals(target.Name, StringComparison.OrdinalIgnoreCase));
 
@@ -24,8 +24,8 @@
             {
                messageToUser = "After following the footsteps of " + target.Name + ", you find that that they visited " + wentTo + ".";
             }
-
-            Console.Write(messageToUser);
+            ChatMessage chatMessageToUser = new ChatMessage("", messageToUser, user.Name, "nightNotification");
+            nightMessages.Add(chatMessageToUser);
         }
     }
 }

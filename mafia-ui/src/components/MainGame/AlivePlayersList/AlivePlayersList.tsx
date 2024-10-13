@@ -17,11 +17,11 @@ const AlivePlayersList: React.FC = () => {
   const websocket = useContext(WebsocketContext);
   const { isDay } = useDayNight();
 
-  const handleActionClick = (targetUsername: string) => {
+  const handleActionClick = (targetUsername: string, actionType: string) => {
     if (websocket) {
       const message = createMessage(RequestMessages.NightAction, [
         targetUsername,
-        'Test',
+        actionType,
       ]); // Create the message
       websocket.sendMessage(message); // Send the message via WebSocket
     }
@@ -40,7 +40,7 @@ const AlivePlayersList: React.FC = () => {
               {!isDay && role === 'Assassin' && player !== username && (
                 <Button
                   className="action-button"
-                  onClick={() => handleActionClick(player)}
+                  onClick={() => handleActionClick(player, 'kill')}
                 >
                   Kill
                 </Button>
@@ -50,7 +50,7 @@ const AlivePlayersList: React.FC = () => {
               {!isDay && role === 'Tracker' && player !== username && (
                 <Button
                   className="action-button"
-                  onClick={() => handleActionClick(player)}
+                  onClick={() => handleActionClick(player, 'information')}
                 >
                   Track
                 </Button>
@@ -60,7 +60,7 @@ const AlivePlayersList: React.FC = () => {
               {!isDay && role === 'Doctor' && player !== username && (
                 <Button
                   className="action-button"
-                  onClick={() => handleActionClick(player)} 
+                  onClick={() => handleActionClick(player, 'protect')} 
                 >
                   Protect
                 </Button>
@@ -70,7 +70,7 @@ const AlivePlayersList: React.FC = () => {
               {!isDay && role === 'Soldier' && player === username && (
                 <Button
                   className="action-button"
-                  onClick={() => handleActionClick(player)}
+                  onClick={() => handleActionClick(player, 'protect')}
                 >
                   Use Shield
                 </Button>

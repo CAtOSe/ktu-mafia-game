@@ -76,9 +76,10 @@ export const GameStateContextProvider = ({
         case ResponseMessages.AlivePlayerListUpdate: {
           const alivePlayers = message.arguments ?? [];
           console.log('Updated alive players list:', alivePlayers);
-
+          const isAlive = alivePlayers.includes(gameState.current.username);
           updateGameState({
             alivePlayers: alivePlayers,
+            isAlive: isAlive,
           });
           return;
         }
@@ -97,11 +98,16 @@ export const GameStateContextProvider = ({
 
   const parseChatMessages = (chatMessagesJSON: string): ChatMessage[] => {
     try {
-      // Step 1: Parse the JSON string into raw objects
-      console.log('Raw chat messages JSON:', chatMessagesJSON);
-      const rawMessages = JSON.parse(chatMessagesJSON);
-
-      // Step 2: Map each raw object to an instance of ChatMessage
+      // Step 1: Replace pipes (|) back to colons (:) before parsing the JSON string
+      const correctedJSON = chatMessagesJSON.replace(/\|/g, ':');
+      
+      // Step 2: Log the corrected JSON for debugging purposes
+      console.log('Corrected chat messages JSON:', correctedJSON);
+  
+      // Step 3: Parse the corrected JSON string into raw objects
+      const rawMessages = JSON.parse(correctedJSON);
+  
+      // Step 4: Map each raw object to an instance of ChatMessage
       const chatMessages: ChatMessage[] = rawMessages.map((rawMsg: any) => {
         return new ChatMessage(
           rawMsg.content,
@@ -111,8 +117,10 @@ export const GameStateContextProvider = ({
           rawMsg.timeSent
         );
       });
+  
+      // Step 5: Log the parsed chat messages for debugging purposes
       console.log('Parsed chat messages:', chatMessages);
-
+  
       return chatMessages;
     } catch (error) {
       console.error('Error parsing chat messages JSON:', error);

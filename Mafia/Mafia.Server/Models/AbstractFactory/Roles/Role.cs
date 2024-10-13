@@ -9,7 +9,7 @@
         public int AbilityUsesLeft { get; set; }
         public string Goal { get; set; }
 
-        public virtual void NightAction(Player user, Player target, List<NightAction> nightActions)
+        public virtual void NightAction(Player user, Player target, List<NightAction> nightActions, List<ChatMessage> nightMessages)
         {
 
         }

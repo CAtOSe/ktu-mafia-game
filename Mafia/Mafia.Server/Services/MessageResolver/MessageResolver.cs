@@ -31,7 +31,7 @@ public class MessageResolver(IGameService gameService, IChatService chatService)
                 var content = command.Arguments[0];
                 var recipient = command.Arguments[1];
                 var category = command.Arguments[2];
-                await chatService.SendChatMessage(player, content, recipient, category);
+                await chatService.SendChatMessage(player.Name, content, recipient, category);
                 return;
         }
     }
