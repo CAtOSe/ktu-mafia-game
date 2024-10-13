@@ -29,7 +29,10 @@ public class MessageResolver(IGameService gameService, IChatService chatService)
                 await gameService.AddNightActionToList(player, actionTarget, actionType);
                 return;
             case RequestCommands.Chat:
-                await chatService.HandleIncomingMessage(player, command);
+                var content = command.Arguments[0];
+                var recipient = command.Arguments[1];
+                var category = command.Arguments[2];
+                await chatService.SendChatMessage(player, content, recipient, category);
                 return;
         }
     }

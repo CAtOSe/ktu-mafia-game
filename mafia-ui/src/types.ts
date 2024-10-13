@@ -8,6 +8,7 @@ export enum RequestMessages {
   Login = 'login',
   StartGame = 'start-game',
   NightAction = 'night-action',
+  Chat = 'chat',
 }
 
 export enum ResponseMessages {

@@ -4,5 +4,5 @@ namespace Mafia.Server.Services.ChatService;
 
 public interface IChatService
 {
-    public Task HandleIncomingMessage(Player player, Message message);
+    public Task SendChatMessage(Player player, string content, string recipient, string category);
 }
