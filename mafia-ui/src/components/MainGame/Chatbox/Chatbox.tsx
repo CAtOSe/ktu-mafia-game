@@ -45,7 +45,6 @@ const Chatbox: React.FC = () => {
     setInputValue(event.target.value);
   };
   
-
   // Handle sending a message
   const handleSendMessage = () => {
     if (inputValue.trim() && isDay) {

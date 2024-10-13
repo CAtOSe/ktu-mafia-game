@@ -20,4 +20,5 @@ export enum ResponseMessages {
   AlivePlayerListUpdate = 'alive-player-list-update',
   PhaseChange = 'phase-change',
   AssignedItem = 'assign-item',
+  ReceiveChatList = 'receive-chat-list',
 }
