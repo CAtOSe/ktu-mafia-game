@@ -5,8 +5,6 @@ using Mafia.Server.Models.AbstractFactory.Roles.Accomplices;
 using Mafia.Server.Models.AbstractFactory.Roles.Citizens;
 using Mafia.Server.Models.Commands;
 using Mafia.Server.Services.ChatService;
-using Microsoft.AspNetCore.Hosting.Server;
-using System.Runtime.CompilerServices;
 
 namespace Mafia.Server.Services.GameService;
 
@@ -40,7 +38,17 @@ public class GameService(IChatService _chatService) : IGameService
             ResetGame();
         }
         else
-        { 
+        {
+            if (player.IsHost)
+            {
+                _currentPlayers[0].IsHost = true;
+                await _currentPlayers[0].SendMessage(new Message
+                {
+                    Base = ResponseCommands.LoggedIn,
+                    Arguments = ["host"]
+                });
+            }
+            
             await SendPlayerList();
         }
     }
@@ -94,7 +102,7 @@ public class GameService(IChatService _chatService) : IGameService
     }
 
 
-    public async Task StartGame()
+    public async Task StartGame(string difficultyLevel)
     {
         if (GameStarted)
         {
@@ -121,7 +129,7 @@ public class GameService(IChatService _chatService) : IGameService
             });
         });
 
-        await AssignRoles();
+        await AssignRoles(difficultyLevel);
         //await AssignItems();
 
         await gameStartTask;
@@ -191,6 +199,14 @@ public class GameService(IChatService _chatService) : IGameService
         // Sort nightActions by actionType based on the custom order
         nightActions = nightActions.OrderBy(action => actionOrder.IndexOf(action.Target.RoleName)).ToList();
 
+        // Dictionary to track players' alive status before the actions
+        Dictionary<Player, bool> initialAliveStatus = new Dictionary<Player, bool>();
+
+        foreach (var player in _currentPlayers)
+        {
+            initialAliveStatus[player] = player.IsAlive;
+        }
+
         //List<(ChatMessage, int)> nightMessages = new List<(ChatMessage, int)>(); // 1 - Action // 2 - Death
         List<ChatMessage> nightMessages = new List<ChatMessage>();
         // Perform the night actions
@@ -198,14 +214,24 @@ public class GameService(IChatService _chatService) : IGameService
         {
             nightAction.User.Role.NightAction(nightAction.User, nightAction.Target, nightActions, nightMessages);
             nightAction.User.Role.AbilityUsesLeft--;
-        }    
+        }
 
         // Send Messages about night actions
         foreach (var nightMessage in nightMessages)
         {
             await _chatService.SendChatMessage(nightMessage);
         }
-        
+
+        foreach (var player in _currentPlayers)
+        {
+            // Check if the player died (alive status changed from true to false)
+            if (initialAliveStatus[player] && !player.IsAlive)
+            {
+                var deathMessage = new ChatMessage("","You died.",player.Name, "nightNotification");
+                await _chatService.SendChatMessage(deathMessage);
+            }
+        }
+
 
         await SendAlivePlayerList();
 
@@ -261,6 +287,7 @@ public class GameService(IChatService _chatService) : IGameService
     {
         GameStarted = false;
         _phaseCounter = 1;
+        _chatService.ResetChat();
         _cancellationTokenSource?.Cancel(); // Stop the day/night cycle
     }
 
@@ -389,11 +416,10 @@ public class GameService(IChatService _chatService) : IGameService
             });
         }
     }*/
-    private async Task AssignRoles()
+    private async Task AssignRoles(string preset)
     {
-        string preset = "Basic";
         RoleFactorySelector roleFactorySelector = new RoleFactorySelector();
-        RoleFactory roleFactory = roleFactorySelector.factoryMethod(preset);
+        RoleFactory roleFactory = roleFactorySelector.FactoryMethod(preset);
 
         List<Role> killerRoles = roleFactory.GetKillerRoles();
         List<Role> accompliceRoles = roleFactory.GetAccompliceRoles();

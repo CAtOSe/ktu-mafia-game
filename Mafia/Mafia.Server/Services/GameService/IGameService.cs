@@ -7,7 +7,7 @@ public interface IGameService
 {
     public Task DisconnectPlayer(Player player);
     public Task TryAddPlayer(Player player, string username);
-    public Task StartGame();
+    public Task StartGame(string difficultyLevel);
     public List<Player> GetPlayers();
     public Task AddNightActionToList(Player actionUser, string actionTarget, string actionType);
     public Task VoteFor(Player player, string username);

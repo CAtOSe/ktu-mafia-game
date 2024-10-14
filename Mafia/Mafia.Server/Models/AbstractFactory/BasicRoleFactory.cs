@@ -1,5 +1,4 @@
 ﻿using Mafia.Server.Models.AbstractFactory.Roles;
-using Mafia.Server.Models.AbstractFactory.Roles.Accomplices;
 using Mafia.Server.Models.AbstractFactory.Roles.Killers;
 using Mafia.Server.Models.AbstractFactory.Roles.Citizens;
 

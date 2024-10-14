@@ -8,7 +8,7 @@ const RoleList = () => {
 
   return (
     <div className="list-box alive-player-list">
-      <h3>Inventory</h3>
+      <h3></h3>
       <ul>
         {inventory.map((item, index) => (
           <li key={index}>{item}</li>

@@ -23,9 +23,10 @@ public class MessageResolver(IGameService gameService, IChatService chatService)
                 await gameService.DisconnectPlayer(player);
                 return;
             }
-            case RequestCommands.StartGame:
+            case RequestCommands.StartGame when command.Arguments.Count == 1:
             {
-                await gameService.StartGame();
+                var difficultyLevel = command.Arguments[0];
+                await gameService.StartGame(difficultyLevel);
                 return;
             }
             case RequestCommands.NightAction when command.Arguments.Count == 2:

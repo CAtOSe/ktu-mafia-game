@@ -1,7 +1,6 @@
 using System.Text.Json;
 using Mafia.Server.Models;
 using Mafia.Server.Models.Commands;
-using Mafia.Server.Services.GameService;
 
 namespace Mafia.Server.Services.ChatService;
 
@@ -15,6 +14,12 @@ public class ChatService : IChatService
     {
         players = newPlayers;
     }
+
+    public void ResetChat()
+    {
+        messages = new List<ChatMessage>();
+    }
+
     public Task SendChatMessage(string sender, string content, string recipient, string category)
     {
         Console.WriteLine($"We added a message from: {sender} who has written to chat: {content}");

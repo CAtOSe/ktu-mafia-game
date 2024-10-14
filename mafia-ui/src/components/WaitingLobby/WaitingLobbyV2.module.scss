@@ -1,14 +1,12 @@
 @use '@/styles/common/containers';
 
 .waiting-lobby {
+  @include containers.centered-container;
+
   display: flex;
-  margin-top: 64px;
-
-  &__container {
-    @include containers.centered-container;
-
-    min-width: 400px;
-  }
+  margin: 64px auto 0;
+  height: min-content;
+  min-width: 400px;
 
   &__status {
     font-size: 18px;
@@ -39,5 +37,10 @@
     text-align: center;
     font-size: 24px;
     font-weight: bold;
+  }
+
+  &__mode-selector {
+    display: flex;
+    gap: 16px;
   }
 }
