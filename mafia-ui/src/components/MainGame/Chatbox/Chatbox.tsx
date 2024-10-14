@@ -3,9 +3,9 @@ import styles from './Chatbox.module.scss';
 import classNames from 'classnames/bind';
 import { GameStateContext } from '../../../contexts/GameStateContext/GameStateContext.tsx';
 import { useDayNight } from '../../../contexts/DayNightContext/useDayNight.ts';
-import createMessage from "../../../helpers/createMessage.ts";
-import {RequestMessages} from "../../../types.ts";
-import WebsocketContext from "../../../contexts/WebSocketContext/WebsocketContext.ts";
+import createMessage from '../../../helpers/createMessage.ts';
+import {RequestMessages} from '../../../types.ts';
+import WebsocketContext from '../../../contexts/WebSocketContext/WebsocketContext.ts';
 
 const cn = classNames.bind(styles);
 
