@@ -28,17 +28,15 @@ const Login = () => {
   };
 
   return (
-    <div className={cn('login')}>
-      <form className={cn('login__form')} onSubmit={handleSubmit(onSubmit)}>
-        <h3 className={cn('login__heading')}>Login</h3>
-        <p className={cn('login__info')}>Please enter your username.</p>
-        <input className={cn('login__input')} {...register('username')} />
-        <p className={cn('login__error')}>
-          Username cannot be shorter than 4 characters
-        </p>
-        <Button style={ButtonStyle.Glow}>Login</Button>
-      </form>
-    </div>
+    <form className={cn('login')} onSubmit={handleSubmit(onSubmit)}>
+      <h3 className={cn('login__heading')}>Login</h3>
+      <p className={cn('login__info')}>Please enter your username.</p>
+      <input className={cn('login__input')} {...register('username')} />
+      <p className={cn('login__error')}>
+        Username cannot be shorter than 4 characters
+      </p>
+      <Button style={ButtonStyle.Glow}>Login</Button>
+    </form>
   );
 };
 

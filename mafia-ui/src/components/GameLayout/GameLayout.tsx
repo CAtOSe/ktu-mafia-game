@@ -7,6 +7,7 @@ import { GameStage } from '../../contexts/GameStateContext/types.ts';
 import LoginV2 from '../Login/LoginV2.tsx';
 import WaitingLobbyV2 from '../WaitingLobby/WaitingLobbyV2.tsx';
 import MainGame from '../MainGame/MainGame.tsx';
+import EndGame from '../EndGame/EndGame.tsx';
 
 const cn = classNames.bind(styles);
 
@@ -25,6 +26,8 @@ const GameLayout = () => {
         return <WaitingLobbyV2 />;
       case GameStage.Running:
         return <MainGame />;
+      case GameStage.End:
+        return <EndGame />;
       default:
         return <p>Unknown game stage</p>;
     }

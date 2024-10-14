@@ -9,6 +9,7 @@ export enum RequestMessages {
   StartGame = 'start-game',
   NightAction = 'night-action',
   Chat = 'chat',
+  Vote = 'vote',
 }
 
 export enum ResponseMessages {
@@ -21,4 +22,5 @@ export enum ResponseMessages {
   PhaseChange = 'phase-change',
   AssignedItem = 'assign-item',
   ReceiveChatList = 'receive-chat-list',
+  EndGame = 'end-game',
 }

@@ -7,15 +7,14 @@ import {
   useState,
 } from 'react';
 import {
+  ChatMessage,
   GameStage,
   GameState,
   GameStateContextProviderProps,
   GameStateContextValue,
-  ChatMessage,
 } from './types.ts';
 import { Message, ResponseMessages } from '../../types.ts';
 import WebsocketContext from '../WebSocketContext/WebsocketContext.ts';
-
 
 const defaultState: GameState = {
   gameStage: GameStage.Connecting,
@@ -56,23 +55,28 @@ export const GameStateContextProvider = ({
     (message: Message) => {
       switch (message.base) {
         case ResponseMessages.Hello:
-          updateGameState({gameStage: GameStage.Login});
+          updateGameState({ gameStage: GameStage.Login });
           return;
+
         case ResponseMessages.LoggedIn:
           updateGameState({
             gameStage: GameStage.Lobby,
             isHost: message.arguments?.[0] === 'host',
           });
           return;
+
         case ResponseMessages.PlayerListUpdate:
-          updateGameState({players: message.arguments ?? []});
+          updateGameState({ players: message.arguments ?? [] });
           return;
+
         case ResponseMessages.GameStarted:
-          updateGameState({gameStage: GameStage.Running});
+          updateGameState({ gameStage: GameStage.Running });
           return;
+
         case ResponseMessages.RoleAssigned:
-          updateGameState({role: message.arguments?.[0]});
+          updateGameState({ role: message.arguments?.[0] });
           return;
+
         case ResponseMessages.AlivePlayerListUpdate: {
           const alivePlayers = message.arguments ?? [];
           console.log('Updated alive players list:', alivePlayers);
@@ -83,14 +87,24 @@ export const GameStateContextProvider = ({
           });
           return;
         }
+
         case ResponseMessages.AssignedItem:
-          updateGameState({inventory: message.arguments ?? []});
+          updateGameState({ inventory: message.arguments ?? [] });
           return;
 
-        case ResponseMessages.ReceiveChatList:
-          const parsedMessages = parseChatMessages(message.arguments?.[0] || '[]');
+        case ResponseMessages.ReceiveChatList: {
+          const parsedMessages = parseChatMessages(
+            message.arguments?.[0] || '[]',
+          );
           updateGameState({ chatMessages: parsedMessages });
           return;
+        }
+
+        case ResponseMessages.EndGame:
+          updateGameState({
+            gameStage: GameStage.End,
+            winnerTeam: message.arguments?.[0],
+          });
       }
     },
     [updateGameState],
@@ -100,13 +114,13 @@ export const GameStateContextProvider = ({
     try {
       // Step 1: Replace pipes (|) back to colons (:) before parsing the JSON string
       const correctedJSON = chatMessagesJSON.replace(/\|/g, ':');
-      
+
       // Step 2: Log the corrected JSON for debugging purposes
       console.log('Corrected chat messages JSON:', correctedJSON);
-  
+
       // Step 3: Parse the corrected JSON string into raw objects
       const rawMessages = JSON.parse(correctedJSON);
-  
+
       // Step 4: Map each raw object to an instance of ChatMessage
       const chatMessages: ChatMessage[] = rawMessages.map((rawMsg: any) => {
         return new ChatMessage(
@@ -114,13 +128,13 @@ export const GameStateContextProvider = ({
           rawMsg.category,
           rawMsg.sender,
           rawMsg.recipient,
-          rawMsg.timeSent
+          rawMsg.timeSent,
         );
       });
-  
+
       // Step 5: Log the parsed chat messages for debugging purposes
       console.log('Parsed chat messages:', chatMessages);
-  
+
       return chatMessages;
     } catch (error) {
       console.error('Error parsing chat messages JSON:', error);
