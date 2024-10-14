@@ -2,6 +2,7 @@ using System.Net.WebSockets;
 using Mafia.Server.Extensions;
 using System.Net.WebSockets;
 using Mafia.Server.Models.Commands;
+using Mafia.Server.Models.AbstractFactory.Roles;
 
 namespace Mafia.Server.Models;
 
@@ -9,8 +10,9 @@ public class Player(WebSocket webSocket)
 {
     public DateTime CreationTime { get; init; } = DateTime.UtcNow;
     public string Name { get; set; } = "Guest";
-    public PlayerRole Role { get; set; } = PlayerRole.Unassigned;
-    public string RoleName => Enum.GetName(typeof(PlayerRole), Role);
+    public Role Role { get; set; } = null;
+    public string RoleName => Role.Name;
+    public string RoleType => Role.RoleType;
     public bool IsLoggedIn { get; set; } = false;
     public bool IsHost { get; set; } = false;
     public bool IsAlive { get; set; } = true;

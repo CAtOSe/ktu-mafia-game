@@ -3,6 +3,9 @@ import styles from './Chatbox.module.scss';
 import classNames from 'classnames/bind';
 import { GameStateContext } from '../../../contexts/GameStateContext/GameStateContext.tsx';
 import { useDayNight } from '../../../contexts/DayNightContext/useDayNight.ts';
+import createMessage from "../../../helpers/createMessage.ts";
+import {RequestMessages} from "../../../types.ts";
+import WebsocketContext from "../../../contexts/WebSocketContext/WebsocketContext.ts";
 
 const cn = classNames.bind(styles);
 
@@ -13,19 +16,19 @@ interface ChatMessage {
   timeSent?: number; // Time in seconds since the game started
   category:
     | 'player'
-    | 'dead-player'
-    | 'night-start'
-    | 'night-action'
-    | 'night-notification'
-    | 'day-start'
-    | 'day-action'
-    | 'day-notification'
+    | 'deadPlayer'
+    | 'nightStart'
+    | 'nightAction'
+    | 'nightNotification'
+    | 'dayStart'
+    | 'dayAction'
+    | 'dayNotification'
     | 'server';
 }
 
 const Chatbox: React.FC = () => {
   const {
-    gameState: { username },
+    gameState: { username, chatMessages, isAlive },
   } = useContext(GameStateContext);
 
   // State to store chat messages as an array of Message objects
@@ -35,42 +38,56 @@ const Chatbox: React.FC = () => {
   const [inputValue, setInputValue] = useState('');
 
   const { isDay } = useDayNight();
+  const websocket = useContext(WebsocketContext);
 
   // Handle input change
   const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setInputValue(event.target.value);
   };
-
+  
   // Handle sending a message
   const handleSendMessage = () => {
     if (inputValue.trim() && isDay) {
+      
       const newMessage: ChatMessage = {
         sender: username,
         content: inputValue,
         category: 'player',
       };
       setMessages([...messages, newMessage]);
-      setInputValue(''); // Clear the input after sending
+
+      const messageCategory = isAlive ? 'player' : 'deadPlayer';
+      if (websocket) {
+        const message = createMessage(RequestMessages.Chat, [
+          inputValue,
+          'everyone',
+          messageCategory,
+        ]); // Create the message
+        websocket.sendMessage(message);
+      }
+
+      setInputValue('');
     }
   };
+  
 
   return (
     <div className={cn('chatbox')}>
       <div className={cn('chat-display')}>
-        {messages.map((message, index) => (
+        {chatMessages.map((message, index) => (
           <p
             key={index}
             className={cn('chat-message', {
               'player-message': message.category === 'player', // (Alive players messages)
-              'dead-player-message': message.category === 'dead-player', // (Dead players messages)
-              'night-start-message': message.category === 'night-start', // (NIGHT 1)
-              'night-action-message': message.category === 'night-action', // (You have chosen to heal John)
+              'dead-player-message': message.category === 'deadPlayer', // (Dead players messages)
+              'night-start-message': message.category === 'nightStart', // (NIGHT 1)
+              'night-action-message': message.category === 'nightAction', // (You have chosen to heal John)
               'night-notification-message':
-                message.category === 'night-notification', // (You have been killed by the killer)
-              'day-start-message': message.category === 'day-start', // (DAY 1)
-              'day-action-message': message.category === 'day-action', // (You have voted for John)
+                message.category === 'nightNotification', // (You have been killed by the killer)
+              'day-start-message': message.category === 'dayStart', // (DAY 1)
+              'day-action-message': message.category === 'dayAction', // (You have voted for John)
               'day-notification-message':
-                message.category === 'day-notification', // (John has been executed by the town)
+                message.category === 'dayNotification', // (John has been executed by the town)
               'server-message': message.category === 'server', // (Other server messages)
             })}
           >
@@ -82,7 +99,7 @@ const Chatbox: React.FC = () => {
                 {/* (Player message content) */}
               </>
             )}
-            {message.category === 'dead-player' && (
+            {message.category === 'deadPlayer' && (
               <>
                 <span className={cn('chat-username-dead')}>
                   {message.sender}
@@ -93,7 +110,7 @@ const Chatbox: React.FC = () => {
               </>
             )}
             {message.category !== 'player' &&
-              message.category !== 'dead-player' && (
+              message.category !== 'deadPlayer' && (
                 <span className={cn('')}>{message.content}</span> // (Other categories display content only)
               )}
           </p>

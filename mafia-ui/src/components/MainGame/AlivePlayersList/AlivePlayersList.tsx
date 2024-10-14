@@ -17,11 +17,11 @@ const AlivePlayersList: React.FC = () => {
   const websocket = useContext(WebsocketContext);
   const { isDay } = useDayNight();
 
-  const handleActionClick = (targetUsername: string) => {
+  const handleActionClick = (targetUsername: string, actionType: string) => {
     if (websocket) {
       const message = createMessage(RequestMessages.NightAction, [
         targetUsername,
-        'kill',
+        actionType,
       ]); // Create the message
       websocket.sendMessage(message); // Send the message via WebSocket
     }
@@ -35,13 +35,44 @@ const AlivePlayersList: React.FC = () => {
           {alivePlayers.map((player) => (
             <li key={player} className="player-row">
               <span className="player-info">{player}</span>
-              {/* Check if the player's role is Killer before rendering the Action button */}
-              {!isDay && role === 'Killer' && player !== username && (
+  
+              {/* Assassin can select everyone except themselves */}
+              {!isDay && role === 'Assassin' && player !== username && (
                 <Button
                   className="action-button"
-                  onClick={() => handleActionClick(player)} // Pass the target player's username
+                  onClick={() => handleActionClick(player, 'kill')}
                 >
                   Kill
+                </Button>
+              )}
+  
+              {/* Tracker can select everyone except themselves */}
+              {!isDay && role === 'Tracker' && player !== username && (
+                <Button
+                  className="action-button"
+                  onClick={() => handleActionClick(player, 'information')}
+                >
+                  Track
+                </Button>
+              )}
+  
+              {/* Doctor can select everyone except themselves */}
+              {!isDay && role === 'Doctor' && player !== username && (
+                <Button
+                  className="action-button"
+                  onClick={() => handleActionClick(player, 'protect')} 
+                >
+                  Protect
+                </Button>
+              )}
+  
+              {/* Soldier can only select themselves */}
+              {!isDay && role === 'Soldier' && player === username && (
+                <Button
+                  className="action-button"
+                  onClick={() => handleActionClick(player, 'protect')}
+                >
+                  Use Shield
                 </Button>
               )}
             </li>

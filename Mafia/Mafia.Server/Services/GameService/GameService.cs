@@ -1,10 +1,18 @@
 ﻿using Mafia.Server.Models;
+using Mafia.Server.Models.AbstractFactory;
+using Mafia.Server.Models.AbstractFactory.Roles;
+using Mafia.Server.Models.AbstractFactory.Roles.Accomplices;
+using Mafia.Server.Models.AbstractFactory.Roles.Citizens;
 using Mafia.Server.Models.Commands;
+using Mafia.Server.Services.ChatService;
+using Microsoft.AspNetCore.Hosting.Server;
+using System.Runtime.CompilerServices;
 
 namespace Mafia.Server.Services.GameService;
 
-public class GameService : IGameService
+public class GameService(IChatService _chatService) : IGameService
 {
+
     private readonly List<Player> _currentPlayers = [];
     
     private CancellationTokenSource _cancellationTokenSource; //  Token for canceling the phase cycle
@@ -13,6 +21,8 @@ public class GameService : IGameService
     private volatile int _phaseCounter = 1;
     private volatile bool _isDayPhase = true;
     private volatile bool _hasExecutedNightAction = false;
+
+    private List<NightAction> nightActions = new List<NightAction>();
 
     public List<Player> GetPlayers() => _currentPlayers;
 
@@ -74,6 +84,7 @@ public class GameService : IGameService
     
     private Task SendPlayerList()
     {
+        _chatService.SetPlayers(_currentPlayers);
         var message = new Message
         {
             Base = ResponseCommands.PlayerListUpdate,
@@ -111,19 +122,19 @@ public class GameService : IGameService
         });
 
         await AssignRoles();
-        await AssignItems();
+        //await AssignItems();
 
         await gameStartTask;
         GameStarted = true;
         StartDayNightCycle();
     }
 
-    public async Task NightAction(Player actionUser, string actionTarget, string actionType)
+    public async Task AddNightActionToList(Player actionUser, string actionTarget, string actionType)
     {
-        if (_isDayPhase || _hasExecutedNightAction) return;
-        
         // Find the target player
         var targetPlayer = _currentPlayers.FirstOrDefault(p => p.Name.Equals(actionTarget, StringComparison.OrdinalIgnoreCase));
+
+        Console.WriteLine("Received NIGHT ACTION: " + actionUser.Name + ", " + targetPlayer.Name);
 
         // Validate that both the action user and the target player exist
         if (targetPlayer == null)
@@ -131,31 +142,66 @@ public class GameService : IGameService
             Console.WriteLine("Invalid action: Either the user or the target player does not exist.");
             return;
         }
+        // If it is the same action that we already have, treat it as canceling action
+        NightAction previousAction = nightActions.FirstOrDefault(p => p.User == actionUser);
+        bool cancelAction = previousAction != null && previousAction.Target == targetPlayer;
 
-        // Check if the action type is "kill"
-        if (actionType.Equals("kill", StringComparison.OrdinalIgnoreCase))
+        // Remove any existing night actions from the same actionUser
+        nightActions.RemoveAll(action => action.User == actionUser);
+
+        // Add the new night action if it was not canceling the action
+        if (!cancelAction)
         {
-            // Perform the kill action
-            targetPlayer.IsAlive = false;
-
-            Console.WriteLine($"{targetPlayer.Name} has been killed by {actionUser.Name}.");
+            nightActions.Add(new NightAction(actionUser, targetPlayer, actionType));
+            await _chatService.SendChatMessage("","You have chosen " + targetPlayer.Name, actionUser.Name, "nightAction");
         }
-
-        _hasExecutedNightAction = true;
-
-        // Send updated list of alive players
-        await SendAlivePlayerList();
+        else
+        {
+            await _chatService.SendChatMessage("", "You have canceled your selection", actionUser.Name, "nightAction");
+        }
     }
+    private async Task ExecuteNightActions()
+    {
+        // Define the custom order for roles
+        var actionOrder = new List<string>
+        {
+            "Poisoner", "Tavern Keeper", "Tracker", "Lookout",
+            "Assassin", "Hemlock", "Phantom", "Soldier", "Doctor"
+        };
 
+        // Sort nightActions by actionType based on the custom order
+        nightActions = nightActions.OrderBy(action => actionOrder.IndexOf(action.Target.RoleName)).ToList();
+
+        //List<(ChatMessage, int)> nightMessages = new List<(ChatMessage, int)>(); // 1 - Action // 2 - Death
+        List<ChatMessage> nightMessages = new List<ChatMessage>();
+        // Perform the night actions
+        foreach (var nightAction in nightActions)
+        {
+            nightAction.User.Role.NightAction(nightAction.User, nightAction.Target, nightActions, nightMessages);
+            nightAction.User.Role.AbilityUsesLeft--;
+        }    
+
+        // Send Messages about night actions
+        foreach (var nightMessage in nightMessages)
+        {
+            await _chatService.SendChatMessage(nightMessage);
+        }
+        
+
+        await SendAlivePlayerList();
+
+        // Clear the nightActions list after processing all actions
+        nightActions.Clear();
+    }
     private Task SendAlivePlayerList()
     {
         var alivePlayers = _currentPlayers.Where(p => p.IsAlive).Select(p => p.Name).ToList();
 
-        Console.WriteLine("Player status:");
+        /*Console.WriteLine("Player status:");
         foreach (var player in _currentPlayers)
         {
             Console.WriteLine($"{player.Name}: {player.IsAlive}");
-        }
+        }*/
 
         var message = new Message
         {
@@ -186,6 +232,11 @@ public class GameService : IGameService
 
         Task.Run(async () =>
         {
+            // Send everyone chat message
+            string chatMessageType = _isDayPhase ? "dayStart" : "nightStart";
+            string phaseName = _isDayPhase ? "DAY" : "NIGHT";
+            await _chatService.SendChatMessage("", phaseName + " " + _phaseCounter, "everyone", chatMessageType);
+
             await UpdateDayNightPhase();
             
             while (GameStarted && !token.IsCancellationRequested) 
@@ -202,6 +253,18 @@ public class GameService : IGameService
                 }
 
                 _isDayPhase = !_isDayPhase; // Toggle between day and night 
+
+
+                if (_isDayPhase) //If it is the end of the night (start of day)
+                {
+                    Console.WriteLine("Executing night actions");
+                    await ExecuteNightActions();
+                }
+                // Send everyone chat message
+                chatMessageType = _isDayPhase ? "dayStart" : "nightStart";
+                phaseName = _isDayPhase ? "DAY" : "NIGHT";
+                await _chatService.SendChatMessage("", phaseName + " " + _phaseCounter, "everyone", chatMessageType);
+
                 Console.WriteLine("Changing phase");
                 await UpdateDayNightPhase();
             }
@@ -211,6 +274,7 @@ public class GameService : IGameService
     private async Task UpdateDayNightPhase()
     {
         await SendAlivePlayerList();
+
         var phaseName = _isDayPhase ? "day" : "night";
         var timeoutDuration = _isDayPhase ? GameConfiguration.DayPhaseDuration : GameConfiguration.NightPhaseDuration;
         Console.WriteLine($"\nNew phase: {phaseName} {_phaseCounter}");
@@ -219,9 +283,40 @@ public class GameService : IGameService
             Base = ResponseCommands.PhaseChange,
             Arguments = [phaseName, timeoutDuration.ToString(), _phaseCounter.ToString()]
         });
+        string winnerTeam = DidAnyTeamWin();
+        if (winnerTeam != null)
+        {
+            Console.WriteLine(winnerTeam + " team has won the game!");
+            await _chatService.SendChatMessage("", winnerTeam + " team has won the game!", "everyone", "server");
+            ResetGame();
+        }
     }
 
-    private async Task AssignRoles()
+    private string DidAnyTeamWin()
+    {
+        // Check if the Killer is dead for the Good team to win
+        var killerPlayer = _currentPlayers.FirstOrDefault(player => player.RoleType == "Killer");
+        if (killerPlayer != null && !killerPlayer.IsAlive)
+        {
+            return "Good";
+        }
+
+        // Count the number of alive Evil team members (Killer or Accomplice)
+        int evilAlivePlayersCount = _currentPlayers.Count(player => player.IsAlive && (player.RoleType == "Killer" || player.RoleType == "Accomplice"));
+        int totalAlivePlayersCount = _currentPlayers.Count(player => player.IsAlive);
+
+        // Check if the evil team has the majority
+        if (evilAlivePlayersCount > totalAlivePlayersCount / 2)
+        {
+            return "Evil";
+        }
+
+        // If no team has won yet
+        return null;
+    }
+
+
+    /*private async Task AssignRoles()
     {
         // Randomly setting Killer role to 1 player
         var random = new Random();
@@ -244,9 +339,114 @@ public class GameService : IGameService
                 Arguments = [player.RoleName]
             });
         }
+    }*/
+    private async Task AssignRoles()
+    {
+        string preset = "Basic";
+        RoleFactorySelector roleFactorySelector = new RoleFactorySelector();
+        RoleFactory roleFactory = roleFactorySelector.factoryMethod(preset);
+
+        List<Role> killerRoles = roleFactory.GetKillerRoles();
+        List<Role> accompliceRoles = roleFactory.GetAccompliceRoles();
+        List<Role> citizenRoles = roleFactory.GetCitizenRoles();
+        // Store the original citizen roles for duplication purposes
+        List<Role> originalCitizenRoles = new List<Role>(citizenRoles);
+
+        int accompliceCount = GetAccompliceCount(_currentPlayers.Count);
+
+        var random = new Random();
+
+        // Create a list to track unassigned players by index
+        List<int> unassignedIndexes = Enumerable.Range(0, _currentPlayers.Count).ToList();
+
+        // 1. Assign a random Killer role to one player
+        int killerIndex = random.Next(unassignedIndexes.Count);
+        var killerPlayer = _currentPlayers[unassignedIndexes[killerIndex]];
+
+        // Get a random killer role from the killerRoles list
+        var killerRole = killerRoles[random.Next(killerRoles.Count)];
+        killerPlayer.Role = killerRole;
+
+        // Remove the assigned killer role and the player index from the tracking list
+        killerRoles.Remove(killerRole);
+        unassignedIndexes.RemoveAt(killerIndex);
+
+        // 2. Assign accomplice roles
+        for (int i = 0; i < accompliceCount; i++)
+        {
+            if (unassignedIndexes.Count == 0) break;  // Safety check: stop if no players are left to assign
+
+            if (accompliceRoles.Count > 0) // If there are accomplice roles available
+            {
+                var accompliceRole = accompliceRoles[random.Next(accompliceRoles.Count)];
+                int accompliceIndex = random.Next(unassignedIndexes.Count);
+                var accomplicePlayer = _currentPlayers[unassignedIndexes[accompliceIndex]];
+
+                accomplicePlayer.Role = accompliceRole;
+                accompliceRoles.Remove(accompliceRole);
+                unassignedIndexes.RemoveAt(accompliceIndex);  // Remove the player index
+            }
+            else // If no more accomplice roles, assign Lackey
+            {
+                int accompliceIndex = random.Next(unassignedIndexes.Count);
+                var accomplicePlayer = _currentPlayers[unassignedIndexes[accompliceIndex]];
+                accomplicePlayer.Role = new Lackey();  // Assign Lackey
+                unassignedIndexes.RemoveAt(accompliceIndex);  // Remove the player index
+            }
+        }
+
+        // 3. Randomly assign 0 to 2 players the Bystander role
+        int bystanderCount = random.Next(3);  // Random number between 0 and 2
+        for (int i = 0; i < bystanderCount && unassignedIndexes.Count > 0; i++)
+        {
+            int bystanderIndex = random.Next(unassignedIndexes.Count);
+            var bystanderPlayer = _currentPlayers[unassignedIndexes[bystanderIndex]];
+            bystanderPlayer.Role = new Bystander();  // Assign Bystander
+            unassignedIndexes.RemoveAt(bystanderIndex);  // Remove the player index
+        }
+
+        // 4. Assign remaining players random roles from citizenRoles
+        foreach (var playerIndex in unassignedIndexes.ToList())  // Iterate over unassigned players
+        {
+            var player = _currentPlayers[playerIndex];
+            if (citizenRoles.Count > 0) // If there are citizen roles available
+            {
+                var citizenRole = citizenRoles[random.Next(citizenRoles.Count)];
+                player.Role = citizenRole;
+                citizenRoles.Remove(citizenRole);  // Remove assigned role
+            }
+            else
+            {
+                // If citizenRoles run out, assign a random role from the original citizenRoles list (allow duplicates)
+            var randomCitizenRole = originalCitizenRoles[random.Next(originalCitizenRoles.Count)];
+            player.Role = randomCitizenRole;  // Allow duplicates now
+            }
+        }
+
+        // Notify each player of their assigned role
+        foreach (var player in _currentPlayers)
+        {
+            Console.WriteLine($"{player.Name} | {player.RoleName}");
+            await player.SendMessage(new Message
+            {
+                Base = ResponseCommands.RoleAssigned,
+                Arguments = new string[] { player.RoleName }
+            });
+        }
     }
 
-    private async Task AssignItems()
+
+    private int GetAccompliceCount(int playerCount)
+    {
+        if (playerCount <= 5) return 0;
+        if (playerCount >= 6 && playerCount <= 9) return 1;
+        if (playerCount >= 10 && playerCount <= 12) return 2;
+        if (playerCount >= 13) return 3;
+
+        return 0;
+    }
+
+   /* private async Task AssignItems()
     {
         foreach (var player in _currentPlayers)
         {
@@ -262,6 +462,6 @@ public class GameService : IGameService
                 Arguments = player.Inventory.Select(x => x.Name).ToList()
             });
         }
-    }
+    }*/
 }
 

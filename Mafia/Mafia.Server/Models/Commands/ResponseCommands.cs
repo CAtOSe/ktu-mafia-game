@@ -12,4 +12,5 @@ public static class ResponseCommands
     public const string StartCountdown = "start-countdown";
     public const string PhaseChange = "phase-change";
     public const string AssignItem = "assign-item";
+    public const string ReceiveChatList = "receive-chat-list";
 }
