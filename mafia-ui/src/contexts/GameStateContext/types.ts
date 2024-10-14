@@ -5,6 +5,7 @@ export enum GameStage {
   Login,
   Lobby,
   Running,
+  End,
 }
 
 export class ChatMessage {
@@ -22,7 +23,22 @@ export class ChatMessage {
     | 'dayAction'
     | 'dayNotification'
     | 'server';
-  constructor(content: string, category: 'player' | 'deadPlayer' | 'nightStart' | 'nightAction' | 'nightNotification' | 'dayStart' | 'dayAction' | 'dayNotification' | 'server', sender?: string, recipient?: string, timeSent?: number) {
+  constructor(
+    content: string,
+    category:
+      | 'player'
+      | 'deadPlayer'
+      | 'nightStart'
+      | 'nightAction'
+      | 'nightNotification'
+      | 'dayStart'
+      | 'dayAction'
+      | 'dayNotification'
+      | 'server',
+    sender?: string,
+    recipient?: string,
+    timeSent?: number,
+  ) {
     this.content = content;
     this.category = category;
     this.sender = sender;
@@ -41,7 +57,8 @@ export interface GameState {
   isAlive: boolean;
   inventory: string[];
   chatMessagesJSON: string;
-  chatMessages: ChatMessage[]
+  chatMessages: ChatMessage[];
+  winnerTeam?: string;
 }
 
 export interface GameStateContextProviderProps {
@@ -52,4 +69,3 @@ export interface GameStateContextValue {
   gameState: GameState;
   updateGameState: (partialGameState: Partial<GameState>) => void;
 }
-

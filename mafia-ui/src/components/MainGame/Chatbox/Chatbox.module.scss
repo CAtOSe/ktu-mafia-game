@@ -18,6 +18,15 @@
   overflow-y: auto; /* Allows scrolling if chat gets long */
   padding-right: 5px; /* Space for scrollbar */
   margin-bottom: 10px;
+  display: flex;
+  flex-direction: column-reverse;
+  scroll-behavior: smooth;
+  overflow-anchor: auto !important;
+}
+
+.chat-item-container {
+  display: flex;
+  flex-direction: column;
 }
 
 /* Individual chat messages */

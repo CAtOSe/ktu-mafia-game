@@ -17,9 +17,11 @@ public class Player(WebSocket webSocket)
     public bool IsHost { get; set; } = false;
     public bool IsAlive { get; set; } = true;
     public List<Item> Inventory { get; set; } = new();
+    public Player CurrentVote;
 
     public async Task SendMessage(Message message)
     {
+        if (webSocket.State != WebSocketState.Open) return;
         await webSocket.SendMessage(message.ToString());
     }
 

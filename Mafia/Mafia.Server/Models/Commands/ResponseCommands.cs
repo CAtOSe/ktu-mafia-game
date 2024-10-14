@@ -13,4 +13,5 @@ public static class ResponseCommands
     public const string PhaseChange = "phase-change";
     public const string AssignItem = "assign-item";
     public const string ReceiveChatList = "receive-chat-list";
+    public const string EndGame = "end-game";
 }

@@ -19,10 +19,12 @@ const AlivePlayersList: React.FC = () => {
 
   const handleActionClick = (targetUsername: string, actionType: string) => {
     if (websocket) {
-      const message = createMessage(RequestMessages.NightAction, [
-        targetUsername,
-        actionType,
-      ]); // Create the message
+      const message = createMessage(
+        actionType === 'vote'
+          ? RequestMessages.Vote
+          : RequestMessages.NightAction,
+        [targetUsername, actionType],
+      ); // Create the message
       websocket.sendMessage(message); // Send the message via WebSocket
     }
   };
@@ -35,7 +37,7 @@ const AlivePlayersList: React.FC = () => {
           {alivePlayers.map((player) => (
             <li key={player} className="player-row">
               <span className="player-info">{player}</span>
-  
+
               {/* Assassin can select everyone except themselves */}
               {!isDay && role === 'Assassin' && player !== username && (
                 <Button
@@ -45,7 +47,7 @@ const AlivePlayersList: React.FC = () => {
                   Kill
                 </Button>
               )}
-  
+
               {/* Tracker can select everyone except themselves */}
               {!isDay && role === 'Tracker' && player !== username && (
                 <Button
@@ -55,17 +57,17 @@ const AlivePlayersList: React.FC = () => {
                   Track
                 </Button>
               )}
-  
+
               {/* Doctor can select everyone except themselves */}
               {!isDay && role === 'Doctor' && player !== username && (
                 <Button
                   className="action-button"
-                  onClick={() => handleActionClick(player, 'protect')} 
+                  onClick={() => handleActionClick(player, 'protect')}
                 >
                   Protect
                 </Button>
               )}
-  
+
               {/* Soldier can only select themselves */}
               {!isDay && role === 'Soldier' && player === username && (
                 <Button
@@ -73,6 +75,15 @@ const AlivePlayersList: React.FC = () => {
                   onClick={() => handleActionClick(player, 'protect')}
                 >
                   Use Shield
+                </Button>
+              )}
+
+              {isDay && player !== username && (
+                <Button
+                  className="action-button"
+                  onClick={() => handleActionClick(player, 'vote')}
+                >
+                  Vote
                 </Button>
               )}
             </li>

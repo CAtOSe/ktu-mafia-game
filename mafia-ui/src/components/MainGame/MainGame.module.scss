@@ -3,7 +3,6 @@
 .main-game {
   position: relative; /* For absolute positioning of child components */
   width: 100vw;
-  height: 100vh;
   display: flex; /* So that the Graveyard could be placed to the right of the Role list */
 }
 

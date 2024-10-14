@@ -1,0 +1,11 @@
+@use '@/styles/common/containers';
+
+.end-game {
+  @include containers.centered-container;
+
+  display: flex;
+  max-width: 400px;
+  margin-top: 64px;
+  padding: 64px;
+  height: min-content;
+}

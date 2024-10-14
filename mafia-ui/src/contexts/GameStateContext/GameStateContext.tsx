@@ -7,11 +7,11 @@ import {
   useState,
 } from 'react';
 import {
+  ChatMessage,
   GameStage,
   GameState,
   GameStateContextProviderProps,
   GameStateContextValue,
-  ChatMessage,
 } from './types.ts';
 import { Message, ResponseMessages } from '../../types.ts';
 import WebsocketContext from '../WebSocketContext/WebsocketContext.ts';
@@ -57,21 +57,26 @@ export const GameStateContextProvider = ({
         case ResponseMessages.Hello:
           updateGameState({ gameStage: GameStage.Login });
           return;
+
         case ResponseMessages.LoggedIn:
           updateGameState({
             gameStage: GameStage.Lobby,
             isHost: message.arguments?.[0] === 'host',
           });
           return;
+
         case ResponseMessages.PlayerListUpdate:
           updateGameState({ players: message.arguments ?? [] });
           return;
+
         case ResponseMessages.GameStarted:
           updateGameState({ gameStage: GameStage.Running });
           return;
+
         case ResponseMessages.RoleAssigned:
           updateGameState({ role: message.arguments?.[0] });
           return;
+
         case ResponseMessages.AlivePlayerListUpdate: {
           const alivePlayers = message.arguments ?? [];
           console.log('Updated alive players list:', alivePlayers);
@@ -82,6 +87,7 @@ export const GameStateContextProvider = ({
           });
           return;
         }
+
         case ResponseMessages.AssignedItem:
           updateGameState({ inventory: message.arguments ?? [] });
           return;
@@ -93,6 +99,12 @@ export const GameStateContextProvider = ({
           updateGameState({ chatMessages: parsedMessages });
           return;
         }
+
+        case ResponseMessages.EndGame:
+          updateGameState({
+            gameStage: GameStage.End,
+            winnerTeam: message.arguments?.[0],
+          });
       }
     },
     [updateGameState],

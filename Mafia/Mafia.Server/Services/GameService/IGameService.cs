@@ -10,4 +10,5 @@ public interface IGameService
     public Task StartGame();
     public List<Player> GetPlayers();
     public Task AddNightActionToList(Player actionUser, string actionTarget, string actionType);
+    public Task VoteFor(Player player, string username);
 }

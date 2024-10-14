@@ -1,14 +1,12 @@
 @use '@/styles/common/containers';
 
 .login {
+  @include containers.centered-container;
+
   display: flex;
+  max-width: 400px;
   margin-top: 64px;
-
-  &__form {
-    @include containers.centered-container;
-
-    max-width: 400px;
-  }
+  height: min-content;
 
   &__heading {
     margin: 0;

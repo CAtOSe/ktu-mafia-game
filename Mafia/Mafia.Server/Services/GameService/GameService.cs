@@ -160,6 +160,25 @@ public class GameService(IChatService _chatService) : IGameService
             await _chatService.SendChatMessage("", "You have canceled your selection", actionUser.Name, "nightAction");
         }
     }
+
+    public async Task VoteFor(Player player, string username)
+    {
+        var targetPlayer =
+            _currentPlayers.FirstOrDefault(x => x.Name.Equals(username, StringComparison.OrdinalIgnoreCase));
+        if (!_isDayPhase || targetPlayer is null) return;
+
+        if (player.CurrentVote != targetPlayer)
+        { 
+            await _chatService.SendChatMessage("","You have chosen " + targetPlayer.Name, player.Name, "dayAction"); 
+            player.CurrentVote = targetPlayer;
+        }
+        else
+        {
+            await _chatService.SendChatMessage("", "You have canceled your selection", player.Name, "dayAction");
+            player.CurrentVote = null;
+        }
+    }
+
     private async Task ExecuteNightActions()
     {
         // Define the custom order for roles
@@ -193,15 +212,36 @@ public class GameService(IChatService _chatService) : IGameService
         // Clear the nightActions list after processing all actions
         nightActions.Clear();
     }
+    
+    private async Task ExecuteDayActions()
+    {
+        var playerVotes = _currentPlayers.ToDictionary(x => x, _ => 0);
+        
+        foreach (var player in _currentPlayers.Where(player => player.CurrentVote is not null))
+        {
+            playerVotes[player.CurrentVote]++;
+            player.CurrentVote = null;
+        }
+
+        var votes = playerVotes.OrderByDescending(x => x.Value).ToList();
+
+        if (votes.Count == 0)
+        {
+            return;
+        }
+        
+        if (votes.Count == 1 || votes[1].Value != votes[0].Value)
+        {
+            var votedOff = votes[0].Key;
+            votedOff.IsAlive = false;
+            await SendAlivePlayerList();
+        }
+    }
+
+    
     private Task SendAlivePlayerList()
     {
         var alivePlayers = _currentPlayers.Where(p => p.IsAlive).Select(p => p.Name).ToList();
-
-        /*Console.WriteLine("Player status:");
-        foreach (var player in _currentPlayers)
-        {
-            Console.WriteLine($"{player.Name}: {player.IsAlive}");
-        }*/
 
         var message = new Message
         {
@@ -260,6 +300,10 @@ public class GameService(IChatService _chatService) : IGameService
                     Console.WriteLine("Executing night actions");
                     await ExecuteNightActions();
                 }
+                else
+                {
+                    await ExecuteDayActions();
+                }
                 // Send everyone chat message
                 chatMessageType = _isDayPhase ? "dayStart" : "nightStart";
                 phaseName = _isDayPhase ? "DAY" : "NIGHT";
@@ -288,6 +332,11 @@ public class GameService(IChatService _chatService) : IGameService
         {
             Console.WriteLine(winnerTeam + " team has won the game!");
             await _chatService.SendChatMessage("", winnerTeam + " team has won the game!", "everyone", "server");
+            await NotifyAllPlayers(new Message
+            {
+                Base = ResponseCommands.EndGame,
+                Arguments = [winnerTeam]
+            });
             ResetGame();
         }
     }
