@@ -414,7 +414,7 @@ public class GameService(IChatService _chatService) : IGameService
         var killerRole = killerRoles[random.Next(killerRoles.Count)];
 
         // Builder
-        IPlayerBuilder killerBuilder = new KillerBuilder(_currentPlayers[killerIndex].WebSocket);
+        IPlayerBuilder killerBuilder = roleFactory.GetKillerBuilder(_currentPlayers[killerIndex].WebSocket);
         var killerPlayer = killerBuilder.SetName(_currentPlayers[killerIndex].Name)
                                         .SetRole(killerRole)
                                         .SetAlive(true)
@@ -437,9 +437,9 @@ public class GameService(IChatService _chatService) : IGameService
             Role accompliceRole = accompliceRoles.Count > 0
                                     ? accompliceRoles[random.Next(accompliceRoles.Count)]
                                     : new Lackey();
-         
+
             // Builder
-            IPlayerBuilder accompliceBuilder = new AccompliceBuilder(_currentPlayers[accompliceIndex].WebSocket);
+            IPlayerBuilder accompliceBuilder = roleFactory.GetAccompliceBuilder(_currentPlayers[accompliceIndex].WebSocket);
             var accomplicePlayer = accompliceBuilder.SetName(_currentPlayers[accompliceIndex].Name)
                                                     .SetRole(accompliceRole)
                                                     .SetAlive(true)
@@ -458,7 +458,7 @@ public class GameService(IChatService _chatService) : IGameService
         {
             int bystanderIndex = random.Next(unassignedIndexes.Count);
             // Builder
-            IPlayerBuilder citizenBuilder = new CitizenBuilder(_currentPlayers[bystanderIndex].WebSocket);
+            IPlayerBuilder citizenBuilder = roleFactory.GetCitizenBuilder(_currentPlayers[bystanderIndex].WebSocket);
             var bystanderPlayer = citizenBuilder.SetName(_currentPlayers[bystanderIndex].Name)
                                                 .SetRole(new Bystander())
                                                 .SetAlive(true)
@@ -477,7 +477,7 @@ public class GameService(IChatService _chatService) : IGameService
                                 ? citizenRoles[random.Next(citizenRoles.Count)]
                                 : originalCitizenRoles[random.Next(originalCitizenRoles.Count)];
             // Builder
-            IPlayerBuilder citizenBuilder = new CitizenBuilder(_currentPlayers[playerIndex].WebSocket);
+            IPlayerBuilder citizenBuilder = roleFactory.GetCitizenBuilder(_currentPlayers[playerIndex].WebSocket);
             var citizenPlayer = citizenBuilder.SetName(_currentPlayers[playerIndex].Name)
                                               .SetRole(citizenRole)
                                               .SetAlive(true)
