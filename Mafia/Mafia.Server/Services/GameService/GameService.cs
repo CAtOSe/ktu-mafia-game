@@ -7,6 +7,7 @@ using Mafia.Server.Models.Builder;
 using Mafia.Server.Models.Commands;
 using Mafia.Server.Services.ChatService;
 using Microsoft.AspNetCore.Hosting.Server;
+using System.Numerics;
 using System.Runtime.CompilerServices;
 
 namespace Mafia.Server.Services.GameService;
@@ -133,9 +134,10 @@ public class GameService(IChatService _chatService) : IGameService
     public async Task AddNightActionToList(Player actionUser, string actionTarget, string actionType)
     {
         // Find the target player
+        actionUser = _currentPlayers.FirstOrDefault(p => p.Name.Equals(actionUser.Name, StringComparison.OrdinalIgnoreCase));
         var targetPlayer = _currentPlayers.FirstOrDefault(p => p.Name.Equals(actionTarget, StringComparison.OrdinalIgnoreCase));
 
-        Console.WriteLine("Received NIGHT ACTION: " + actionUser.Name + ", " + targetPlayer.Name);
+        Console.WriteLine("Received NIGHT ACTION: " + actionUser.Name + " " + actionUser.Role + ", " + targetPlayer.Name);
 
         // Validate that both the action user and the target player exist
         if (targetPlayer == null)
@@ -194,6 +196,7 @@ public class GameService(IChatService _chatService) : IGameService
 
         //List<(ChatMessage, int)> nightMessages = new List<(ChatMessage, int)>(); // 1 - Action // 2 - Death
         List<ChatMessage> nightMessages = new List<ChatMessage>();
+
         // Perform the night actions
         foreach (var nightAction in nightActions)
         {
@@ -485,6 +488,8 @@ public class GameService(IChatService _chatService) : IGameService
                                               .SetHost(_currentPlayers[playerIndex].IsHost)
                                               .Build();
 
+
+            Console.WriteLine($"Building {_currentPlayers[playerIndex].Name} | {citizenRole}");
             _currentPlayers[playerIndex] = citizenPlayer;
             citizenRoles.Remove(citizenRole);
         }
