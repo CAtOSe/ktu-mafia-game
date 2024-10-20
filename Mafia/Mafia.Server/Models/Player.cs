@@ -17,6 +17,8 @@ public class Player(WebSocket webSocket)
     public bool IsHost { get; set; } = false;
     public bool IsAlive { get; set; } = true;
     public List<Item> Inventory { get; set; } = new();
+    public WebSocket WebSocket = webSocket;
+
     public Player CurrentVote;
 
     public async Task SendMessage(Message message)
