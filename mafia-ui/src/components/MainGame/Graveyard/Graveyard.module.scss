@@ -1,0 +1,26 @@
+@use '@/styles/common/list-styles';
+
+.graveyard {
+  @include list-styles.list-box; // Reuse the list styles from the common styles
+  @include list-styles.gradient-border-element; 
+  padding: 10px;
+  background-color: #2c2c2c;
+}
+
+.graveyard-title {
+  font-size: 18px;
+  margin-bottom: 10px;
+  text-align: center;
+}
+
+.graveyard-list {
+  list-style-type: none;
+  padding: 0;
+  margin: 0;
+}
+
+.graveyard-player {
+  padding: 5px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1); /* Separator line */
+  color: #fff;
+}

@@ -1,19 +1,8 @@
-﻿using Mafia.Server.Models.Strategy;
-
-namespace Mafia.Server.Models.AbstractFactory.Roles.Citizens
+﻿namespace Mafia.Server.Models.Strategy
 {
-    public class Soldier : Citizen
+    public class SoldierAction : IRoleActionAlgorithm
     {
-        public Soldier(int abilityUses = 10)
-        {
-            Name = "Soldier";
-            Ability = "At night, you may protect yourself from dying";
-            AbilityUsesLeft = abilityUses;
-            RoleAlgorithm = new SoldierAction();
-            RoleAlgorithmPoisoned = new SoldierActionPoisoned();
-        }
-        /*
-        public override void NightAction(Player user, Player target, List<NightAction> nightActions, List<ChatMessage> nightMessages)
+        public Task NightAction(Player user, Player target, List<NightAction> nightActions, List<ChatMessage> nightMessages)
         {
             string messageToUser = "You used your shield to protect yourself tonight.";
             ChatMessage chatMessageToUser = new ChatMessage("", messageToUser, user.Name, "nightNotification");
@@ -26,6 +15,8 @@ namespace Mafia.Server.Models.AbstractFactory.Roles.Citizens
                 ChatMessage chatMessageToTarget = new ChatMessage("", messageToTarget, target.Name, "nightNotification");
                 nightMessages.Add(chatMessageToTarget);
             }
-        }*/
+
+            return Task.CompletedTask;
+        }
     }
 }

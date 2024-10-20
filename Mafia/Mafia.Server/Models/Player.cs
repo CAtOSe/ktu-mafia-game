@@ -16,6 +16,8 @@ public class Player(WebSocket webSocket)
     public bool IsLoggedIn { get; set; } = false;
     public bool IsHost { get; set; } = false;
     public bool IsAlive { get; set; } = true;
+
+    public bool IsPoisoned { get; set; } = false;
     public List<Item> Inventory { get; set; } = new();
     public WebSocket WebSocket = webSocket;
 

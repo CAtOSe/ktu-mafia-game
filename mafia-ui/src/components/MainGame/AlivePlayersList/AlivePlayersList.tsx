@@ -48,6 +48,16 @@ const AlivePlayersList: React.FC = () => {
                 </Button>
               )}
 
+              {/* Poisoner can select everyone except themselves */}
+              {!isDay && isAlive && role === 'Poisoner' && player !== username && (
+                <Button
+                  className="action-button"
+                  onClick={() => handleActionClick(player, 'poison')}
+                >
+                  Poison
+                </Button>
+              )}
+
               {/* Tracker can select everyone except themselves */}
               {!isDay && isAlive && role === 'Tracker' && player !== username && (
                 <Button

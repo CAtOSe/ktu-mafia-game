@@ -15,7 +15,7 @@ namespace Mafia.Server.Models.AbstractFactory
         }
         public override List<Role> GetAccompliceRoles()
         {
-            return new List<Role> { };
+            return new List<Role> { new Poisoner()};
         }
         public override List<Role> GetCitizenRoles()
         {

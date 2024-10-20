@@ -187,21 +187,32 @@ public class GameService(IChatService _chatService) : IGameService
 
     private async Task ExecuteNightActions()
     {
+
+
         // Define the custom order for roles
         var actionOrder = new List<string>
-    {
-        "Poisoner", "Tavern Keeper", "Tracker", "Lookout",
-        "Assassin", "Hemlock", "Phantom", "Soldier", "Doctor"
-    };
+        {
+            "Poisoner", "Tavern Keeper", "Tracker", "Lookout",
+            "Assassin", "Hemlock", "Phantom", "Soldier", "Doctor"
+        };
 
         // Sort nightActions by actionType based on the custom order
-        nightActions = nightActions.OrderBy(action => actionOrder.IndexOf(action.Target.RoleName)).ToList();
+        //nightActions = nightActions.OrderBy(action => actionOrder.IndexOf(action.Target.RoleName)).ToList();
+
+        nightActions = nightActions
+            .OrderBy(action =>
+            {
+                int index = actionOrder.FindIndex(role => role.Equals(action.User.RoleName, StringComparison.OrdinalIgnoreCase));
+                return index >= 0 ? index : int.MaxValue; // Ensure roles not found in the list are sorted last
+            })
+            .ToList();
 
         // Dictionary to track players' alive status before the actions
         Dictionary<Player, bool> initialAliveStatus = new Dictionary<Player, bool>();
 
         foreach (var player in _currentPlayers)
         {
+            player.IsPoisoned = false;
             initialAliveStatus[player] = player.IsAlive;
         }
 
@@ -210,7 +221,8 @@ public class GameService(IChatService _chatService) : IGameService
         // Perform the night actions
         foreach (var nightAction in nightActions)
         {
-            nightAction.User.Role.NightAction(nightAction.User, nightAction.Target, nightActions, nightMessages);
+            Console.WriteLine("Doing NIGHT ACTION: " + nightAction.User.RoleName + " " + nightAction.User.IsPoisoned);
+            await nightAction.User.Role.NightAction(nightAction.User, nightAction.Target, nightActions, nightMessages);
             nightAction.User.Role.AbilityUsesLeft--;
         }
 
@@ -473,7 +485,7 @@ public class GameService(IChatService _chatService) : IGameService
         List<int> unassignedIndexes = Enumerable.Range(0, _currentPlayers.Count).ToList();
 
         // 1. Assign a random Killer role to one player
-        int killerIndex = random.Next(unassignedIndexes.Count);
+        int killerIndex = unassignedIndexes[random.Next(unassignedIndexes.Count)];
         var killerRole = killerRoles[random.Next(killerRoles.Count)];
 
         // Builder
@@ -502,7 +514,7 @@ public class GameService(IChatService _chatService) : IGameService
         {
             if (unassignedIndexes.Count == 0) break;  // Safety check: stop if no players are left to assign
 
-            int accompliceIndex = random.Next(unassignedIndexes.Count);
+            int accompliceIndex = unassignedIndexes[random.Next(unassignedIndexes.Count)];
             Role accompliceRole = accompliceRoles.Count > 0
                                     ? accompliceRoles[random.Next(accompliceRoles.Count)]
                                     : new Lackey();
@@ -531,7 +543,7 @@ public class GameService(IChatService _chatService) : IGameService
         int bystanderCount = random.Next(3);  // Random number between 0 and 2
         for (int i = 0; i < bystanderCount && unassignedIndexes.Count > 0; i++)
         {
-            int bystanderIndex = random.Next(unassignedIndexes.Count);
+            int bystanderIndex = unassignedIndexes[random.Next(unassignedIndexes.Count)];
             // Builder
             IPlayerBuilder citizenBuilder = roleFactory.GetCitizenBuilder(_currentPlayers[bystanderIndex].WebSocket);
             var bystanderPlayer = citizenBuilder.SetName(_currentPlayers[bystanderIndex].Name)
