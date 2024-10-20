@@ -3,6 +3,7 @@ using Mafia.Server.Models.AbstractFactory;
 using Mafia.Server.Models.AbstractFactory.Roles;
 using Mafia.Server.Models.AbstractFactory.Roles.Accomplices;
 using Mafia.Server.Models.AbstractFactory.Roles.Citizens;
+using Mafia.Server.Models.Builder;
 using Mafia.Server.Models.Commands;
 using Mafia.Server.Services.ChatService;
 using Microsoft.AspNetCore.Hosting.Server;
@@ -410,14 +411,21 @@ public class GameService(IChatService _chatService) : IGameService
 
         // 1. Assign a random Killer role to one player
         int killerIndex = random.Next(unassignedIndexes.Count);
-        var killerPlayer = _currentPlayers[unassignedIndexes[killerIndex]];
-
-        // Get a random killer role from the killerRoles list
         var killerRole = killerRoles[random.Next(killerRoles.Count)];
-        killerPlayer.Role = killerRole;
+
+        // Builder
+        IPlayerBuilder killerBuilder = roleFactory.GetKillerBuilder(_currentPlayers[killerIndex].WebSocket);
+        var killerPlayer = killerBuilder.SetName(_currentPlayers[killerIndex].Name)
+                                        .SetRole(killerRole)
+                                        .SetAlive(true)
+                                        .SetLoggedIn(_currentPlayers[killerIndex].IsLoggedIn)
+                                        .SetHost(_currentPlayers[killerIndex].IsHost)
+                                        .Build();
+
+        _currentPlayers[killerIndex] = killerPlayer;
 
         // Remove the assigned killer role and the player index from the tracking list
-        killerRoles.Remove(killerRole);
+        killerRoles.Remove(killerPlayer.Role);
         unassignedIndexes.RemoveAt(killerIndex);
 
         // 2. Assign accomplice roles
@@ -425,23 +433,23 @@ public class GameService(IChatService _chatService) : IGameService
         {
             if (unassignedIndexes.Count == 0) break;  // Safety check: stop if no players are left to assign
 
-            if (accompliceRoles.Count > 0) // If there are accomplice roles available
-            {
-                var accompliceRole = accompliceRoles[random.Next(accompliceRoles.Count)];
-                int accompliceIndex = random.Next(unassignedIndexes.Count);
-                var accomplicePlayer = _currentPlayers[unassignedIndexes[accompliceIndex]];
+            int accompliceIndex = random.Next(unassignedIndexes.Count);
+            Role accompliceRole = accompliceRoles.Count > 0
+                                    ? accompliceRoles[random.Next(accompliceRoles.Count)]
+                                    : new Lackey();
 
-                accomplicePlayer.Role = accompliceRole;
-                accompliceRoles.Remove(accompliceRole);
-                unassignedIndexes.RemoveAt(accompliceIndex);  // Remove the player index
-            }
-            else // If no more accomplice roles, assign Lackey
-            {
-                int accompliceIndex = random.Next(unassignedIndexes.Count);
-                var accomplicePlayer = _currentPlayers[unassignedIndexes[accompliceIndex]];
-                accomplicePlayer.Role = new Lackey();  // Assign Lackey
-                unassignedIndexes.RemoveAt(accompliceIndex);  // Remove the player index
-            }
+            // Builder
+            IPlayerBuilder accompliceBuilder = roleFactory.GetAccompliceBuilder(_currentPlayers[accompliceIndex].WebSocket);
+            var accomplicePlayer = accompliceBuilder.SetName(_currentPlayers[accompliceIndex].Name)
+                                                    .SetRole(accompliceRole)
+                                                    .SetAlive(true)
+                                                    .SetLoggedIn(_currentPlayers[accompliceIndex].IsLoggedIn)
+                                                    .SetHost(_currentPlayers[accompliceIndex].IsHost)
+                                                    .Build();
+
+            _currentPlayers[accompliceIndex] = accomplicePlayer;
+            accompliceRoles.Remove(accompliceRole);
+            unassignedIndexes.RemoveAt(accompliceIndex);
         }
 
         // 3. Randomly assign 0 to 2 players the Bystander role
@@ -449,27 +457,36 @@ public class GameService(IChatService _chatService) : IGameService
         for (int i = 0; i < bystanderCount && unassignedIndexes.Count > 0; i++)
         {
             int bystanderIndex = random.Next(unassignedIndexes.Count);
-            var bystanderPlayer = _currentPlayers[unassignedIndexes[bystanderIndex]];
-            bystanderPlayer.Role = new Bystander();  // Assign Bystander
-            unassignedIndexes.RemoveAt(bystanderIndex);  // Remove the player index
+            // Builder
+            IPlayerBuilder citizenBuilder = roleFactory.GetCitizenBuilder(_currentPlayers[bystanderIndex].WebSocket);
+            var bystanderPlayer = citizenBuilder.SetName(_currentPlayers[bystanderIndex].Name)
+                                                .SetRole(new Bystander())
+                                                .SetAlive(true)
+                                                .SetLoggedIn(_currentPlayers[bystanderIndex].IsLoggedIn)
+                                                .SetHost(_currentPlayers[bystanderIndex].IsHost)
+                                                .Build();
+
+            _currentPlayers[bystanderIndex] = bystanderPlayer;
+            unassignedIndexes.RemoveAt(bystanderIndex);
         }
 
         // 4. Assign remaining players random roles from citizenRoles
         foreach (var playerIndex in unassignedIndexes.ToList())  // Iterate over unassigned players
         {
-            var player = _currentPlayers[playerIndex];
-            if (citizenRoles.Count > 0) // If there are citizen roles available
-            {
-                var citizenRole = citizenRoles[random.Next(citizenRoles.Count)];
-                player.Role = citizenRole;
-                citizenRoles.Remove(citizenRole);  // Remove assigned role
-            }
-            else
-            {
-                // If citizenRoles run out, assign a random role from the original citizenRoles list (allow duplicates)
-            var randomCitizenRole = originalCitizenRoles[random.Next(originalCitizenRoles.Count)];
-            player.Role = randomCitizenRole;  // Allow duplicates now
-            }
+            Role citizenRole = citizenRoles.Count > 0
+                                ? citizenRoles[random.Next(citizenRoles.Count)]
+                                : originalCitizenRoles[random.Next(originalCitizenRoles.Count)];
+            // Builder
+            IPlayerBuilder citizenBuilder = roleFactory.GetCitizenBuilder(_currentPlayers[playerIndex].WebSocket);
+            var citizenPlayer = citizenBuilder.SetName(_currentPlayers[playerIndex].Name)
+                                              .SetRole(citizenRole)
+                                              .SetAlive(true)
+                                              .SetLoggedIn(_currentPlayers[playerIndex].IsLoggedIn)
+                                              .SetHost(_currentPlayers[playerIndex].IsHost)
+                                              .Build();
+
+            _currentPlayers[playerIndex] = citizenPlayer;
+            citizenRoles.Remove(citizenRole);
         }
 
         // Notify each player of their assigned role
