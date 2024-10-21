@@ -12,6 +12,7 @@ import {
   GameState,
   GameStateContextProviderProps,
   GameStateContextValue,
+  IncomingChatMessage,
 } from './types.ts';
 import { Message, ResponseMessages } from '../../types.ts';
 import WebsocketContext from '../WebSocketContext/WebsocketContext.ts';
@@ -122,15 +123,17 @@ export const GameStateContextProvider = ({
       const rawMessages = JSON.parse(correctedJSON);
 
       // Step 4: Map each raw object to an instance of ChatMessage
-      const chatMessages: ChatMessage[] = rawMessages.map((rawMsg: any) => {
-        return new ChatMessage(
-          rawMsg.content,
-          rawMsg.category,
-          rawMsg.sender,
-          rawMsg.recipient,
-          rawMsg.timeSent,
-        );
-      });
+      const chatMessages: ChatMessage[] = rawMessages.map(
+        (rawMsg: IncomingChatMessage) => {
+          return new ChatMessage(
+            rawMsg.content,
+            rawMsg.category,
+            rawMsg.sender,
+            rawMsg.recipient,
+            rawMsg.timeSent,
+          );
+        },
+      );
 
       // Step 5: Log the parsed chat messages for debugging purposes
       console.log('Parsed chat messages:', chatMessages);
