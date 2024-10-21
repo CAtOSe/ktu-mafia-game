@@ -29,7 +29,7 @@ public class AdvancedRoleFactoryTests
 
         // Assert
         result.Should().HaveCount(1);
-        result.Should().AllBeOfType<Poisoner>();
+        result.Should().AllBeOfType<Spy>();
     }
     
     [Fact]
