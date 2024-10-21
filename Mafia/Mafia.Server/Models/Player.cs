@@ -1,14 +1,12 @@
 using System.Net.WebSockets;
 using Mafia.Server.Extensions;
-using System.Net.WebSockets;
-using Mafia.Server.Models.Commands;
 using Mafia.Server.Models.AbstractFactory.Roles;
+using Mafia.Server.Models.Messages;
 
 namespace Mafia.Server.Models;
 
 public class Player(WebSocket webSocket)
 {
-    public DateTime CreationTime { get; init; } = DateTime.UtcNow;
     public string Name { get; set; } = "Guest";
     public Role Role { get; set; } = null;
     public string RoleName => Role.Name;
@@ -19,14 +17,13 @@ public class Player(WebSocket webSocket)
 
     public bool IsPoisoned { get; set; } = false;
     public List<Item> Inventory { get; set; } = new();
-    public WebSocket WebSocket = webSocket;
 
     public Player CurrentVote;
 
-    public async Task SendMessage(Message message)
+    public async Task SendMessage(CommandMessage commandMessage)
     {
         if (webSocket.State != WebSocketState.Open) return;
-        await webSocket.SendMessage(message.ToString());
+        await webSocket.SendMessage(commandMessage.ToString());
     }
 
     public async void CloseConnection()

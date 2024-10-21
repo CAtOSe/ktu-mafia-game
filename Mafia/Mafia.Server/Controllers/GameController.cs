@@ -17,7 +17,7 @@ public class GameController(ISessionHandler sessionHandler, IHostApplicationLife
             {
                 await sessionHandler.HandleConnection(webSocket, hostLifetime.ApplicationStopping);
             }
-            catch (OperationCanceledException e)
+            catch (OperationCanceledException)
             {
                 Console.WriteLine($"Terminating connection.");
             }

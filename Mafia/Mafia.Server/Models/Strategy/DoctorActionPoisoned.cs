@@ -1,18 +1,20 @@
 ﻿namespace Mafia.Server.Models.Strategy
 {
-    public class DoctorActionPoisoned : IRoleActionAlgorithm
+    public class DoctorActionPoisoned : IRoleAction
     {
-        public Task NightAction(Player user, Player target, List<NightAction> nightActions, List<ChatMessage> nightMessages)
+        public string Name => nameof(DoctorAction);
+
+        public Task Execute(Player user, Player target, RoleActionContext context, List<ChatMessage> messages)
         {
             string messageToUser = "You protected " + target.Name + " tonight. | FALSE";
             ChatMessage chatMessageToUser = new ChatMessage("", messageToUser, user.Name, "nightNotification");
-            nightMessages.Add(chatMessageToUser);
+            messages.Add(chatMessageToUser);
 
             if (target.IsAlive) // If target was not attacked, lie and say they were
             {
                 messageToUser = "Your target was attacked. | FALSE";
                 chatMessageToUser = new ChatMessage("", messageToUser, user.Name, "nightNotification");
-                nightMessages.Add(chatMessageToUser);
+                messages.Add(chatMessageToUser);
             }
 
             Console.Write(messageToUser);

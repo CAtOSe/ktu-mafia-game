@@ -2,20 +2,17 @@
 
 namespace Mafia.Server.Models.Strategy
 {
-    public class TrackerActionPoisoned : IRoleActionAlgorithm
+    public class TrackerActionPoisoned : IRoleAction
     {
-        public Task NightAction(Player user, Player target, List<NightAction> nightActions, List<ChatMessage> nightMessages)
+        public string Name => nameof(TrackerAction);
+        public Task Execute(Player user, Player target, RoleActionContext context, List<ChatMessage> messages)
         {
-            var action = nightActions.FirstOrDefault(p => p.User.Name.Equals(target.Name, StringComparison.OrdinalIgnoreCase));
-
-            string wentTo = action?.Target?.Name;
-
-            var randomPlayer = GetRandomPlayer(user, nightActions);
+            var randomPlayer = GetRandomPlayer(user, context.Players);
             string messageToUser = "";
-            if ((wentTo == target.Name || wentTo == null) && randomPlayer != null)
+            if (randomPlayer != null)
             {
                 // Lie 1: Say they went to a random wrong player
-                messageToUser = "After following the footsteps of " + target.Name + ", you find that they visited " + user.Name + ". | FALSE";
+                messageToUser = "After following the footsteps of " + target.Name + ", you find that they visited " + randomPlayer.Name + ". | FALSE";
             }
             else
             {
@@ -24,19 +21,16 @@ namespace Mafia.Server.Models.Strategy
             }
 
             ChatMessage chatMessageToUser = new ChatMessage("", messageToUser, user.Name, "nightNotification");
-            nightMessages.Add(chatMessageToUser);
+            messages.Add(chatMessageToUser);
 
             return Task.CompletedTask;
         }
 
-        private Player GetRandomPlayer(Player target, List<NightAction> nightActions)
+        private Player GetRandomPlayer(Player target, List<Player> allPlayers)
         {
             Random _random = new Random();
             // Get a list of all night targets except the one we selected
-            var possiblePlayers = nightActions
-                .Select(na => na.Target)
-                .Where(p => p.Name != target.Name)
-                .ToList();
+            var possiblePlayers = allPlayers.Where(p => p != target).ToList();
 
             // Return a random player from the list
             return possiblePlayers[_random.Next(possiblePlayers.Count)];

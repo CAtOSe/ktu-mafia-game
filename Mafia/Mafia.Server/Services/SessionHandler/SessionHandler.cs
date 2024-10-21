@@ -1,7 +1,7 @@
 using System.Net.WebSockets;
 using System.Text;
 using Mafia.Server.Models;
-using Mafia.Server.Models.Commands;
+using Mafia.Server.Models.Messages;
 using Mafia.Server.Services.GameService;
 using Mafia.Server.Services.MessageResolver;
 
@@ -14,7 +14,7 @@ public class SessionHandler(IMessageResolver messageResolver, IGameService gameS
     {
         Console.WriteLine("New connection established.");
         Player player = new(webSocket);
-        await player.SendMessage(new Message { Base = ResponseCommands.Hello });
+        await player.SendMessage(new CommandMessage { Base = ResponseCommands.Hello });
         
         var buffer = new byte[1024 * 4];
         var receiveResult = await webSocket.ReceiveAsync(

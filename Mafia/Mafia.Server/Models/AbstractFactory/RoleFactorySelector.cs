@@ -2,13 +2,13 @@
 {
     public class RoleFactorySelector
     {
-        public RoleFactory factoryMethod(string presetName)
+        public RoleFactory FactoryMethod(string presetName)
         {
             switch (presetName)
             {
-                case "Basic":
+                case "basic":
                     return new BasicRoleFactory();
-                case "Advanced":
+                case "advanced":
                     return new AdvancedRoleFactory();
                 /*case "Expert":
                     return new ExpertRoleFactory();*/

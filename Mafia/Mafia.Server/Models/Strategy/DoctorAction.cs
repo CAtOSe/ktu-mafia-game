@@ -1,28 +1,33 @@
 ﻿namespace Mafia.Server.Models.Strategy
 {
-    public class DoctorAction : IRoleActionAlgorithm
+    public class DoctorAction : IRoleAction
     {
-        public Task NightAction(Player user, Player target, List<NightAction> nightActions, List<ChatMessage> nightMessages)
+        public string Name => nameof(DoctorAction);
+        
+        public Task Execute(Player user, Player target, RoleActionContext context, List<ChatMessage> messages)
         {
             string messageToUser = "You protected " + target.Name + " tonight.";
             ChatMessage chatMessageToUser = new ChatMessage("", messageToUser, user.Name, "nightNotification");
-            nightMessages.Add(chatMessageToUser);
+            messages.Add(chatMessageToUser);
 
             if (!target.IsAlive)
             {
                 target.IsAlive = true;
                 string messageToTarget = "Doctor protected you from death.";
                 ChatMessage chatMessageToTarget = new ChatMessage("", messageToTarget, target.Name, "nightNotification");
-                nightMessages.Add(chatMessageToTarget);
+                messages.Add(chatMessageToTarget);
 
                 messageToUser = "Your target was attacked.";
                 chatMessageToUser = new ChatMessage("", messageToUser, user.Name, "nightNotification");
-                nightMessages.Add(chatMessageToUser);
+                messages.Add(chatMessageToUser);
 
-                string killer = nightActions.FirstOrDefault(p => p.ActionType == "kill" && p.Target == target).User.Name;
-                string messageToKiller = "Your target survived the attack.";
-                ChatMessage chatMessageToKiller = new ChatMessage("", messageToKiller, killer, "nightNotification");
-                nightMessages.Add(chatMessageToKiller);
+                var killer = context.QueuedActions.FirstOrDefault(a => a.Target == target && a.User != user)?.Target;
+                if (killer is not null)
+                {
+                    string messageToKiller = "Your target survived the attack.";
+                    ChatMessage chatMessageToKiller = new ChatMessage("", messageToKiller, killer.Name, "nightNotification");
+                    messages.Add(chatMessageToKiller);
+                }
             }
 
             Console.Write(messageToUser);
