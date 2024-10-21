@@ -3,7 +3,7 @@ using Mafia.Server.Models.AbstractFactory;
 using Mafia.Server.Models.AbstractFactory.Roles;
 using Mafia.Server.Models.AbstractFactory.Roles.Accomplices;
 using Mafia.Server.Models.AbstractFactory.Roles.Citizens;
-using Mafia.Server.Models.Commands;
+using Mafia.Server.Models.Messages;
 using Mafia.Server.Services.ChatService;
 
 namespace Mafia.Server.Services.GameService;
@@ -27,7 +27,7 @@ public class GameService(IChatService _chatService) : IGameService
     public async Task DisconnectPlayer(Player player)
     {
         _currentPlayers.Remove(player);
-        await player.SendMessage(new Message
+        await player.SendMessage(new CommandMessage
         {
             Base = RequestCommands.Disconnect
         });
@@ -42,7 +42,7 @@ public class GameService(IChatService _chatService) : IGameService
             if (player.IsHost)
             {
                 _currentPlayers[0].IsHost = true;
-                await _currentPlayers[0].SendMessage(new Message
+                await _currentPlayers[0].SendMessage(new CommandMessage
                 {
                     Base = ResponseCommands.LoggedIn,
                     Arguments = ["host"]
@@ -57,7 +57,7 @@ public class GameService(IChatService _chatService) : IGameService
     {
         if (player.IsLoggedIn)
         {
-            await player.SendMessage(new Message
+            await player.SendMessage(new CommandMessage
             {
                 Base = ResponseCommands.Error,
                 Error = ErrorMessages.AlreadyLoggedIn,
@@ -69,7 +69,7 @@ public class GameService(IChatService _chatService) : IGameService
             p.Name.Equals(username, StringComparison.OrdinalIgnoreCase));
         if (usernameTaken)
         {
-            await player.SendMessage(new Message
+            await player.SendMessage(new CommandMessage
             {
                 Base = ResponseCommands.Error,
                 Error = ErrorMessages.UsernameTaken
@@ -82,7 +82,7 @@ public class GameService(IChatService _chatService) : IGameService
         player.IsHost = _currentPlayers.Count == 0;
         
         _currentPlayers.Add(player);
-        await player.SendMessage(new Message
+        await player.SendMessage(new CommandMessage
         {
             Base = ResponseCommands.LoggedIn,
             Arguments = player.IsHost ? ["host"] : null
@@ -93,7 +93,7 @@ public class GameService(IChatService _chatService) : IGameService
     private Task SendPlayerList()
     {
         _chatService.SetPlayers(_currentPlayers);
-        var message = new Message
+        var message = new CommandMessage
         {
             Base = ResponseCommands.PlayerListUpdate,
             Arguments = _currentPlayers.Select(p => p.Name).ToList(),
@@ -116,14 +116,14 @@ public class GameService(IChatService _chatService) : IGameService
         }
 
         Console.WriteLine("Assigning roles and starting the countdown.");
-        await NotifyAllPlayers(new Message
+        await NotifyAllPlayers(new CommandMessage
         {
             Base = ResponseCommands.StartCountdown,
             Arguments = [GameConfiguration.BeginCountdown.ToString()]
         });
         var gameStartTask = Task.Delay(GameConfiguration.BeginCountdown).ContinueWith(async t =>
         {
-            await NotifyAllPlayers(new Message
+            await NotifyAllPlayers(new CommandMessage
             {
                 Base = ResponseCommands.GameStarted,
             });
@@ -269,7 +269,7 @@ public class GameService(IChatService _chatService) : IGameService
     {
         var alivePlayers = _currentPlayers.Where(p => p.IsAlive).Select(p => p.Name).ToList();
 
-        var message = new Message
+        var message = new CommandMessage
         {
             Base = ResponseCommands.AlivePlayerListUpdate,
             Arguments = alivePlayers,
@@ -277,9 +277,9 @@ public class GameService(IChatService _chatService) : IGameService
         return NotifyAllPlayers(message);
     }
     
-    private Task NotifyAllPlayers(Message message)
+    private Task NotifyAllPlayers(CommandMessage commandMessage)
     {
-        var notifications = _currentPlayers.Select(p => p.SendMessage(message));
+        var notifications = _currentPlayers.Select(p => p.SendMessage(commandMessage));
         return Task.WhenAll(notifications);
     }
 
@@ -349,7 +349,7 @@ public class GameService(IChatService _chatService) : IGameService
         var phaseName = _isDayPhase ? "day" : "night";
         var timeoutDuration = _isDayPhase ? GameConfiguration.DayPhaseDuration : GameConfiguration.NightPhaseDuration;
         Console.WriteLine($"\nNew phase: {phaseName} {_phaseCounter}");
-        await NotifyAllPlayers(new Message
+        await NotifyAllPlayers(new CommandMessage
         {
             Base = ResponseCommands.PhaseChange,
             Arguments = [phaseName, timeoutDuration.ToString(), _phaseCounter.ToString()]
@@ -359,7 +359,7 @@ public class GameService(IChatService _chatService) : IGameService
         {
             Console.WriteLine(winnerTeam + " team has won the game!");
             await _chatService.SendChatMessage("", winnerTeam + " team has won the game!", "everyone", "server");
-            await NotifyAllPlayers(new Message
+            await NotifyAllPlayers(new CommandMessage
             {
                 Base = ResponseCommands.EndGame,
                 Arguments = [winnerTeam]
@@ -502,7 +502,7 @@ public class GameService(IChatService _chatService) : IGameService
         foreach (var player in _currentPlayers)
         {
             Console.WriteLine($"{player.Name} | {player.RoleName}");
-            await player.SendMessage(new Message
+            await player.SendMessage(new CommandMessage
             {
                 Base = ResponseCommands.RoleAssigned,
                 Arguments = new string[] { player.RoleName }

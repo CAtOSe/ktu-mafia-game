@@ -1,8 +1,7 @@
 using System.Net.WebSockets;
 using Mafia.Server.Extensions;
-using System.Net.WebSockets;
-using Mafia.Server.Models.Commands;
 using Mafia.Server.Models.AbstractFactory.Roles;
+using Mafia.Server.Models.Messages;
 
 namespace Mafia.Server.Models;
 
@@ -19,10 +18,10 @@ public class Player(WebSocket webSocket)
     public List<Item> Inventory { get; set; } = new();
     public Player CurrentVote;
 
-    public async Task SendMessage(Message message)
+    public async Task SendMessage(IMessage commandMessage)
     {
         if (webSocket.State != WebSocketState.Open) return;
-        await webSocket.SendMessage(message.ToString());
+        await webSocket.SendMessage(commandMessage.ToString());
     }
 
     public async void CloseConnection()

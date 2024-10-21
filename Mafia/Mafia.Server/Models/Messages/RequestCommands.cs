@@ -1,4 +1,4 @@
-namespace Mafia.Server.Models.Commands;
+namespace Mafia.Server.Models.Messages;
 
 public static class RequestCommands
 {

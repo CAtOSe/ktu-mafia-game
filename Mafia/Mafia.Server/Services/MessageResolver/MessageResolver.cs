@@ -1,5 +1,5 @@
 using Mafia.Server.Models;
-using Mafia.Server.Models.Commands;
+using Mafia.Server.Models.Messages;
 using Mafia.Server.Services.ChatService;
 using Mafia.Server.Services.GameService;
 
@@ -9,7 +9,7 @@ public class MessageResolver(IGameService gameService, IChatService chatService)
 {
     public async Task HandleMessage(Player player, string message)
     {
-        var command = Message.FromString(message);
+        var command = CommandMessage.FromString(message);
         switch (command.Base)
         {
             case RequestCommands.Login when command.Arguments.Count == 1:

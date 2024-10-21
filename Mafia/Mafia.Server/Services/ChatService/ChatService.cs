@@ -1,6 +1,6 @@
 using System.Text.Json;
 using Mafia.Server.Models;
-using Mafia.Server.Models.Commands;
+using Mafia.Server.Models.Messages;
 
 namespace Mafia.Server.Services.ChatService;
 
@@ -54,7 +54,7 @@ public class ChatService : IChatService
         string chatMessagesJson = JsonSerializer.Serialize(chatList);
         string customChatMessagesJson = chatMessagesJson.Replace(":", "|");
         Console.WriteLine("Serialized chat messages: " + customChatMessagesJson);
-        await player.SendMessage(new Message
+        await player.SendMessage(new CommandMessage
         {
             Base = ResponseCommands.ReceiveChatList,
             Arguments = new List<string> { customChatMessagesJson }
