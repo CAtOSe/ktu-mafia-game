@@ -1,4 +1,6 @@
-﻿namespace Mafia.Server.Models.AbstractFactory.Roles.Citizens
+﻿using Mafia.Server.Models.Strategy;
+
+namespace Mafia.Server.Models.AbstractFactory.Roles.Citizens
 {
     public class Tracker : Citizen
     {
@@ -7,8 +9,11 @@
             Name = "Tracker";
             Ability = "At night, choose a player to find out who they visited that night";
             AbilityUsesLeft = abilityUses;
+            RoleAlgorithm = new TrackerAction();
+            RoleAlgorithmPoisoned = new TrackerActionPoisoned();
         }
 
+        /*
         public override void NightAction(Player user, Player target, List<NightAction> nightActions, List<ChatMessage> nightMessages)
         {
             var action = nightActions.FirstOrDefault(p => p.User.Name.Equals(target.Name, StringComparison.OrdinalIgnoreCase));
@@ -26,6 +31,6 @@
             }
             ChatMessage chatMessageToUser = new ChatMessage("", messageToUser, user.Name, "nightNotification");
             nightMessages.Add(chatMessageToUser);
-        }
+        }*/
     }
 }

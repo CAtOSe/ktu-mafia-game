@@ -22,7 +22,7 @@ public class ChatService : IChatService
 
     public Task SendChatMessage(string sender, string content, string recipient, string category)
     {
-        Console.WriteLine($"We added a message from: {sender} who has written to chat: {content}");
+        //Console.WriteLine($"We added a message from: {sender} who has written to chat: {content}");
         messages.Add(new ChatMessage(sender, content, recipient, category, messages.Count));
         return SendOutFilteredChats();
     }
@@ -53,7 +53,7 @@ public class ChatService : IChatService
     {
         string chatMessagesJson = JsonSerializer.Serialize(chatList);
         string customChatMessagesJson = chatMessagesJson.Replace(":", "|");
-        Console.WriteLine("Serialized chat messages: " + customChatMessagesJson);
+        //Console.WriteLine("Serialized chat messages: " + customChatMessagesJson);
         await player.SendMessage(new CommandMessage
         {
             Base = ResponseCommands.ReceiveChatList,

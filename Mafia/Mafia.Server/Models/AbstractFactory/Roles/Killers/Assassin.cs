@@ -1,4 +1,6 @@
-﻿namespace Mafia.Server.Models.AbstractFactory.Roles.Killers
+﻿using Mafia.Server.Models.Strategy;
+
+namespace Mafia.Server.Models.AbstractFactory.Roles.Killers
 {
     public class Assassin : Killer
     {
@@ -7,8 +9,10 @@
             Name = "Assassin";
             Ability = "At night, kill a player";
             AbilityUsesLeft = abilityUses;
+            RoleAlgorithm = new AssassinAction();
+            RoleAlgorithmPoisoned = new AssassinAction();
         }
-
+        /*
         public override void NightAction(Player user, Player target, List<NightAction> nightActions, List<ChatMessage> nightMessages)
         {
             target.IsAlive = false;
@@ -20,6 +24,6 @@
             string messageToTarget = "You were attacked by the Killer."; // Death Message
             ChatMessage chatMessageToTarget = new ChatMessage("", messageToTarget, target.Name, "nightNotification");
             nightMessages.Add(chatMessageToTarget);
-        }
+        }*/
     }
 }
