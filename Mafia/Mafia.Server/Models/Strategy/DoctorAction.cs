@@ -1,20 +1,8 @@
-﻿using Mafia.Server.Models.Strategy;
-using System.Security.Cryptography.X509Certificates;
-
-namespace Mafia.Server.Models.AbstractFactory.Roles.Citizens
+﻿namespace Mafia.Server.Models.Strategy
 {
-    public class Doctor : Citizen
+    public class DoctorAction : IRoleActionAlgorithm
     {
-        public Doctor(int abilityUses = 10)
-        {
-            Name = "Doctor";
-            Ability = "At night, choose a player to protect them from dying";
-            AbilityUsesLeft = abilityUses;
-            RoleAlgorithm = new DoctorAction();
-            RoleAlgorithmPoisoned = new DoctorActionPoisoned();
-        }
-        /*
-        public override void NightAction(Player user, Player target, List<NightAction> nightActions, List<ChatMessage> nightMessages)
+        public Task NightAction(Player user, Player target, List<NightAction> nightActions, List<ChatMessage> nightMessages)
         {
             string messageToUser = "You protected " + target.Name + " tonight.";
             ChatMessage chatMessageToUser = new ChatMessage("", messageToUser, user.Name, "nightNotification");
@@ -38,7 +26,8 @@ namespace Mafia.Server.Models.AbstractFactory.Roles.Citizens
             }
 
             Console.Write(messageToUser);
-            
-        }*/
+
+            return Task.CompletedTask;
+        }
     }
 }

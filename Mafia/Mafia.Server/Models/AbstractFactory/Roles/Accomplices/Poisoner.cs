@@ -1,4 +1,6 @@
-﻿namespace Mafia.Server.Models.AbstractFactory.Roles.Accomplices
+﻿using Mafia.Server.Models.Strategy;
+
+namespace Mafia.Server.Models.AbstractFactory.Roles.Accomplices
 {
     public class Poisoner : Accomplice
     {
@@ -7,6 +9,8 @@
             Name = "Poisoner";
             Ability = "At night, poison a player - their ability does not work, if ability provides information - they get wrong information";
             AbilityUsesLeft = abilityUses;
+            RoleAlgorithm = new PoisonerAction();
+            RoleAlgorithmPoisoned = new PoisonerAction();
         }
     }
 }
