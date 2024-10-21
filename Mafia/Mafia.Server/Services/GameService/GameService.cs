@@ -3,17 +3,14 @@ using Mafia.Server.Models.AbstractFactory;
 using Mafia.Server.Models.AbstractFactory.Roles;
 using Mafia.Server.Models.AbstractFactory.Roles.Accomplices;
 using Mafia.Server.Models.AbstractFactory.Roles.Citizens;
-using Mafia.Server.Models.Builder;
 using Mafia.Server.Models.Messages;
 using Mafia.Server.Services.ChatService;
-using Microsoft.AspNetCore.Hosting.Server;
-using System.Numerics;
-using System.Runtime.CompilerServices;
 using System.Text;
+using Mafia.Server.Models.Strategy;
 
 namespace Mafia.Server.Services.GameService;
 
-public class GameService(IChatService _chatService) : IGameService
+public class GameService(IChatService chatService) : IGameService
 {
 
     private readonly List<Player> _currentPlayers = [];
@@ -23,10 +20,9 @@ public class GameService(IChatService _chatService) : IGameService
 
     private volatile int _phaseCounter = 1;
     private volatile bool _isDayPhase = true;
-    private volatile bool _hasExecutedNightAction = false;
 
-    private List<NightAction> nightActions = new List<NightAction>();
-    private List<ChatMessage> dayStartAnnouncements = new List<ChatMessage>();
+    private List<ActionQueueEntry> _actionQueue = [];
+    private List<ChatMessage> _dayStartAnnouncements = [];
 
     public List<Player> GetPlayers() => _currentPlayers;
 
@@ -98,7 +94,7 @@ public class GameService(IChatService _chatService) : IGameService
     
     private Task SendPlayerList()
     {
-        _chatService.SetPlayers(_currentPlayers);
+        chatService.SetPlayers(_currentPlayers);
         var message = new CommandMessage
         {
             Base = ResponseCommands.PlayerListUpdate,
@@ -147,31 +143,34 @@ public class GameService(IChatService _chatService) : IGameService
     {
         // Find the target player
         var targetPlayer = _currentPlayers.FirstOrDefault(p => p.Name.Equals(actionTarget, StringComparison.OrdinalIgnoreCase));
-
-        Console.WriteLine("Received NIGHT ACTION: " + actionUser.Name + " " + actionUser.Role + ", " + targetPlayer.Name);
-
-        // Validate that both the action user and the target player exist
         if (targetPlayer == null)
         {
             Console.WriteLine("Invalid action: Either the user or the target player does not exist.");
             return;
         }
+
+        Console.WriteLine("Received NIGHT ACTION: " + actionUser.Name + " " + actionUser.Role + ", " + targetPlayer.Name);
+
         // If it is the same action that we already have, treat it as canceling action
-        NightAction previousAction = nightActions.FirstOrDefault(p => p.User == actionUser);
+        var previousAction = _actionQueue.FirstOrDefault(p => p.User == actionUser);
         bool cancelAction = previousAction != null && previousAction.Target == targetPlayer;
 
         // Remove any existing night actions from the same actionUser
-        nightActions.RemoveAll(action => action.User == actionUser);
+        _actionQueue.RemoveAll(action => action.User == actionUser);
 
         // Add the new night action if it was not canceling the action
         if (!cancelAction)
         {
-            nightActions.Add(new NightAction(actionUser, targetPlayer, actionType));
-            await _chatService.SendChatMessage("","You have chosen " + targetPlayer.Name, actionUser.Name, "nightAction");
+            _actionQueue.Add(new ActionQueueEntry
+            {
+                User = actionUser,
+                Target = targetPlayer
+            });
+            await chatService.SendChatMessage("","You have chosen " + targetPlayer.Name, actionUser.Name, "nightAction");
         }
         else
         {
-            await _chatService.SendChatMessage("", "You have canceled your selection", actionUser.Name, "nightAction");
+            await chatService.SendChatMessage("", "You have canceled your selection", actionUser.Name, "nightAction");
         }
     }
 
@@ -183,34 +182,29 @@ public class GameService(IChatService _chatService) : IGameService
 
         if (player.CurrentVote != targetPlayer)
         { 
-            await _chatService.SendChatMessage("","You have chosen " + targetPlayer.Name, player.Name, "dayAction"); 
+            await chatService.SendChatMessage("","You have chosen " + targetPlayer.Name, player.Name, "dayAction"); 
             player.CurrentVote = targetPlayer;
         }
         else
         {
-            await _chatService.SendChatMessage("", "You have canceled your selection", player.Name, "dayAction");
+            await chatService.SendChatMessage("", "You have canceled your selection", player.Name, "dayAction");
             player.CurrentVote = null;
         }
     }
 
     private async Task ExecuteNightActions()
     {
-        // Define the custom order for roles
-        var actionOrder = new List<string>
-        {
-            "Poisoner", "Tavern Keeper", "Tracker", "Lookout",
-            "Assassin", "Hemlock", "Phantom", "Soldier", "Doctor"
-        };
-
         // Sort nightActions by actionType based on the custom order
         //nightActions = nightActions.OrderBy(action => actionOrder.IndexOf(action.Target.RoleName)).ToList();
 
-        nightActions = nightActions
-            .OrderBy(action =>
-            {
-                int index = actionOrder.FindIndex(role => role.Equals(action.User.RoleName, StringComparison.OrdinalIgnoreCase));
-                return index >= 0 ? index : int.MaxValue; // Ensure roles not found in the list are sorted last
-            })
+        _actionQueue = _actionQueue.Select(a =>
+        {
+            var index = GameConfiguration.ActionOrder.IndexOf(a.User.Role.RoleAlgorithm.Name);
+            var order = index == -1 ? int.MaxValue : index;
+            return new KeyValuePair<int, ActionQueueEntry>(order, a);
+        })
+            .OrderBy(x => x.Key)
+            .Select(x => x.Value)
             .ToList();
 
         // Dictionary to track players' alive status before the actions
@@ -221,21 +215,25 @@ public class GameService(IChatService _chatService) : IGameService
             player.IsPoisoned = false;
             initialAliveStatus[player] = player.IsAlive;
         }
-
-        //List<(ChatMessage, int)> nightMessages = new List<(ChatMessage, int)>(); // 1 - Action // 2 - Death
+        
         List<ChatMessage> nightMessages = new List<ChatMessage>();
         // Perform the night actions
-        foreach (var nightAction in nightActions)
+        var context = new RoleActionContext
+        {
+            Players = _currentPlayers,
+            QueuedActions = _actionQueue,
+        };
+        foreach (var nightAction in _actionQueue)
         {
             Console.WriteLine("Doing NIGHT ACTION: " + nightAction.User.RoleName + " " + nightAction.User.IsPoisoned);
-            await nightAction.User.Role.NightAction(nightAction.User, nightAction.Target, nightActions, nightMessages);
+            await nightAction.User.Role.ExecuteAction(nightAction.User, nightAction.Target, context, nightMessages);
             nightAction.User.Role.AbilityUsesLeft--;
         }
 
         // Send Messages about night actions
         foreach (var nightMessage in nightMessages)
         {
-            await _chatService.SendChatMessage(nightMessage);
+            await chatService.SendChatMessage(nightMessage);
         }
 
         int deathInNightCount = 0;
@@ -247,20 +245,20 @@ public class GameService(IChatService _chatService) : IGameService
                 deathInNightCount++;
                 var deathMessage = new ChatMessage("", "You died.", player.Name, "nightNotification");
                 var dayAnnouncement = new ChatMessage("", player.Name + " has died in the night.", "everyone", "dayNotification");
-                dayStartAnnouncements.Add(dayAnnouncement);
-                await _chatService.SendChatMessage(deathMessage);
+                _dayStartAnnouncements.Add(dayAnnouncement);
+                await chatService.SendChatMessage(deathMessage);
             }
         }
         if(deathInNightCount == 0)
         {
             var dayAnnouncement = new ChatMessage("","No one has died in the night.", "everyone", "dayNotification");
-            dayStartAnnouncements.Add(dayAnnouncement);
+            _dayStartAnnouncements.Add(dayAnnouncement);
         }
 
         await SendAlivePlayerList();
 
         // Clear the nightActions list after processing all actions
-        nightActions.Clear();
+        _actionQueue.Clear();
     }
 
     private async Task ExecuteDayActions()
@@ -288,7 +286,7 @@ public class GameService(IChatService _chatService) : IGameService
         string votesResultMessage = votesResultBuilder.ToString();
 
         var finalVotesMessage = new ChatMessage("", votesResultMessage, "everyone", "server");
-        await _chatService.SendChatMessage(finalVotesMessage);
+        await chatService.SendChatMessage(finalVotesMessage);
 
         if (votes.Count == 0) // No players voted
         {
@@ -301,14 +299,14 @@ public class GameService(IChatService _chatService) : IGameService
             votedOff.IsAlive = false;
             await SendAlivePlayerList();
             var votingResultMessage = new ChatMessage("", votedOff.Name + " has been voted off by the town.", "everyone", "dayNotification");
-            await _chatService.SendChatMessage(votingResultMessage);
+            await chatService.SendChatMessage(votingResultMessage);
             var votingResultPersonalMessage = new ChatMessage("", "You died.", votedOff.Name, "dayNotification");
-            await _chatService.SendChatMessage(votingResultPersonalMessage);
+            await chatService.SendChatMessage(votingResultPersonalMessage);
         }
         else // More than one max value
         {
             var votingResultMessage = new ChatMessage("", "No player has been voted of by the town today. (Tie)", "everyone", "dayNotification");
-            await _chatService.SendChatMessage(votingResultMessage);
+            await chatService.SendChatMessage(votingResultMessage);
         }
     }
 
@@ -335,7 +333,7 @@ public class GameService(IChatService _chatService) : IGameService
     {
         GameStarted = false;
         _phaseCounter = 1;
-        _chatService.ResetChat();
+        chatService.ResetChat();
         _cancellationTokenSource?.Cancel(); // Stop the day/night cycle
     }
 
@@ -350,7 +348,7 @@ public class GameService(IChatService _chatService) : IGameService
             // Send everyone chat message
             string chatMessageType = _isDayPhase ? "dayStart" : "nightStart";
             string phaseName = _isDayPhase ? "DAY" : "NIGHT";
-            await _chatService.SendChatMessage("", phaseName + " " + _phaseCounter, "everyone", chatMessageType);
+            await chatService.SendChatMessage("", phaseName + " " + _phaseCounter, "everyone", chatMessageType);
 
             await UpdateDayNightPhase();
             
@@ -362,7 +360,6 @@ public class GameService(IChatService _chatService) : IGameService
                 }
                 else
                 {
-                    _hasExecutedNightAction = false;
                     await Task.Delay(GameConfiguration.NightPhaseDuration, token);
                     _phaseCounter = _phaseCounter + 1;
                 }
@@ -382,14 +379,14 @@ public class GameService(IChatService _chatService) : IGameService
                 //Sending "DAY 1" / "NIGHT 1"/
                 chatMessageType = _isDayPhase ? "dayStart" : "nightStart";
                 phaseName = _isDayPhase ? "DAY" : "NIGHT";
-                await _chatService.SendChatMessage("", phaseName + " " + _phaseCounter, "everyone", chatMessageType);
+                await chatService.SendChatMessage("", phaseName + " " + _phaseCounter, "everyone", chatMessageType);
 
                 //Sending "Player 1 has died in the night."
-                foreach(ChatMessage announcement in dayStartAnnouncements)
+                foreach(ChatMessage announcement in _dayStartAnnouncements)
                 {
-                    await _chatService.SendChatMessage(announcement);
+                    await chatService.SendChatMessage(announcement);
                 }
-                dayStartAnnouncements.Clear();
+                _dayStartAnnouncements.Clear();
 
                 Console.WriteLine("Changing phase");
                 await UpdateDayNightPhase();
@@ -413,7 +410,7 @@ public class GameService(IChatService _chatService) : IGameService
         if (winnerTeam != null)
         {
             Console.WriteLine(winnerTeam + " team has won the game!");
-            await _chatService.SendChatMessage("", winnerTeam + " team has won the game!", "everyone", "server");
+            await chatService.SendChatMessage("", winnerTeam + " team has won the game!", "everyone", "server");
             await NotifyAllPlayers(new CommandMessage
             {
                 Base = ResponseCommands.EndGame,
@@ -492,20 +489,10 @@ public class GameService(IChatService _chatService) : IGameService
         // 1. Assign a random Killer role to one player
         int killerIndex = unassignedIndexes[random.Next(unassignedIndexes.Count)];
         var killerRole = killerRoles[random.Next(killerRoles.Count)];
-
-        // Builder
-        IPlayerBuilder killerBuilder = roleFactory.GetKillerBuilder(_currentPlayers[killerIndex].WebSocket);
-        var killerPlayer = killerBuilder.SetName(_currentPlayers[killerIndex].Name)
-                                        .SetRole(killerRole)
-                                        .SetAlive(true)
-                                        .SetLoggedIn(_currentPlayers[killerIndex].IsLoggedIn)
-                                        .SetHost(_currentPlayers[killerIndex].IsHost)
-                                        .Build();
-
-        _currentPlayers[killerIndex] = killerPlayer;
+        
+        _currentPlayers[killerIndex].Role = killerRole;
 
         // Remove the assigned killer role and the player index from the tracking list
-        killerRoles.Remove(killerPlayer.Role);
         unassignedIndexes.Remove(killerIndex);
 
         Console.WriteLine("Built Killer");
@@ -525,15 +512,7 @@ public class GameService(IChatService _chatService) : IGameService
                                     : new Lackey();
 
             // Builder
-            IPlayerBuilder accompliceBuilder = roleFactory.GetAccompliceBuilder(_currentPlayers[accompliceIndex].WebSocket);
-            var accomplicePlayer = accompliceBuilder.SetName(_currentPlayers[accompliceIndex].Name)
-                                                    .SetRole(accompliceRole)
-                                                    .SetAlive(true)
-                                                    .SetLoggedIn(_currentPlayers[accompliceIndex].IsLoggedIn)
-                                                    .SetHost(_currentPlayers[accompliceIndex].IsHost)
-                                                    .Build();
-
-            _currentPlayers[accompliceIndex] = accomplicePlayer;
+            _currentPlayers[accompliceIndex].Role = accompliceRole;
             accompliceRoles.Remove(accompliceRole);
             unassignedIndexes.Remove(accompliceIndex);
         }
@@ -549,16 +528,7 @@ public class GameService(IChatService _chatService) : IGameService
         for (int i = 0; i < bystanderCount && unassignedIndexes.Count > 0; i++)
         {
             int bystanderIndex = unassignedIndexes[random.Next(unassignedIndexes.Count)];
-            // Builder
-            IPlayerBuilder citizenBuilder = roleFactory.GetCitizenBuilder(_currentPlayers[bystanderIndex].WebSocket);
-            var bystanderPlayer = citizenBuilder.SetName(_currentPlayers[bystanderIndex].Name)
-                                                .SetRole(new Bystander())
-                                                .SetAlive(true)
-                                                .SetLoggedIn(_currentPlayers[bystanderIndex].IsLoggedIn)
-                                                .SetHost(_currentPlayers[bystanderIndex].IsHost)
-                                                .Build();
-
-            _currentPlayers[bystanderIndex] = bystanderPlayer;
+            _currentPlayers[bystanderIndex].Role = new Bystander();
             unassignedIndexes.Remove(bystanderIndex);
         }
 
@@ -580,16 +550,7 @@ public class GameService(IChatService _chatService) : IGameService
             Role citizenRole = citizenRoles.Count > 0
                                 ? citizenRoles[random.Next(citizenRoles.Count)]
                                 : originalCitizenRoles[random.Next(originalCitizenRoles.Count)];
-            // Builder
-            IPlayerBuilder citizenBuilder = roleFactory.GetCitizenBuilder(_currentPlayers[playerIndex].WebSocket);
-            var citizenPlayer = citizenBuilder.SetName(_currentPlayers[playerIndex].Name)
-                                              .SetRole(citizenRole)
-                                              .SetAlive(true)
-                                              .SetLoggedIn(_currentPlayers[playerIndex].IsLoggedIn)
-                                              .SetHost(_currentPlayers[playerIndex].IsHost)
-                                              .Build();
-
-            _currentPlayers[playerIndex] = citizenPlayer;
+            _currentPlayers[playerIndex].Role = citizenRole;
             citizenRoles.Remove(citizenRole);
         }
 

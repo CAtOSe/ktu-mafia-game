@@ -7,7 +7,6 @@ namespace Mafia.Server.Models;
 
 public class Player(WebSocket webSocket)
 {
-    public DateTime CreationTime { get; init; } = DateTime.UtcNow;
     public string Name { get; set; } = "Guest";
     public Role Role { get; set; } = null;
     public string RoleName => Role.Name;
@@ -18,11 +17,10 @@ public class Player(WebSocket webSocket)
 
     public bool IsPoisoned { get; set; } = false;
     public List<Item> Inventory { get; set; } = new();
-    public WebSocket WebSocket = webSocket;
 
     public Player CurrentVote;
 
-    public async Task SendMessage(IMessage commandMessage)
+    public async Task SendMessage(CommandMessage commandMessage)
     {
         if (webSocket.State != WebSocketState.Open) return;
         await webSocket.SendMessage(commandMessage.ToString());

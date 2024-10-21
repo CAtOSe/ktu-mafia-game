@@ -11,18 +11,18 @@ namespace Mafia.Server.Models.AbstractFactory.Roles
         public int AbilityUsesLeft { get; set; }
         public string Goal { get; set; }
 
-        public IRoleActionAlgorithm RoleAlgorithm { get; set; }
-        public IRoleActionAlgorithm RoleAlgorithmPoisoned { get; set; }
+        public IRoleAction RoleAlgorithm { get; set; }
+        public IRoleAction RoleAlgorithmPoisoned { get; set; }
 
-        public virtual Task NightAction(Player user, Player target, List<NightAction> nightActions, List<ChatMessage> nightMessages)
+        public virtual Task ExecuteAction(Player user, Player target, RoleActionContext context, List<ChatMessage> nightMessages)
         {
             if (user.IsPoisoned)
             {
-                RoleAlgorithmPoisoned.NightAction(user, target, nightActions, nightMessages);
+                RoleAlgorithmPoisoned.Execute(user, target, context, nightMessages);
             }
             else
             {
-                RoleAlgorithm.NightAction(user, target, nightActions, nightMessages);
+                RoleAlgorithm.Execute(user, target, context, nightMessages);
             }
 
             return Task.CompletedTask;

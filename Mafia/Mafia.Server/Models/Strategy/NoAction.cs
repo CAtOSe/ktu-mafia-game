@@ -1,8 +1,10 @@
 ﻿namespace Mafia.Server.Models.Strategy
 {
-    public class NoAction : IRoleActionAlgorithm
+    public class NoAction : IRoleAction
     {
-        public Task NightAction(Player user, Player target, List<NightAction> nightActions, List<ChatMessage> nightMessages)
+        public string Name => nameof(NoAction);
+
+        public Task Execute(Player user, Player target, RoleActionContext context, List<ChatMessage> messages)
         {
             // Does nothing
             return Task.CompletedTask;

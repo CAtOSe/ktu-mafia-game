@@ -1,12 +1,14 @@
 ﻿namespace Mafia.Server.Models.Strategy
 {
-    public class PoisonerAction : IRoleActionAlgorithm
+    public class PoisonerAction : IRoleAction
     {
-        public Task NightAction(Player user, Player target, List<NightAction> nightActions, List<ChatMessage> nightMessages)
+        public string Name => nameof(PoisonerAction);
+
+        public Task Execute(Player user, Player target, RoleActionContext context, List<ChatMessage> messages)
         {
             string messageToUser = "You poisoned " + target.Name + " tonight.";
             ChatMessage chatMessageToUser = new ChatMessage("", messageToUser, user.Name, "nightNotification");
-            nightMessages.Add(chatMessageToUser);
+            messages.Add(chatMessageToUser);
 
             target.IsPoisoned = true;
 

@@ -5,13 +5,13 @@ namespace Mafia.Server.Models;
 public class ChatMessage
 {
     [JsonPropertyName("sender")]
-    public string? Sender { get; set; } // Optional, since server messages may not have a sender
+    public string Sender { get; set; }
 
     [JsonPropertyName("content")]
     public string Content { get; set; } // Required
 
     [JsonPropertyName("recipient")]
-    public string? Recipient { get; set; } // Optional, if sending to everyone, is left empty
+    public string Recipient { get; set; } // Optional, if sending to everyone, is left empty
 
     [JsonPropertyName("timeSent")]
     public int TimeSent { get; set; } // Time in seconds since the game started

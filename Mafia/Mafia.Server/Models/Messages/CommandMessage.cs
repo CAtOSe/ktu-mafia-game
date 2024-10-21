@@ -2,7 +2,7 @@ using System.Text;
 
 namespace Mafia.Server.Models.Messages;
 
-public record CommandMessage : IMessage
+public record CommandMessage
 {
     public string Base { get; init; }
     public string Error { get; init; }
