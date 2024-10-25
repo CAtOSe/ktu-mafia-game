@@ -11,4 +11,8 @@ public interface IGameService
     public List<Player> GetPlayers();
     public Task AddNightActionToList(Player actionUser, string actionTarget, string actionType);
     public Task VoteFor(Player player, string username);
+    void PauseTimer();
+    void ResumeTimer();
+    bool IsPaused { get; }
+    bool IsGameStarted { get; }
 }
