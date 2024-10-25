@@ -7,16 +7,22 @@ using Mafia.Server.Models.Messages;
 using Mafia.Server.Services.ChatService;
 using System.Text;
 using Mafia.Server.Models.Strategy;
+using Mafia.Server.Command;
+using Mafia.Server.Services.MessageResolver;
 
+using System.Threading;
+using System.Threading.Tasks;
 namespace Mafia.Server.Services.GameService;
 
-public class GameService(IChatService chatService) : IGameService
+//public class GameService(IChatService chatService) : IGameService
+public class GameService : IGameService
 {
 
     private readonly List<Player> _currentPlayers = [];
-    
-    private CancellationTokenSource _cancellationTokenSource; //  Token for canceling the phase cycle
-    private bool GameStarted { get; set; } = false;
+    private readonly IChatService chatService;
+    public CancellationTokenSource _cancellationTokenSource; //  Token for canceling the phase cycle
+    private IMessageResolver _messageResolver;
+    public bool GameStarted { get; set; } = false;
 
     private volatile int _phaseCounter = 1;
     private volatile bool _isDayPhase = true;
@@ -25,6 +31,43 @@ public class GameService(IChatService chatService) : IGameService
     private List<ChatMessage> _dayStartAnnouncements = [];
 
     public List<Player> GetPlayers() => _currentPlayers;
+    
+    private PauseResumeCommand _pauseResumeCommand;
+    private int _timeRemaining;
+    private Timer _gameTimer;
+    private bool _isPaused;
+    private double _remainingTime;
+    
+    public bool IsPaused => _isPaused;
+    public bool IsGameStarted => GameStarted;
+    
+    public GameService(IChatService chatService)
+    {
+        _isPaused = false;
+        _remainingTime = 0;
+        this.chatService = chatService;
+    }
+
+    // Add methods to pause and resume the game
+    public void PauseTimer()
+    {
+        _isPaused = true;
+        if (_messageResolver != null) 
+        {
+            _messageResolver.SendGameUpdate("paused", _timeRemaining);
+        }
+    }
+
+    public void ResumeTimer()
+    {
+        _isPaused = false;
+        if (_messageResolver != null)
+        {
+            _messageResolver.SendGameUpdate("resumed", _timeRemaining);
+        }
+    }
+
+
 
     public async Task DisconnectPlayer(Player player)
     {
@@ -338,61 +381,57 @@ public class GameService(IChatService chatService) : IGameService
     }
 
     // Timer logic for day/night cycle 
-    private void StartDayNightCycle()
+    private async void StartDayNightCycle()
     {
-        _cancellationTokenSource = new CancellationTokenSource(); 
-        var token = _cancellationTokenSource.Token; 
+        _cancellationTokenSource = new CancellationTokenSource();
+        var token = _cancellationTokenSource.Token;
 
-        Task.Run(async () =>
+        while (GameStarted && !token.IsCancellationRequested)
         {
-            // Send everyone chat message
             string chatMessageType = _isDayPhase ? "dayStart" : "nightStart";
             string phaseName = _isDayPhase ? "DAY" : "NIGHT";
             await chatService.SendChatMessage("", phaseName + " " + _phaseCounter, "everyone", chatMessageType);
 
             await UpdateDayNightPhase();
-            
-            while (GameStarted && !token.IsCancellationRequested) 
+
+            _timeRemaining = _isDayPhase ? GameConfiguration.DayPhaseDuration : GameConfiguration.NightPhaseDuration;
+
+            try
             {
-                if (_isDayPhase)
+                while (_timeRemaining > 0)
                 {
-                    await Task.Delay(GameConfiguration.DayPhaseDuration, token);
-                }
-                else
-                {
-                    await Task.Delay(GameConfiguration.NightPhaseDuration, token);
-                    _phaseCounter = _phaseCounter + 1;
-                }
+                    if (_isPaused)
+                    {
+                        Console.WriteLine("Game is paused. Time remaining: " + _timeRemaining);
+                        await Task.Delay(500); // Pristabdyta: laukia pusę sekundės
+                        continue;
+                    }
 
-                _isDayPhase = !_isDayPhase; // Toggle between day and night 
-
-
-                if (_isDayPhase) //If it is the end of the night (start of day)
-                {
-                    Console.WriteLine("Executing night actions");
-                    await ExecuteNightActions();
+                    Console.WriteLine("Game is running. Time remaining: " + _timeRemaining);
+                    await Task.Delay(1000, token); // Kai aktyvi fazė, laukia 1s
+                    _timeRemaining -= 1000;
                 }
-                else
-                {
-                    await ExecuteDayActions();
-                }
-                //Sending "DAY 1" / "NIGHT 1"/
-                chatMessageType = _isDayPhase ? "dayStart" : "nightStart";
-                phaseName = _isDayPhase ? "DAY" : "NIGHT";
-                await chatService.SendChatMessage("", phaseName + " " + _phaseCounter, "everyone", chatMessageType);
-
-                //Sending "Player 1 has died in the night."
-                foreach(ChatMessage announcement in _dayStartAnnouncements)
-                {
-                    await chatService.SendChatMessage(announcement);
-                }
-                _dayStartAnnouncements.Clear();
-
-                Console.WriteLine("Changing phase");
-                await UpdateDayNightPhase();
             }
-        }, token); 
+            catch (TaskCanceledException)
+            {
+                Console.WriteLine("Cycle cancelled.");
+                return;
+            }
+
+            _isDayPhase = !_isDayPhase;
+
+            if (_isDayPhase)
+            {
+                _phaseCounter++;
+                await ExecuteNightActions();
+            }
+            else
+            {
+                await ExecuteDayActions();
+            }
+        }
     }
+
     
     private async Task UpdateDayNightPhase()
     {
@@ -584,6 +623,8 @@ public class GameService(IChatService chatService) : IGameService
 
         return 0;
     }
+    
+    
 
    /* private async Task AssignItems()
     {

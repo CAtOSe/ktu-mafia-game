@@ -14,4 +14,6 @@ public static class ResponseCommands
     public const string AssignItem = "assign-item";
     public const string ReceiveChatList = "receive-chat-list";
     public const string EndGame = "end-game";
+    public const string GameUpdate = "game-update";
+    
 }

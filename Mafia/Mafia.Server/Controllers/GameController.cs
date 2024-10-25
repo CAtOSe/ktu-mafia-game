@@ -1,41 +1,74 @@
 ﻿using System.Net.WebSockets;
+using Mafia.Server.Command;
+using Mafia.Server.Services.GameService;
 using Mafia.Server.Services.SessionHandler;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Mafia.Server.Controllers;
-
-public class GameController(ISessionHandler sessionHandler, IHostApplicationLifetime hostLifetime) : Controller
+namespace Mafia.Server.Controllers
 {
-    [Route("/ws")]
-    public async Task Get()
+    [ApiController]
+    [Route("api/gamecontrol")]
+    public class GameController : ControllerBase
     {
-        if (HttpContext.WebSockets.IsWebSocketRequest)
-        {
-            using var webSocket = await HttpContext.WebSockets.AcceptWebSocketAsync();
+        private readonly IGameService _gameService; 
+        private readonly ISessionHandler _sessionHandler;
+        private readonly IHostApplicationLifetime _hostLifetime;
 
-            try
+        public GameController(ISessionHandler sessionHandler, IHostApplicationLifetime hostLifetime, IGameService gameService)
+        {
+            _sessionHandler = sessionHandler;
+            _hostLifetime = hostLifetime;
+            _gameService = gameService;
+        }
+
+        [Route("/ws")]
+        public async Task Get()
+        {
+            if (HttpContext.WebSockets.IsWebSocketRequest)
             {
-                await sessionHandler.HandleConnection(webSocket, hostLifetime.ApplicationStopping);
-            }
-            catch (OperationCanceledException)
-            {
-                Console.WriteLine($"Terminating connection.");
-            }
-            catch (WebSocketException e)
-            {
-                if (e.WebSocketErrorCode == WebSocketError.ConnectionClosedPrematurely)
-                { 
-                    Console.WriteLine($"Unexpected connection close ({e.WebSocketErrorCode})");
-                }
-                else
+                using var webSocket = await HttpContext.WebSockets.AcceptWebSocketAsync();
+                try
                 {
-                    throw;
+                    await _sessionHandler.HandleConnection(webSocket, _hostLifetime.ApplicationStopping);
                 }
+                catch (OperationCanceledException)
+                {
+                    Console.WriteLine("Terminating connection.");
+                }
+                catch (WebSocketException e)
+                {
+                    if (e.WebSocketErrorCode == WebSocketError.ConnectionClosedPrematurely)
+                    {
+                        Console.WriteLine($"Unexpected connection close ({e.WebSocketErrorCode})");
+                    }
+                    else
+                    {
+                        throw;
+                    }
+                }
+            }
+            else
+            {
+                HttpContext.Response.StatusCode = StatusCodes.Status400BadRequest;
             }
         }
-        else
+
+        // Pause/Play button logic with PauseResumeCommand
+        [HttpPost("toggle")]
+        public IActionResult TogglePauseResume()
         {
-            HttpContext.Response.StatusCode = StatusCodes.Status400BadRequest;
+            try
+            {
+                var command = new PauseResumeCommand(_gameService, !_gameService.IsPaused);
+                var result = command.Execute(); 
+
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error in TogglePauseResume: {ex.Message}");
+                return StatusCode(500, "Internal Server Error");
+            }
         }
     }
 }
