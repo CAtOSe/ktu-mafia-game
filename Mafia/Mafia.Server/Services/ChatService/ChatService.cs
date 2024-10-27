@@ -60,4 +60,19 @@ public class ChatService : IChatService
             Arguments = new List<string> { customChatMessagesJson }
         });
     } 
+    
+    // New Method: Returns all messages (for testing purposes)
+    public List<ChatMessage> GetMessages()
+    {
+        return messages;
+    }
+
+    // New Method: Filters messages for a specific player based on their status and recipient
+    public List<ChatMessage> FilterMessagesForPlayer(Player player)
+    {
+        return messages
+            .Where(msg => (!player.IsAlive || msg.ChatCategory != "deadPlayer") &&
+                          (msg.Recipient == player.Name || msg.Recipient == "everyone"))
+            .ToList();
+    }
 }
