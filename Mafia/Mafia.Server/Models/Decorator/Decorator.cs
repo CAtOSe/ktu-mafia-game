@@ -9,9 +9,14 @@
             wrappee = layer;
         }
 
-        public override void Announce(List<Player> currentPlayers, List<Player> playersWhoDied)
+        public override void DayStartAnnouncements(List<Player> currentPlayers, List<Player> playersWhoDied, List<ChatMessage> dayAnnouncements)
         {
-            wrappee.Announce(currentPlayers, playersWhoDied);
+            wrappee.DayStartAnnouncements(currentPlayers, playersWhoDied, dayAnnouncements);
+        }
+
+        public override void VotingEnd(Player votedOff, List<ChatMessage> votingResults)
+        {
+            wrappee.VotingEnd(votedOff, votingResults);
         }
     }
 }

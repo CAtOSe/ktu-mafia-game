@@ -2,9 +2,13 @@
 {
     public class MorningAnnouncer
     {
-        public virtual void Announce(List<Player> currentPlayers, List<Player> playersWhoDied)
+        public virtual void DayStartAnnouncements(List<Player> currentPlayers, List<Player> playersWhoDied, List<ChatMessage> dayAnnouncements)
         {
-            Console.WriteLine("Good morning, everyone!");
+            Console.WriteLine("DayStartAnnouncements");
+        }
+        public virtual void VotingEnd(Player votedOffPlayer, List<ChatMessage> votingResults)
+        {
+            Console.WriteLine("VotingEndAnnouncements");
         }
     }
 }

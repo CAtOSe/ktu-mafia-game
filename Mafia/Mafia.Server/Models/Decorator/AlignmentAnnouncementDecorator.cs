@@ -2,16 +2,17 @@
 
 namespace Mafia.Server.Models.Decorator
 {
-    public class RoleAnnouncementDecorator : Decorator
+    public class AlignmentAnnouncementDecorator : Decorator
     {
-        public RoleAnnouncementDecorator(MorningAnnouncer wrappee) : base(wrappee) { }
+
+        public AlignmentAnnouncementDecorator(MorningAnnouncer wrappee) : base(wrappee) { }
 
         public override void DayStartAnnouncements(List<Player> currentPlayers, List<Player> playersWhoDied, List<ChatMessage> dayAnnouncements)
         {
             base.DayStartAnnouncements(currentPlayers, playersWhoDied, dayAnnouncements);
             foreach (var player in playersWhoDied)
             {
-                var dayAnnouncement = new ChatMessage("", player.Name + "'s role was " + player.RoleName + ".", "everyone", "dayNotification");
+                var dayAnnouncement = new ChatMessage("", player.Name + " was " + player.Role.Alignment + ".", "everyone", "dayNotification");
                 dayAnnouncements.Add(dayAnnouncement);
             }
             Console.WriteLine("RoleAnnouncementDecorator triggered.");
@@ -20,7 +21,7 @@ namespace Mafia.Server.Models.Decorator
         public override void VotingEnd(Player votedOff, List<ChatMessage> votingResults)
         {
             base.VotingEnd(votedOff, votingResults);
-            var votingResultMessage = new ChatMessage("", votedOff.Name + "'s role was " + votedOff.RoleName + ".", "everyone", "dayNotification");
+            var votingResultMessage = new ChatMessage("", votedOff.Name + " was " + votedOff.Role.Alignment + ".", "everyone", "dayNotification");
             votingResults.Add(votingResultMessage);
         }
     }

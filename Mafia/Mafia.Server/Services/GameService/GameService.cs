@@ -345,8 +345,13 @@ public class GameService : IGameService
             var votedOff = votes[0].Key;
             votedOff.IsAlive = false;
             await SendAlivePlayerList();
-            var votingResultMessage = new ChatMessage("", votedOff.Name + " has been voted off by the town.", "everyone", "dayNotification");
-            await chatService.SendChatMessage(votingResultMessage);
+            List<ChatMessage> votingResultsMessages = new List<ChatMessage>();
+            _morningAnnouncer.VotingEnd(votedOff, votingResultsMessages);
+            //var votingResultMessage = new ChatMessage("", votedOff.Name + " has been voted off by the town.", "everyone", "dayNotification");
+            foreach(var votingResultMessage in votingResultsMessages)
+            {
+                await chatService.SendChatMessage(votingResultMessage);
+            }
             var votingResultPersonalMessage = new ChatMessage("", "You died.", votedOff.Name, "dayNotification");
             await chatService.SendChatMessage(votingResultPersonalMessage);
         }
@@ -396,14 +401,17 @@ public class GameService : IGameService
             string phaseName = _isDayPhase ? "DAY" : "NIGHT";
             await chatService.SendChatMessage("", phaseName + " " + _phaseCounter, "everyone", chatMessageType); // DAY 1 / NIGHT 1
 
-            _morningAnnouncer.Announce(_currentPlayers, _playersWhoDiedInTheNight); // DECORATOR
-            //Sending "Player 1 has died in the night."
-            foreach (ChatMessage announcement in _dayStartAnnouncements)
+            if (_isDayPhase)
             {
-                await chatService.SendChatMessage(announcement);
+                _morningAnnouncer.DayStartAnnouncements(_currentPlayers, _playersWhoDiedInTheNight, _dayStartAnnouncements); // DECORATOR
+                //Sending "Player 1 has died in the night."
+                foreach (ChatMessage announcement in _dayStartAnnouncements)
+                {
+                    await chatService.SendChatMessage(announcement);
+                }
+                _dayStartAnnouncements.Clear();
+                _playersWhoDiedInTheNight.Clear();
             }
-            _dayStartAnnouncements.Clear();
-            _playersWhoDiedInTheNight.Clear();
 
             await UpdateDayNightPhase();
 
