@@ -22,6 +22,7 @@ builder.Services.AddSingleton<IGameService, GameService>();
 builder.Services.AddSingleton<ISessionHandler, SessionHandler>();
 builder.Services.AddSingleton<IMessageResolver, MessageResolver>();
 builder.Services.AddSingleton<IChatService, ChatService>();
+builder.Services.AddSingleton(TimeProvider.System);
 
 var app = builder.Build();
 

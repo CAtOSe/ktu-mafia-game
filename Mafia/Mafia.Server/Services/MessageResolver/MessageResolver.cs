@@ -52,15 +52,4 @@ public class MessageResolver(IGameService gameService, IChatService chatService)
             }
         }
     }
-    public async Task SendGameUpdate(string status, int remainingTime)
-    {
-        var updateMessage = new CommandMessage
-        {
-            Base = ResponseCommands.GameUpdate, // Pridėkite `GameUpdate` kaip naują atsakymo tipą
-            Arguments = new List<string> { status, remainingTime.ToString() }
-        };
-
-        // Siųskite visiems prijungtiems žaidėjams per `chatService` arba tiesiogiai
-        await chatService.SendChatMessage("", updateMessage.ToString(), "everyone", "gameUpdate");
-    }
 }

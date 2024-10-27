@@ -13,6 +13,6 @@ public interface IGameService
     public Task VoteFor(Player player, string username);
     void PauseTimer();
     void ResumeTimer();
-    bool IsPaused { get; }
-    bool IsGameStarted { get; }
+    public bool IsPaused { get; }
+    public bool GameStarted { get; }
 }

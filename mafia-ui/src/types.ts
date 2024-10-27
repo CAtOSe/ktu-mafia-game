@@ -23,4 +23,5 @@ export enum ResponseMessages {
   AssignedItem = 'assign-item',
   ReceiveChatList = 'receive-chat-list',
   EndGame = 'end-game',
+  GameUpdate = 'game-update',
 }

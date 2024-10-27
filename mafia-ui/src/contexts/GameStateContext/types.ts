@@ -60,6 +60,7 @@ export interface GameState {
   chatMessagesJSON: string;
   chatMessages: ChatMessage[];
   winnerTeam?: string;
+  isPaused: boolean;
 }
 
 export interface GameStateContextProviderProps {
