@@ -1,4 +1,4 @@
-import React, { useContext } from 'react';
+import React, { useContext, useState } from 'react';
 import styles from './AlivePlayerList.module.scss';
 import classNames from 'classnames/bind';
 import { GameStateContext } from '../../../contexts/GameStateContext/GameStateContext';
@@ -17,6 +17,8 @@ const AlivePlayersList: React.FC = () => {
   const websocket = useContext(WebsocketContext);
   const { isDay } = useDayNight();
 
+  const [actionCounts, setActionCounts] = useState<{ [key: string]: number }>({});
+
   const handleActionClick = (targetUsername: string, actionType: string) => {
     if (websocket) {
       const message = createMessage(
@@ -26,6 +28,12 @@ const AlivePlayersList: React.FC = () => {
         [targetUsername, actionType],
       ); // Create the message
       websocket.sendMessage(message); // Send the message via WebSocket
+
+      // Update the action count 
+      setActionCounts((prevCounts: { [x: string]: any; }) => ({
+        ...prevCounts,
+        [username]: (prevCounts[username] || 0) + 1,
+      }));
     }
   };
 
@@ -36,12 +44,12 @@ const AlivePlayersList: React.FC = () => {
         <ul>
           {alivePlayers.map((player) => (
             <li key={player} className={cn('player-row')}>
-              <span
-                className={cn('player-info', {
-                  'self-username': player === username,
-                })}
-              >
-                {player}
+              <span className="player-info">
+                {player === username ? (
+                  <>[Actions: {actionCounts[player] || '0'}] {player}</>
+                ) : (
+                  <>{player}</>
+                )}
               </span>
 
               {!isDay && isAlive && role === 'Assassin' && player !== username && (
