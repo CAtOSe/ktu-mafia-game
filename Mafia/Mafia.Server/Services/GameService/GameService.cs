@@ -12,6 +12,7 @@ using Mafia.Server.Services.MessageResolver;
 
 using System.Threading;
 using System.Threading.Tasks;
+using Mafia.Server.Models.Decorator;
 namespace Mafia.Server.Services.GameService;
 
 //public class GameService(IChatService chatService) : IGameService
@@ -29,6 +30,8 @@ public class GameService : IGameService
 
     private List<ActionQueueEntry> _actionQueue = [];
     private List<ChatMessage> _dayStartAnnouncements = [];
+    private List<Player> _playersWhoDiedInTheNight = [];
+    private MorningAnnouncer _morningAnnouncer;
 
     public List<Player> GetPlayers() => _currentPlayers;
     
@@ -287,16 +290,17 @@ public class GameService : IGameService
             {
                 deathInNightCount++;
                 var deathMessage = new ChatMessage("", "You died.", player.Name, "nightNotification");
-                var dayAnnouncement = new ChatMessage("", player.Name + " has died in the night.", "everyone", "dayNotification");
-                _dayStartAnnouncements.Add(dayAnnouncement);
+                _playersWhoDiedInTheNight.Add(player);
+                //var dayAnnouncement = new ChatMessage("", player.Name + " has died in the night.", "everyone", "dayNotification");
+                //_dayStartAnnouncements.Add(dayAnnouncement);
                 await chatService.SendChatMessage(deathMessage);
             }
         }
-        if(deathInNightCount == 0)
+        /*if(deathInNightCount == 0)
         {
             var dayAnnouncement = new ChatMessage("","No one has died in the night.", "everyone", "dayNotification");
             _dayStartAnnouncements.Add(dayAnnouncement);
-        }
+        }*/
 
         await SendAlivePlayerList();
 
@@ -341,8 +345,13 @@ public class GameService : IGameService
             var votedOff = votes[0].Key;
             votedOff.IsAlive = false;
             await SendAlivePlayerList();
-            var votingResultMessage = new ChatMessage("", votedOff.Name + " has been voted off by the town.", "everyone", "dayNotification");
-            await chatService.SendChatMessage(votingResultMessage);
+            List<ChatMessage> votingResultsMessages = new List<ChatMessage>();
+            _morningAnnouncer.VotingEnd(votedOff, votingResultsMessages);
+            //var votingResultMessage = new ChatMessage("", votedOff.Name + " has been voted off by the town.", "everyone", "dayNotification");
+            foreach(var votingResultMessage in votingResultsMessages)
+            {
+                await chatService.SendChatMessage(votingResultMessage);
+            }
             var votingResultPersonalMessage = new ChatMessage("", "You died.", votedOff.Name, "dayNotification");
             await chatService.SendChatMessage(votingResultPersonalMessage);
         }
@@ -390,7 +399,19 @@ public class GameService : IGameService
         {
             string chatMessageType = _isDayPhase ? "dayStart" : "nightStart";
             string phaseName = _isDayPhase ? "DAY" : "NIGHT";
-            await chatService.SendChatMessage("", phaseName + " " + _phaseCounter, "everyone", chatMessageType);
+            await chatService.SendChatMessage("", phaseName + " " + _phaseCounter, "everyone", chatMessageType); // DAY 1 / NIGHT 1
+
+            if (_isDayPhase)
+            {
+                _morningAnnouncer.DayStartAnnouncements(_currentPlayers, _playersWhoDiedInTheNight, _dayStartAnnouncements); // DECORATOR
+                //Sending "Player 1 has died in the night."
+                foreach (ChatMessage announcement in _dayStartAnnouncements)
+                {
+                    await chatService.SendChatMessage(announcement);
+                }
+                _dayStartAnnouncements.Clear();
+                _playersWhoDiedInTheNight.Clear();
+            }
 
             await UpdateDayNightPhase();
 
@@ -512,9 +533,14 @@ public class GameService : IGameService
         RoleFactorySelector roleFactorySelector = new RoleFactorySelector();
         RoleFactory roleFactory = roleFactorySelector.FactoryMethod(preset);
 
+        // ABSTRACT FACTORY
         List<Role> killerRoles = roleFactory.GetKillerRoles();
         List<Role> accompliceRoles = roleFactory.GetAccompliceRoles();
         List<Role> citizenRoles = roleFactory.GetCitizenRoles();
+        // DECORATOR
+        _morningAnnouncer = roleFactory.GetAnnouncer();
+
+
         // Store the original citizen roles for duplication purposes
         List<Role> originalCitizenRoles = new List<Role>(citizenRoles);
 

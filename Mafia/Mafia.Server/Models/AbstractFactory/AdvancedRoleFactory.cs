@@ -2,6 +2,7 @@
 using Mafia.Server.Models.AbstractFactory.Roles.Accomplices;
 using Mafia.Server.Models.AbstractFactory.Roles.Killers;
 using Mafia.Server.Models.AbstractFactory.Roles.Citizens;
+using Mafia.Server.Models.Decorator;
 
 namespace Mafia.Server.Models.AbstractFactory
 {
@@ -18,6 +19,16 @@ namespace Mafia.Server.Models.AbstractFactory
         public override List<Role> GetCitizenRoles()
         {
             return new List<Role> { new Doctor(3), new Tracker(2), new Soldier(2), new Lookout(2) };
+        }
+        public override MorningAnnouncer GetAnnouncer()
+        {
+            MorningAnnouncer announcer = new MorningAnnouncer();
+            // DECORATOR
+            announcer = new DesignPatternIndicatorDecorator(announcer);
+            announcer = new DeathAnnouncementDecorator(announcer);
+            announcer = new AlignmentAnnouncementDecorator(announcer);
+
+            return announcer;
         }
     }
 }
