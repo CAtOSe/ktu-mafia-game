@@ -310,6 +310,15 @@ public class GameService : IGameService
 
     private async Task ExecuteDayActions()
     {
+        _morningAnnouncer.DayStartAnnouncements(_currentPlayers, _playersWhoDiedInTheNight, _dayStartAnnouncements); // DECORATOR
+        //Sending "Player 1 has died in the night."
+        foreach (ChatMessage announcement in _dayStartAnnouncements)
+        {
+            await _chatService.SendChatMessage(announcement);
+        }
+        _dayStartAnnouncements.Clear();
+        _playersWhoDiedInTheNight.Clear();
+        
         var playerVotes = _currentPlayers.ToDictionary(x => x, _ => 0);
         
         foreach (var player in _currentPlayers.Where(player => player.CurrentVote is not null))
@@ -403,20 +412,8 @@ public class GameService : IGameService
                 _lastPhaseChange = _timeProvider.GetUtcNow();
                 string chatMessageType = _isDayPhase ? "dayStart" : "nightStart";
                 string phaseName = _isDayPhase ? "DAY" : "NIGHT";
-                await _chatService.SendChatMessage("", phaseName + " " + _phaseCounter, "everyone", chatMessageType);// DAY 1 / NIGHT 1
-
-            if (_isDayPhase)
-            {
-                _morningAnnouncer.DayStartAnnouncements(_currentPlayers, _playersWhoDiedInTheNight, _dayStartAnnouncements); // DECORATOR
-                //Sending "Player 1 has died in the night."
-                foreach (ChatMessage announcement in _dayStartAnnouncements)
-                {
-                    await chatService.SendChatMessage(announcement);
-                }
-                _dayStartAnnouncements.Clear();
-                _playersWhoDiedInTheNight.Clear();
-            }
-                await UpdateDayNightPhase();
+                await _chatService.SendChatMessage("", phaseName + " " + _phaseCounter, "everyone",
+                    chatMessageType); // DAY 1 / NIGHT 1
             }
             else
             {
