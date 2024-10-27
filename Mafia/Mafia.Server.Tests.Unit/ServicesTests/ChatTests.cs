@@ -61,33 +61,6 @@ public class ChatTests
     }
     
     [Fact]
-    public void ChatService_ShouldFilterMessagesCorrectlyForPlayer()
-    {
-        // Arrange
-        var aliveMessage = new ChatMessage("Sender", "Message for alive players", "everyone", "player", 0);
-        var deadMessage = new ChatMessage("Sender", "Message for dead players", "everyone", "deadPlayer", 1);
-        var specificRecipientMessage = new ChatMessage("Sender", "Message for AlivePlayer only", "AlivePlayer", "server", 2);
-
-        _sut.SendChatMessage(aliveMessage).Wait();
-        _sut.SendChatMessage(deadMessage).Wait();
-        _sut.SendChatMessage(specificRecipientMessage).Wait();
-
-        // Act
-        var alivePlayerMessages = _sut.FilterMessagesForPlayer(_alivePlayer);
-        var deadPlayerMessages = _sut.FilterMessagesForPlayer(_deadPlayer);
-
-        // Assert
-        // Alive player should not see deadPlayer message
-        Assert.DoesNotContain(alivePlayerMessages, m => m.ChatCategory == "deadPlayer");
-        Assert.Contains(alivePlayerMessages, m => m.Content == "Message for alive players");
-        Assert.Contains(alivePlayerMessages, m => m.Content == "Message for AlivePlayer only");
-
-        // Dead player should see both deadPlayer and everyone messages
-        Assert.Contains(deadPlayerMessages, m => m.ChatCategory == "deadPlayer");
-        Assert.Contains(deadPlayerMessages, m => m.Content == "Message for alive players");
-    }
-    
-    [Fact]
     public async Task ChatService_ShouldSerializeMessagesCorrectly()
     {
         // Arrange
@@ -110,5 +83,58 @@ public class ChatTests
         // Check if JSON serialization has replaced `:` with `|`
         Assert.Contains("|", customSerializedMessages);
         Assert.DoesNotContain(":", customSerializedMessages);
+    }
+    
+    [Fact]
+    public void ChatService_AlivePlayerShouldOnlySeeAliveMessages()
+    {
+        // Arrange
+        var aliveMessage = new ChatMessage("Sender", "Message for alive players", "everyone", "player", 0);
+        var deadMessage = new ChatMessage("Sender", "Message for dead players", "everyone", "deadPlayer", 1);
+
+        _sut.SendChatMessage(aliveMessage).Wait();
+        _sut.SendChatMessage(deadMessage).Wait();
+
+        // Act
+        var alivePlayerMessages = _sut.FilterMessagesForPlayer(_alivePlayer);
+
+        // Assert
+        Assert.DoesNotContain(alivePlayerMessages, m => m.ChatCategory == "deadPlayer");
+        Assert.Contains(alivePlayerMessages, m => m.Content == "Message for alive players");
+    }
+    
+    [Fact]
+    public void ChatService_DeadPlayerShouldSeeBothAliveAndDeadMessages()
+    {
+        // Arrange
+        var aliveMessage = new ChatMessage("Sender", "Message for alive players", "everyone", "player", 0);
+        var deadMessage = new ChatMessage("Sender", "Message for dead players", "everyone", "deadPlayer", 1);
+
+        _sut.SendChatMessage(aliveMessage).Wait();
+        _sut.SendChatMessage(deadMessage).Wait();
+
+        // Act
+        var deadPlayerMessages = _sut.FilterMessagesForPlayer(_deadPlayer);
+
+        // Assert
+        Assert.Contains(deadPlayerMessages, m => m.ChatCategory == "deadPlayer");
+        Assert.Contains(deadPlayerMessages, m => m.Content == "Message for alive players");
+    }
+    
+    [Fact]
+    public void ChatService_ShouldShowSpecificRecipientMessageToIntendedPlayerOnly()
+    {
+        // Arrange
+        var specificRecipientMessage = new ChatMessage("Sender", "Message for AlivePlayer only", "AlivePlayer", "server", 2);
+
+        _sut.SendChatMessage(specificRecipientMessage).Wait();
+
+        // Act
+        var alivePlayerMessages = _sut.FilterMessagesForPlayer(_alivePlayer);
+        var deadPlayerMessages = _sut.FilterMessagesForPlayer(_deadPlayer);
+
+        // Assert
+        Assert.Contains(alivePlayerMessages, m => m.Content == "Message for AlivePlayer only");
+        Assert.DoesNotContain(deadPlayerMessages, m => m.Content == "Message for AlivePlayer only");
     }
 }
