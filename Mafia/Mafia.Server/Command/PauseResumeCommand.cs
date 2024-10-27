@@ -16,7 +16,7 @@ namespace Mafia.Server.Command
 
         public string Execute()
         {
-            if (!_gameService.IsGameStarted)
+            if (!_gameService.GameStarted)
             {
                 return "Game not started.";
             }

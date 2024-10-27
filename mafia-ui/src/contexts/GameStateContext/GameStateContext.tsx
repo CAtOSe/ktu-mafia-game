@@ -28,6 +28,7 @@ const defaultState: GameState = {
   inventory: [],
   chatMessagesJSON: '',
   chatMessages: [],
+  isPaused: false,
 };
 
 export const GameStateContext = createContext<GameStateContextValue>({
@@ -106,6 +107,13 @@ export const GameStateContextProvider = ({
             gameStage: GameStage.End,
             winnerTeam: message.arguments?.[0],
           });
+          return;
+
+        case ResponseMessages.GameUpdate: {
+          const isPaused = message.arguments?.[0] === 'paused';
+          updateGameState({ isPaused });
+          return;
+        }
       }
     },
     [updateGameState],
