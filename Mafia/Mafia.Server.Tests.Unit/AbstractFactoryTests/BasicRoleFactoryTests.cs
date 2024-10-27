@@ -4,46 +4,44 @@ using Mafia.Server.Models.AbstractFactory.Roles.Accomplices;
 using Mafia.Server.Models.AbstractFactory.Roles.Citizens;
 using Mafia.Server.Models.AbstractFactory.Roles.Killers;
 
-namespace Mafia.Server.Tests.Unit;
+namespace Mafia.Server.Tests.Unit.AbstractFactoryTests;
 
-public class AdvancedRoleFactoryTests
+public class BasicRoleFactoryTests
 {
-    private AdvancedRoleFactory _sut = new();
+    private BasicRoleFactory _sut = new();
 
     [Fact]
-    public void AdvancedRoleFactory_ShouldConstructKillerRoles()
+    public void BasicRoleFactory_ShouldConstructKillerRoles()
     {
         // Act
         var result = _sut.GetKillerRoles();
 
         // Assert
         result.Should().HaveCount(1);
-        result.Should().AllBeOfType<Hemlock>();
+        result.Should().AllBeOfType<Assassin>();
     }
     
     [Fact]
-    public void AdvancedRoleFactory_ShouldConstructAccompliceRolesRoles()
+    public void BasicRoleFactory_ShouldConstructAccompliceRolesRoles()
     {
         // Act
         var result = _sut.GetAccompliceRoles();
 
         // Assert
         result.Should().HaveCount(1);
-        result.Should().AllBeOfType<Spy>();
+        result.Should().AllBeOfType<Poisoner>();
     }
     
     [Fact]
-    public void AdvancedRoleFactory_ShouldConstructCitizenRoles()
+    public void BasicRoleFactory_ShouldConstructCitizenRoles()
     {
         // Act
         var result = _sut.GetCitizenRoles();
 
         // Assert
-        result.Should().HaveCount(4);
+        result.Should().HaveCount(3);
         result.Should().ContainSingle(x => x is Doctor);
         result.Should().ContainSingle(x => x is Tracker);
         result.Should().ContainSingle(x => x is Soldier);
-        result.Should().ContainSingle(x => x is Lookout);
-
     }
 }
