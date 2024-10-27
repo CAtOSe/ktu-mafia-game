@@ -4,3 +4,47 @@
   @include list-styles.gradient-border-element;
   @include list-styles.list-box;
 }
+
+.player-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 5px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1); 
+}
+
+.player-info {
+  font-size: 14px;
+  flex: 1;
+}
+
+.action-button {
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 5px 10px;
+  font-size: 12px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.vote-button {
+  background-color: #ff6ec4; /* Pink for voting */
+  
+  &:hover {
+    background-color: #ff3ca4; /* Darker pink on hover */
+  }
+}
+
+.night-action-button {
+  background-color: #7873f5; /* Purple for night actions */
+  
+  &:hover {
+    background-color: #5b56d0; /* Darker purple on hover */
+  }
+}
+
+.self-username {
+  color: #ff6ec4;
+  font-weight: bold;
+}

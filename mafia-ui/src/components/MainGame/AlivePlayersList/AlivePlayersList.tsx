@@ -35,53 +35,63 @@ const AlivePlayersList: React.FC = () => {
       {alivePlayers.length > 0 ? (
         <ul>
           {alivePlayers.map((player) => (
-            <li key={player} className="player-row">
-              <span className="player-info">{player}</span>
+            <li key={player} className={cn('player-row')}>
+              <span
+                className={cn('player-info', {
+                  'self-username': player === username,
+                })}
+              >
+                {player}
+              </span>
 
-              {/* Assassin can select everyone except themselves */}
               {!isDay && isAlive && role === 'Assassin' && player !== username && (
                 <Button
-                  className="action-button"
+                  className={cn('action-button', 'night-action-button')}
                   onClick={() => handleActionClick(player, 'kill')}
                 >
                   Kill
                 </Button>
               )}
 
-              {/* Poisoner can select everyone except themselves */}
-              {!isDay && isAlive && role === 'Poisoner' && player !== username && (
+              {!isDay && isAlive && (role === 'Poisoner' || role === 'Hemlock') && player !== username && (
                 <Button
-                  className="action-button"
+                  className={cn('action-button', 'night-action-button')}
                   onClick={() => handleActionClick(player, 'poison')}
                 >
                   Poison
                 </Button>
               )}
 
-              {/* Tracker can select everyone except themselves */}
               {!isDay && isAlive && role === 'Tracker' && player !== username && (
                 <Button
-                  className="action-button"
+                  className={cn('action-button', 'night-action-button')}
                   onClick={() => handleActionClick(player, 'information')}
                 >
                   Track
                 </Button>
               )}
 
-              {/* Doctor can select everyone except themselves */}
+              {!isDay && isAlive && role === 'Spy' && player !== username && (
+                <Button
+                  className={cn('action-button', 'night-action-button')}
+                  onClick={() => handleActionClick(player, 'information')}
+                >
+                  Investigate
+                </Button>
+              )}
+
               {!isDay && isAlive && role === 'Doctor' && player !== username && (
                 <Button
-                  className="action-button"
+                  className={cn('action-button', 'night-action-button')}
                   onClick={() => handleActionClick(player, 'protect')}
                 >
                   Protect
                 </Button>
               )}
 
-              {/* Soldier can only select themselves */}
               {!isDay && isAlive && role === 'Soldier' && player === username && (
                 <Button
-                  className="action-button"
+                  className={cn('action-button', 'night-action-button')}
                   onClick={() => handleActionClick(player, 'protect')}
                 >
                   Use Shield
@@ -90,7 +100,7 @@ const AlivePlayersList: React.FC = () => {
 
               {isDay && isAlive && player !== username && (
                 <Button
-                  className="action-button"
+                  className={cn('action-button', 'vote-button')}
                   onClick={() => handleActionClick(player, 'vote')}
                 >
                   Vote
