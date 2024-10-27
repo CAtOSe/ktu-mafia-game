@@ -1,7 +1,7 @@
 using FluentAssertions;
 using Mafia.Server.Models.AbstractFactory;
 
-namespace Mafia.Server.Tests.Unit;
+namespace Mafia.Server.Tests.Unit.AbstractFactoryTests;
 
 public class RoleFactorySelectorTests
 {
