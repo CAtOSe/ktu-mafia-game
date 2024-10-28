@@ -414,6 +414,7 @@ public class GameService : IGameService
                 string phaseName = _isDayPhase ? "DAY" : "NIGHT";
                 await _chatService.SendChatMessage("", phaseName + " " + _phaseCounter, "everyone",
                     chatMessageType); // DAY 1 / NIGHT 1
+                await UpdateDayNightPhase();
             }
             else
             {
