@@ -1,8 +1,9 @@
 using System.Text.Json.Serialization;
+using Mafia.Server.Models.Bridge;
 
 namespace Mafia.Server.Models;
 
-public class ChatMessage
+public class ChatMessage : IMessage
 {
     [JsonPropertyName("sender")]
     public string Sender { get; set; }
@@ -27,5 +28,9 @@ public class ChatMessage
         Recipient = recipient;
         TimeSent = timeSent;
         ChatCategory = ((ChatCategory)Enum.Parse(typeof(ChatCategory), category, true)).ToString();
+    }
+    public void ProcessMessage(IMessageHandler handler)
+    {
+        handler.HandleChat(this);
     }
 }
