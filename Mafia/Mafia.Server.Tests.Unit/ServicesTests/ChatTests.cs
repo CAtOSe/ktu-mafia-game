@@ -1,10 +1,12 @@
 using System.Text.Json;
 using Mafia.Server.Models;
+using Mafia.Server.Models.Bridge;
 using Mafia.Server.Models.Messages;
 using Mafia.Server.Services.ChatService;
 using Mafia.Server.Tests.Unit.TestSetup;
 using Moq;
 using Xunit;
+using CommandMessage = Mafia.Server.Models.Messages.CommandMessage;
 
 namespace Mafia.Server.Tests.Unit.ServicesTests;
 
@@ -14,10 +16,11 @@ public class ChatTests
     private readonly List<Player> _testPlayers;
     private readonly Player _alivePlayer;
     private readonly Player _deadPlayer;
+    private readonly IMessageHandler _messageHandler;
 
     public ChatTests()
     {
-        _sut = new ChatService();
+        _sut = new ChatService(_messageHandler);
         _alivePlayer = new Player(MockWebSocket.Get()) { IsAlive = true, Name = "AlivePlayer" };
         _deadPlayer = new Player(MockWebSocket.Get()) { IsAlive = false, Name = "DeadPlayer" };
 

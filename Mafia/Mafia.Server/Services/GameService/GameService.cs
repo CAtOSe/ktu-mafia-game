@@ -15,6 +15,8 @@ using System.Xml.Linq;
 using Mafia.Server.Models.Builder;
 using System.Numerics;
 using System.Linq;
+using Mafia.Server.Models.Bridge;
+using CommandMessage = Mafia.Server.Models.Messages.CommandMessage;
 
 namespace Mafia.Server.Services.GameService;
 
@@ -22,6 +24,7 @@ public class GameService : IGameService
 {
     private readonly IChatService _chatService;
     private readonly TimeProvider _timeProvider;
+    private readonly IMessageHandler _messageHandler;
 
     private volatile int _phaseCounter = 1;
     private volatile bool _isDayPhase = true;
@@ -42,11 +45,17 @@ public class GameService : IGameService
     public bool IsPaused { get; private set; }
     public bool GameStarted { get; private set; }
     
-    public GameService(IChatService chatService, TimeProvider timeProvider)
+    public GameService(IChatService chatService, TimeProvider timeProvider, IMessageHandler messageHandler)
     {
         IsPaused = false;
         _chatService = chatService;
         _timeProvider = timeProvider;
+        _messageHandler = messageHandler;
+    }
+    
+    public void ExecuteCommand(CommandMessage message)
+    {
+        _messageHandler.HandleCommand(message);
     }
 
     public void PauseTimer()
@@ -391,7 +400,7 @@ public class GameService : IGameService
         return NotifyAllPlayers(message);
     }
     
-    private Task NotifyAllPlayers(CommandMessage commandMessage)
+    internal Task NotifyAllPlayers(CommandMessage commandMessage)
     {
         var notifications = _currentPlayers.Select(p => p.SendMessage(commandMessage));
         return Task.WhenAll(notifications);

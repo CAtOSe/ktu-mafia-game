@@ -1,14 +1,22 @@
 using System.Text.Json;
 using Mafia.Server.Models;
+using Mafia.Server.Models.Bridge;
 using Mafia.Server.Models.Messages;
+using CommandMessage = Mafia.Server.Models.Messages.CommandMessage;
 
 namespace Mafia.Server.Services.ChatService;
 
 public class ChatService : IChatService
 {
     List<ChatMessage> messages = new List<ChatMessage>();
+    private readonly IMessageHandler _messageHandler;
 
     private List<Player> players; 
+    
+    public ChatService(IMessageHandler messageHandler)
+    {
+        _messageHandler = messageHandler;
+    }
 
     public void SetPlayers(List<Player> newPlayers)
     {
@@ -25,6 +33,9 @@ public class ChatService : IChatService
         //Console.WriteLine($"We added a message from: {sender} who has written to chat: {content}");
         messages.Add(new ChatMessage(sender, content, recipient, category, messages.Count));
         return SendOutFilteredChats();
+        /*var chatMessage = new ChatMessage(sender, content, recipient, category);
+        chatMessage.ProcessMessage(_messageHandler);
+        return Task.CompletedTask;*/
     }
 
     public Task SendChatMessage(ChatMessage chatMessage)
@@ -74,5 +85,10 @@ public class ChatService : IChatService
             .Where(msg => (!player.IsAlive || msg.ChatCategory != "deadPlayer") &&
                           (msg.Recipient == player.Name || msg.Recipient == "everyone"))
             .ToList();
+    }
+    
+    public void SendMessage(ChatMessage message)
+    {
+        _messageHandler.HandleChat(message);
     }
 }
