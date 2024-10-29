@@ -11,6 +11,10 @@ using Mafia.Server.Models.Strategy;
 using System.Threading;
 using System.Threading.Tasks;
 using Mafia.Server.Models.Decorator;
+using System.Xml.Linq;
+using Mafia.Server.Models.Builder;
+using System.Numerics;
+using System.Linq;
 
 namespace Mafia.Server.Services.GameService;
 
@@ -187,6 +191,7 @@ public class GameService : IGameService
 
     public async Task AddNightActionToList(Player actionUser, string actionTarget, string actionType)
     {
+        actionUser = _currentPlayers.FirstOrDefault(p => p.Name.Equals(actionUser.Name, StringComparison.OrdinalIgnoreCase));
         // Find the target player
         var targetPlayer = _currentPlayers.FirstOrDefault(p => p.Name.Equals(actionTarget, StringComparison.OrdinalIgnoreCase));
         if (targetPlayer == null)
@@ -222,6 +227,8 @@ public class GameService : IGameService
 
     public async Task VoteFor(Player player, string username)
     {
+        player = _currentPlayers.FirstOrDefault(x => x.Name.Equals(player.Name, StringComparison.OrdinalIgnoreCase));
+
         var targetPlayer =
             _currentPlayers.FirstOrDefault(x => x.Name.Equals(username, StringComparison.OrdinalIgnoreCase));
         if (!_isDayPhase || targetPlayer is null) return;
@@ -526,10 +533,20 @@ public class GameService : IGameService
         // 1. Assign a random Killer role to one player
         int killerIndex = unassignedIndexes[random.Next(unassignedIndexes.Count)];
         var killerRole = killerRoles[random.Next(killerRoles.Count)];
-        
-        _currentPlayers[killerIndex].Role = killerRole;
+
+        // BUILDER
+        IPlayerBuilder killerBuilder = roleFactory.GetKillerBuilder(_currentPlayers[killerIndex].WebSocket);
+        var killerPlayer = killerBuilder.SetName(_currentPlayers[killerIndex].Name)
+                                        .SetRole(killerRole)
+                                        .SetAlive(true)
+                                        .SetLoggedIn(_currentPlayers[killerIndex].IsLoggedIn)
+                                        .SetHost(_currentPlayers[killerIndex].IsHost)
+                                        .Build();
+
+        _currentPlayers[killerIndex] = killerPlayer;
 
         // Remove the assigned killer role and the player index from the tracking list
+        killerRoles.Remove(killerPlayer.Role);
         unassignedIndexes.Remove(killerIndex);
 
         Console.WriteLine("Built Killer");
@@ -543,15 +560,23 @@ public class GameService : IGameService
         {
             if (unassignedIndexes.Count == 0) break;  // Safety check: stop if no players are left to assign
 
-            int accompliceIndex = unassignedIndexes[random.Next(unassignedIndexes.Count)];
+            int accompliceIndex = random.Next(unassignedIndexes.Count);
             Role accompliceRole = accompliceRoles.Count > 0
                                     ? accompliceRoles[random.Next(accompliceRoles.Count)]
                                     : new Lackey();
+            // BUILDER
+            IPlayerBuilder accompliceBuilder = roleFactory.GetAccompliceBuilder(_currentPlayers[accompliceIndex].WebSocket);
+            var accomplicePlayer = accompliceBuilder.SetName(_currentPlayers[accompliceIndex].Name)
+                                                    .SetRole(accompliceRole)
+                                                    .SetAlive(true)
+                                                    .SetLoggedIn(_currentPlayers[accompliceIndex].IsLoggedIn)
+                                                    .SetHost(_currentPlayers[accompliceIndex].IsHost)
+                                                    .Build();
 
-            // Builder
-            _currentPlayers[accompliceIndex].Role = accompliceRole;
+            _currentPlayers[accompliceIndex] = accomplicePlayer;
             accompliceRoles.Remove(accompliceRole);
             unassignedIndexes.Remove(accompliceIndex);
+
         }
 
         Console.WriteLine("Built Accomplice");
@@ -564,9 +589,20 @@ public class GameService : IGameService
         int bystanderCount = random.Next(3);  // Random number between 0 and 2
         for (int i = 0; i < bystanderCount && unassignedIndexes.Count > 0; i++)
         {
-            int bystanderIndex = unassignedIndexes[random.Next(unassignedIndexes.Count)];
-            _currentPlayers[bystanderIndex].Role = new Bystander();
+            int bystanderIndex = random.Next(unassignedIndexes.Count);
+
+            // BUILDER
+            IPlayerBuilder citizenBuilder = roleFactory.GetCitizenBuilder(_currentPlayers[bystanderIndex].WebSocket);
+            var bystanderPlayer = citizenBuilder.SetName(_currentPlayers[bystanderIndex].Name)
+                                                .SetRole(new Bystander())
+                                                .SetAlive(true)
+                                                .SetLoggedIn(_currentPlayers[bystanderIndex].IsLoggedIn)
+                                                .SetHost(_currentPlayers[bystanderIndex].IsHost)
+                                                .Build();
+
+            _currentPlayers[bystanderIndex] = bystanderPlayer;
             unassignedIndexes.Remove(bystanderIndex);
+
         }
 
         Console.WriteLine("Built Bystander");
@@ -585,10 +621,20 @@ public class GameService : IGameService
         foreach (var playerIndex in unassignedIndexes.ToList())  // Iterate over unassigned players
         {
             Role citizenRole = citizenRoles.Count > 0
-                                ? citizenRoles[random.Next(citizenRoles.Count)]
-                                : originalCitizenRoles[random.Next(originalCitizenRoles.Count)];
-            _currentPlayers[playerIndex].Role = citizenRole;
+                           ? citizenRoles[random.Next(citizenRoles.Count)]
+                           : originalCitizenRoles[random.Next(originalCitizenRoles.Count)];
+            // BUILDER
+            IPlayerBuilder citizenBuilder = roleFactory.GetCitizenBuilder(_currentPlayers[playerIndex].WebSocket);
+            var citizenPlayer = citizenBuilder.SetName(_currentPlayers[playerIndex].Name)
+                                              .SetRole(citizenRole)
+                                              .SetAlive(true)
+                                              .SetLoggedIn(_currentPlayers[playerIndex].IsLoggedIn)
+                                              .SetHost(_currentPlayers[playerIndex].IsHost)
+                                              .Build();
+
+            _currentPlayers[playerIndex] = citizenPlayer;
             citizenRoles.Remove(citizenRole);
+
         }
 
         Console.WriteLine("Built Citizen");

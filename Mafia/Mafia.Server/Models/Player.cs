@@ -18,6 +18,7 @@ public class Player(WebSocket webSocket)
 
     public bool IsPoisoned { get; set; } = false;
     public List<Item> Inventory { get; set; } = new();
+    public WebSocket WebSocket = webSocket;
 
     public Player CurrentVote;
     

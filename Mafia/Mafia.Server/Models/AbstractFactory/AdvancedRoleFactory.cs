@@ -3,6 +3,8 @@ using Mafia.Server.Models.AbstractFactory.Roles.Accomplices;
 using Mafia.Server.Models.AbstractFactory.Roles.Killers;
 using Mafia.Server.Models.AbstractFactory.Roles.Citizens;
 using Mafia.Server.Models.Decorator;
+using Mafia.Server.Models.Builder;
+using System.Net.WebSockets;
 
 namespace Mafia.Server.Models.AbstractFactory
 {
@@ -20,6 +22,23 @@ namespace Mafia.Server.Models.AbstractFactory
         {
             return new List<Role> { new Doctor(3), new Tracker(2), new Soldier(2), new Lookout(2) };
         }
+
+        public override IPlayerBuilder GetKillerBuilder(WebSocket webSocket)
+        {
+            return new KillerBuilder(webSocket);
+        }
+
+        public override IPlayerBuilder GetAccompliceBuilder(WebSocket webSocket)
+        {
+            return new AccompliceBuilder(webSocket);
+        }
+
+        public override IPlayerBuilder GetCitizenBuilder(WebSocket webSocket)
+        {
+            return new CitizenBuilder(webSocket);
+        }
+
+
         public override MorningAnnouncer GetAnnouncer()
         {
             MorningAnnouncer announcer = new MorningAnnouncer();
