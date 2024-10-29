@@ -533,7 +533,7 @@ public class GameService : IGameService
         // 1. Assign a random Killer role to one player
         int killerIndex = unassignedIndexes[random.Next(unassignedIndexes.Count)];
         var killerRole = killerRoles[random.Next(killerRoles.Count)];
-        Console.WriteLine($"KILLER ROLE : {killerRole}, KILLER INDEX: {killerIndex}");
+
         // BUILDER
         IPlayerBuilder killerBuilder = roleFactory.GetKillerBuilder(_currentPlayers[killerIndex].WebSocket);
         var killerPlayer = killerBuilder.SetName(_currentPlayers[killerIndex].Name)
@@ -552,8 +552,7 @@ public class GameService : IGameService
         Console.WriteLine("Built Killer");
         foreach (var player in _currentPlayers)
         {
-            Console.WriteLine($"{player.Name} | {player.Role?.GetType().Name ?? "No Role"}");
-            //Console.WriteLine($"{player.Name} | {player.Role}");
+            Console.WriteLine($"{player.Name} | {player.Role}");
         }
 
         // 2. Assign accomplice roles
@@ -565,7 +564,6 @@ public class GameService : IGameService
             Role accompliceRole = accompliceRoles.Count > 0
                                     ? accompliceRoles[random.Next(accompliceRoles.Count)]
                                     : new Lackey();
-            Console.WriteLine($"ACCOMPLICE ROLE : {accompliceRole}, ACCOMPLICE INDEX: {accompliceIndex}");
             // BUILDER
             IPlayerBuilder accompliceBuilder = roleFactory.GetAccompliceBuilder(_currentPlayers[accompliceIndex].WebSocket);
             var accomplicePlayer = accompliceBuilder.SetName(_currentPlayers[accompliceIndex].Name)
@@ -584,8 +582,7 @@ public class GameService : IGameService
         Console.WriteLine("Built Accomplice");
         foreach (var player in _currentPlayers)
         {
-            Console.WriteLine($"{player.Name} | {player.Role?.GetType().Name ?? "No Role"}");
-            //Console.WriteLine($"{player.Name} | {player.Role}");
+            Console.WriteLine($"{player.Name} | {player.Role}");
         }
 
         // 3. Randomly assign 0 to 2 players the Bystander role
@@ -593,7 +590,7 @@ public class GameService : IGameService
         for (int i = 0; i < bystanderCount && unassignedIndexes.Count > 0; i++)
         {
             int bystanderIndex = random.Next(unassignedIndexes.Count);
-            Console.WriteLine($"BYSTANDER INDEX: {bystanderIndex}");
+
             // BUILDER
             IPlayerBuilder citizenBuilder = roleFactory.GetCitizenBuilder(_currentPlayers[bystanderIndex].WebSocket);
             var bystanderPlayer = citizenBuilder.SetName(_currentPlayers[bystanderIndex].Name)
@@ -611,8 +608,7 @@ public class GameService : IGameService
         Console.WriteLine("Built Bystander");
         foreach (var player in _currentPlayers)
         {
-            Console.WriteLine($"{player.Name} | {player.Role?.GetType().Name ?? "No Role"}");
-            //Console.WriteLine($"{player.Name} | {player.Role}");
+            Console.WriteLine($"{player.Name} | {player.Role}");
         }
 
         Console.WriteLine("Unassigned indexes:");
@@ -627,8 +623,6 @@ public class GameService : IGameService
             Role citizenRole = citizenRoles.Count > 0
                            ? citizenRoles[random.Next(citizenRoles.Count)]
                            : originalCitizenRoles[random.Next(originalCitizenRoles.Count)];
-
-            Console.WriteLine($"CITIZEN ROLE : {citizenRole}, CITIZEN INDEX: {playerIndex}");
             // BUILDER
             IPlayerBuilder citizenBuilder = roleFactory.GetCitizenBuilder(_currentPlayers[playerIndex].WebSocket);
             var citizenPlayer = citizenBuilder.SetName(_currentPlayers[playerIndex].Name)
@@ -646,8 +640,7 @@ public class GameService : IGameService
         Console.WriteLine("Built Citizen");
         foreach (var player in _currentPlayers)
         {
-            Console.WriteLine($"{player.Name} | {player.Role?.GetType().Name ?? "No Role"}");
-            //Console.WriteLine($"{player.Name} | {player.Role}");
+            Console.WriteLine($"{player.Name} | {player.Role}");
         }
 
         Console.WriteLine("Final");
@@ -673,17 +666,6 @@ public class GameService : IGameService
         if (playerCount >= 13) return 3;
 
         return 0;
-    }
-
-    private Player FindPlayerByUsername(List<Player> players, string username)
-    {
-        Player player = null;
-        foreach (var p in players)
-        {
-            if (p.Name.Equals(username, StringComparison.OrdinalIgnoreCase))
-                player = p;
-        }
-        return player;
     }
     
 }
