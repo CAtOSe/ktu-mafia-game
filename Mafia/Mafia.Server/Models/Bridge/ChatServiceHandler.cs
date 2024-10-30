@@ -13,6 +13,6 @@ public class ChatServiceHandler : IMessageHandler
 
     public void HandleCommand(CommandMessage message)
     {
-        // Nenaudojama ChatService kontekste
+       
     }
 }

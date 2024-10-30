@@ -53,7 +53,7 @@ public class GameService : IGameService
         _messageHandler = messageHandler;
     }
     
-    public void ExecuteCommand(CommandMessage message)
+    public void ExecuteGameCommand(CommandMessage message)
     {
         _messageHandler.HandleCommand(message);
     }
@@ -257,7 +257,7 @@ public class GameService : IGameService
     private async Task ExecuteNightActions()
     {
         // Sort nightActions by actionType based on the custom order
-        //nightActions = nightActions.OrderBy(action => actionOrder.IndexOf(action.Target.RoleName)).ToList();
+        // nightActions = nightActions.OrderBy(action => actionOrder.IndexOf(action.Target.RoleName)).ToList();
 
         _actionQueue = _actionQueue.Select(a =>
         {

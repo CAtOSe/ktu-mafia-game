@@ -1,5 +1,8 @@
 ﻿using System.Net.WebSockets;
 using Mafia.Server.Command;
+using Mafia.Server.Models;
+using Mafia.Server.Models.Messages;
+using Mafia.Server.Services.ChatService;
 using Mafia.Server.Services.GameService;
 using Mafia.Server.Services.SessionHandler;
 using Microsoft.AspNetCore.Mvc;
@@ -13,12 +16,14 @@ namespace Mafia.Server.Controllers
         private readonly IGameService _gameService; 
         private readonly ISessionHandler _sessionHandler;
         private readonly IHostApplicationLifetime _hostLifetime;
+        private readonly IChatService _chatService;
 
-        public GameController(ISessionHandler sessionHandler, IHostApplicationLifetime hostLifetime, IGameService gameService)
+        public GameController(ISessionHandler sessionHandler, IHostApplicationLifetime hostLifetime, IGameService gameService, IChatService chatService)
         {
             _sessionHandler = sessionHandler;
             _hostLifetime = hostLifetime;
             _gameService = gameService;
+            _chatService = chatService;
         }
 
         [Route("/ws")]
@@ -70,5 +75,20 @@ namespace Mafia.Server.Controllers
                 return StatusCode(500, "Internal Server Error");
             }
         }
+
+        [HttpPost("sendMessage")]
+        public IActionResult SendMessage([FromBody] ChatMessage message)
+        {
+            _chatService.SendChatMessage(message); 
+            return Ok();
+        }
+        
+        [HttpPost("executeCommand")]
+        public IActionResult ExecuteGameCommand([FromBody] CommandMessage command)
+        {
+            _gameService.ExecuteGameCommand(command);
+            return Ok();
+        }
+
     }
 }

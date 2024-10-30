@@ -31,11 +31,13 @@ public class ChatService : IChatService
     public Task SendChatMessage(string sender, string content, string recipient, string category)
     {
         //Console.WriteLine($"We added a message from: {sender} who has written to chat: {content}");
-        messages.Add(new ChatMessage(sender, content, recipient, category, messages.Count));
+        //messages.Add(new ChatMessage(sender, content, recipient, category, messages.Count));
+        //return SendOutFilteredChats();
+        var chatMessage = new ChatMessage(sender, content, recipient, category, messages.Count);
+        messages.Add(chatMessage);
+        _messageHandler.HandleChat(chatMessage);
+
         return SendOutFilteredChats();
-        /*var chatMessage = new ChatMessage(sender, content, recipient, category);
-        chatMessage.ProcessMessage(_messageHandler);
-        return Task.CompletedTask;*/
     }
 
     public Task SendChatMessage(ChatMessage chatMessage)
@@ -72,23 +74,18 @@ public class ChatService : IChatService
         });
     } 
     
-    // New Method: Returns all messages (for testing purposes)
+    // Returns all messages (for testing purposes)
     public List<ChatMessage> GetMessages()
     {
         return messages;
     }
 
-    // New Method: Filters messages for a specific player based on their status and recipient
+    // Filters messages for a specific player based on their status and recipient
     public List<ChatMessage> FilterMessagesForPlayer(Player player)
     {
         return messages
             .Where(msg => (!player.IsAlive || msg.ChatCategory != "deadPlayer") &&
                           (msg.Recipient == player.Name || msg.Recipient == "everyone"))
             .ToList();
-    }
-    
-    public void SendMessage(ChatMessage message)
-    {
-        _messageHandler.HandleChat(message);
     }
 }
