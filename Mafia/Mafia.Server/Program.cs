@@ -1,3 +1,4 @@
+using Mafia.Server.Models.Adapter;
 using Mafia.Server.Models.Bridge;
 using Mafia.Server.Services.ChatService;
 using Mafia.Server.Services.GameService;
@@ -25,6 +26,7 @@ builder.Services.AddSingleton<IGameService, GameService>();
 builder.Services.AddSingleton<ISessionHandler, SessionHandler>();
 builder.Services.AddSingleton<IMessageResolver, MessageResolver>();
 builder.Services.AddSingleton<IChatService, ChatService>();
+builder.Services.AddSingleton<IChatServiceAdapter, ChatServiceAdapter>();
 
 // Registruojame IMessageHandler su konkrečiu implementavimu
 builder.Services.AddSingleton<IMessageHandler, ChatServiceHandler>();
