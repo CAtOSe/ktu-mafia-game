@@ -1,5 +1,7 @@
 using Mafia.Server.Models.Adapter;
 using Mafia.Server.Models.Bridge;
+using Mafia.Server.Models.Facade;
+using Mafia.Server.Command;
 using Mafia.Server.Services.ChatService;
 using Mafia.Server.Services.GameService;
 using Mafia.Server.Services.MessageResolver;
@@ -29,6 +31,9 @@ builder.Services.AddSingleton<IChatServiceAdapter, ChatServiceAdapter>();
 builder.Services.AddSingleton<IMessageHandler, ChatServiceHandler>();
 builder.Services.AddSingleton<IMessageHandler, GameServiceHandler>();
 
+builder.Services.AddSingleton<RoleFactorySelector>();
+builder.Services.AddSingleton<ICommand, PauseResumeFacade>();
+builder.Services.AddSingleton<GameRoleFacade>();
 
 builder.Services.AddSingleton(TimeProvider.System);
 

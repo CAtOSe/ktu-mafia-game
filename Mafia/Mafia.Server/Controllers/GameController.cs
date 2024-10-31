@@ -89,6 +89,13 @@ namespace Mafia.Server.Controllers
             _gameService.ExecuteGameCommand(command);
             return Ok();
         }
+        
+        [HttpPost("assign-role")]
+        public IActionResult AssignRole([FromBody] string playerId, string roleType)
+        {
+            _gameService.AssignRole(playerId, "basic", roleType); // Adjust "basic" as needed
+            return Ok($"Role {roleType} assigned to player {playerId}");
+        }
 
     }
 }

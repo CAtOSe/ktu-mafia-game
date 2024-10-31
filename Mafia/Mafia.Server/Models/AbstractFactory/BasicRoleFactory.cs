@@ -38,6 +38,11 @@ namespace Mafia.Server.Models.AbstractFactory
             return new CitizenBuilder(webSocket);
         }
 
+        public override PlayerRole CreateRole(string roleType)
+        {
+            throw new NotImplementedException();
+        }
+
 
         public override MorningAnnouncer GetAnnouncer()
         {
