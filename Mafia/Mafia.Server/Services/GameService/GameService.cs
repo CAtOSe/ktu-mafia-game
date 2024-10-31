@@ -18,6 +18,8 @@ using System.Linq;
 using Mafia.Server.Models.Bridge;
 using CommandMessage = Mafia.Server.Models.Messages.CommandMessage;
 using Mafia.Server.Models.Adapter;
+using Mafia.Server.Models.Facade;
+using RoleFactorySelector = Mafia.Server.Models.AbstractFactory.RoleFactorySelector;
 
 namespace Mafia.Server.Services.GameService;
 
@@ -27,6 +29,7 @@ public class GameService : IGameService
     private readonly TimeProvider _timeProvider;
     private readonly IMessageHandler _messageHandler;
     private readonly IChatServiceAdapter _chatAdapter;
+    private readonly GameRoleFacade _gameRoleFacade;
 
     private volatile int _phaseCounter = 1;
     private volatile bool _isDayPhase = true;
@@ -48,15 +51,21 @@ public class GameService : IGameService
     public bool GameStarted { get; private set; }
     
     public GameService(IChatService chatService, TimeProvider timeProvider, 
-                       IMessageHandler messageHandler, IChatServiceAdapter chatAdapter)
+                       IMessageHandler messageHandler, IChatServiceAdapter chatAdapter, GameRoleFacade gameRoleFacade)
     {
         IsPaused = false;
         _chatService = chatService;
         _timeProvider = timeProvider;
         _messageHandler = messageHandler;
         _chatAdapter = chatAdapter;
+        _gameRoleFacade = gameRoleFacade;
     }
     
+    public void AssignRole(string playerId, string presetName, string roleType)
+    {
+        // Use GameRoleFacade to assign role
+        _gameRoleFacade.AssignRoleToPlayer(playerId, roleType);
+    }
     public void ExecuteGameCommand(CommandMessage message)
     {
         _messageHandler.HandleCommand(message);

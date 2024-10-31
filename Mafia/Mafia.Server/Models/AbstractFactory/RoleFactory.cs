@@ -17,5 +17,6 @@ namespace Mafia.Server.Models.AbstractFactory
         public abstract IPlayerBuilder GetAccompliceBuilder(WebSocket webSocket);
         public abstract IPlayerBuilder GetCitizenBuilder(WebSocket webSocket);
 
+        public abstract PlayerRole CreateRole(string roleType);
     }
 }
