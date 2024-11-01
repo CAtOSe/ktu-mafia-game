@@ -1,4 +1,6 @@
-﻿using Mafia.Server.Models.Strategy;
+﻿using Mafia.Server.Models.AbstractFactory.Roles.Accomplices;
+using Mafia.Server.Models.Prototype;
+using Mafia.Server.Models.Strategy;
 
 namespace Mafia.Server.Models.AbstractFactory.Roles.Citizens
 {
@@ -11,6 +13,12 @@ namespace Mafia.Server.Models.AbstractFactory.Roles.Citizens
             AbilityUsesLeft = abilityUses;
             RoleAlgorithm = new TrackerAction();
             RoleAlgorithmPoisoned = new TrackerActionPoisoned();
+        }
+
+        public override IRolePrototype Clone()
+        {
+            var clone = (Tracker)this.MemberwiseClone();
+            return clone;
         }
 
         /*

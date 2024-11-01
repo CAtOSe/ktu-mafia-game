@@ -1,4 +1,6 @@
-﻿using Mafia.Server.Models.Strategy;
+﻿using Mafia.Server.Models.AbstractFactory.Roles.Accomplices;
+using Mafia.Server.Models.Prototype;
+using Mafia.Server.Models.Strategy;
 
 namespace Mafia.Server.Models.AbstractFactory.Roles.Killers
 {
@@ -11,6 +13,12 @@ namespace Mafia.Server.Models.AbstractFactory.Roles.Killers
             AbilityUsesLeft = abilityUses;
             RoleAlgorithm = new HemlockAction();
             RoleAlgorithmPoisoned = new HemlockAction();
+        }
+
+        public override IRolePrototype Clone()
+        {
+            var clone = (Hemlock)this.MemberwiseClone();
+            return clone;
         }
     }
 }

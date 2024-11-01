@@ -1,4 +1,7 @@
-﻿using Mafia.Server.Models.Strategy;
+﻿using Mafia.Server.Models.AbstractFactory.Roles.Accomplices;
+using Mafia.Server.Models.AbstractFactory.Roles.Citizens;
+using Mafia.Server.Models.Prototype;
+using Mafia.Server.Models.Strategy;
 
 namespace Mafia.Server.Models.AbstractFactory.Roles.Killers
 {
@@ -12,6 +15,13 @@ namespace Mafia.Server.Models.AbstractFactory.Roles.Killers
             RoleAlgorithm = new AssassinAction();
             RoleAlgorithmPoisoned = new AssassinAction();
         }
+
+        public override IRolePrototype Clone()
+        {
+            var clone = (Assassin)this.MemberwiseClone();
+            return clone;
+        }
+
         /*
         public override void NightAction(Player user, Player target, List<NightAction> nightActions, List<ChatMessage> nightMessages)
         {

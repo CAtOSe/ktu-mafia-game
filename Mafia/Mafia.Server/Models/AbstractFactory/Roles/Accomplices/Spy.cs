@@ -1,4 +1,5 @@
-﻿using Mafia.Server.Models.Strategy;
+﻿using Mafia.Server.Models.Prototype;
+using Mafia.Server.Models.Strategy;
 
 namespace Mafia.Server.Models.AbstractFactory.Roles.Accomplices
 {
@@ -11,6 +12,12 @@ namespace Mafia.Server.Models.AbstractFactory.Roles.Accomplices
             AbilityUsesLeft = abilityUses;
             RoleAlgorithm = new SpyAction();
             RoleAlgorithmPoisoned = new SpyAction();
+        }
+
+        public override IRolePrototype Clone()
+        {
+            var clone = (Spy)this.MemberwiseClone();
+            return clone;
         }
     }
 }
