@@ -1,8 +1,9 @@
-﻿using Mafia.Server.Models.Strategy;
+﻿using Mafia.Server.Models.Prototype;
+using Mafia.Server.Models.Strategy;
 
 namespace Mafia.Server.Models.AbstractFactory.Roles
 {
-    public abstract class Role
+    public abstract class Role : IRolePrototype
     {
         public string Name { get; set; }
         public string RoleType { get; set; }
@@ -26,6 +27,11 @@ namespace Mafia.Server.Models.AbstractFactory.Roles
             }
 
             return Task.CompletedTask;
+        }
+
+        public virtual IRolePrototype Clone()
+        {
+            return (IRolePrototype)this.MemberwiseClone(); 
         }
 
     }

@@ -3,32 +3,16 @@
   "WorkspaceRootPath": "D:\\Studies\\Game\\ktu-mafia-game\\Mafia\\",
   "Documents": [
     {
-      "AbsoluteMoniker": "D:0:0:{755CE962-0E0F-468B-B98B-67139D9CB31E}|Mafia.Server\\Mafia.Server.csproj|d:\\studies\\game\\ktu-mafia-game\\mafia\\mafia.server\\services\\chatservice\\ichatservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{755CE962-0E0F-468B-B98B-67139D9CB31E}|Mafia.Server\\Mafia.Server.csproj|solutionrelative:mafia.server\\services\\chatservice\\ichatservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{755CE962-0E0F-468B-B98B-67139D9CB31E}|Mafia.Server\\Mafia.Server.csproj|d:\\studies\\game\\ktu-mafia-game\\mafia\\mafia.server\\models\\abstractfactory\\roles\\role.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{755CE962-0E0F-468B-B98B-67139D9CB31E}|Mafia.Server\\Mafia.Server.csproj|solutionrelative:mafia.server\\models\\abstractfactory\\roles\\role.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{755CE962-0E0F-468B-B98B-67139D9CB31E}|Mafia.Server\\Mafia.Server.csproj|d:\\studies\\game\\ktu-mafia-game\\mafia\\mafia.server\\services\\chatservice\\chatservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{755CE962-0E0F-468B-B98B-67139D9CB31E}|Mafia.Server\\Mafia.Server.csproj|solutionrelative:mafia.server\\services\\chatservice\\chatservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{755CE962-0E0F-468B-B98B-67139D9CB31E}|Mafia.Server\\Mafia.Server.csproj|d:\\studies\\game\\ktu-mafia-game\\mafia\\mafia.server\\models\\prototype\\iroleprototype.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{755CE962-0E0F-468B-B98B-67139D9CB31E}|Mafia.Server\\Mafia.Server.csproj|solutionrelative:mafia.server\\models\\prototype\\iroleprototype.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{755CE962-0E0F-468B-B98B-67139D9CB31E}|Mafia.Server\\Mafia.Server.csproj|d:\\studies\\game\\ktu-mafia-game\\mafia\\mafia.server\\services\\gameservice\\gameservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{755CE962-0E0F-468B-B98B-67139D9CB31E}|Mafia.Server\\Mafia.Server.csproj|solutionrelative:mafia.server\\services\\gameservice\\gameservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{755CE962-0E0F-468B-B98B-67139D9CB31E}|Mafia.Server\\Mafia.Server.csproj|d:\\studies\\game\\ktu-mafia-game\\mafia\\mafia.server\\models\\adapter\\chatserviceadapter.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{755CE962-0E0F-468B-B98B-67139D9CB31E}|Mafia.Server\\Mafia.Server.csproj|solutionrelative:mafia.server\\models\\adapter\\chatserviceadapter.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{755CE962-0E0F-468B-B98B-67139D9CB31E}|Mafia.Server\\Mafia.Server.csproj|d:\\studies\\game\\ktu-mafia-game\\mafia\\mafia.server\\models\\adapter\\ichatserviceadapter.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{755CE962-0E0F-468B-B98B-67139D9CB31E}|Mafia.Server\\Mafia.Server.csproj|solutionrelative:mafia.server\\models\\adapter\\ichatserviceadapter.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{755CE962-0E0F-468B-B98B-67139D9CB31E}|Mafia.Server\\Mafia.Server.csproj|d:\\studies\\game\\ktu-mafia-game\\mafia\\mafia.server\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{755CE962-0E0F-468B-B98B-67139D9CB31E}|Mafia.Server\\Mafia.Server.csproj|solutionrelative:mafia.server\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{755CE962-0E0F-468B-B98B-67139D9CB31E}|Mafia.Server\\Mafia.Server.csproj|d:\\studies\\game\\ktu-mafia-game\\mafia\\mafia.server\\gameconfiguration.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{755CE962-0E0F-468B-B98B-67139D9CB31E}|Mafia.Server\\Mafia.Server.csproj|solutionrelative:mafia.server\\gameconfiguration.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     }
   ],
   "DocumentGroupContainers": [
@@ -38,84 +22,32 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 0,
+          "SelectedChildIndex": 1,
           "Children": [
             {
               "$type": "Document",
-              "DocumentIndex": 0,
-              "Title": "IChatService.cs",
-              "DocumentMoniker": "D:\\Studies\\Game\\ktu-mafia-game\\Mafia\\Mafia.Server\\Services\\ChatService\\IChatService.cs",
-              "RelativeDocumentMoniker": "Mafia.Server\\Services\\ChatService\\IChatService.cs",
-              "ToolTip": "D:\\Studies\\Game\\ktu-mafia-game\\Mafia\\Mafia.Server\\Services\\ChatService\\IChatService.cs",
-              "RelativeToolTip": "Mafia.Server\\Services\\ChatService\\IChatService.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAQAAAAdAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2024-10-30T15:00:48.19Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 5,
-              "Title": "Program.cs",
-              "DocumentMoniker": "D:\\Studies\\Game\\ktu-mafia-game\\Mafia\\Mafia.Server\\Program.cs",
-              "RelativeDocumentMoniker": "Mafia.Server\\Program.cs",
-              "ToolTip": "D:\\Studies\\Game\\ktu-mafia-game\\Mafia\\Mafia.Server\\Program.cs",
-              "RelativeToolTip": "Mafia.Server\\Program.cs",
-              "ViewState": "AgIAAAIAAAAAAAAAAAAkwBoAAABDAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2024-10-30T13:07:02.105Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 6,
-              "Title": "GameConfiguration.cs",
-              "DocumentMoniker": "D:\\Studies\\Game\\ktu-mafia-game\\Mafia\\Mafia.Server\\GameConfiguration.cs",
-              "RelativeDocumentMoniker": "Mafia.Server\\GameConfiguration.cs",
-              "ToolTip": "D:\\Studies\\Game\\ktu-mafia-game\\Mafia\\Mafia.Server\\GameConfiguration.cs",
-              "RelativeToolTip": "Mafia.Server\\GameConfiguration.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2024-10-30T13:06:50.362Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
               "DocumentIndex": 1,
-              "Title": "ChatService.cs",
-              "DocumentMoniker": "D:\\Studies\\Game\\ktu-mafia-game\\Mafia\\Mafia.Server\\Services\\ChatService\\ChatService.cs",
-              "RelativeDocumentMoniker": "Mafia.Server\\Services\\ChatService\\ChatService.cs",
-              "ToolTip": "D:\\Studies\\Game\\ktu-mafia-game\\Mafia\\Mafia.Server\\Services\\ChatService\\ChatService.cs",
-              "RelativeToolTip": "Mafia.Server\\Services\\ChatService\\ChatService.cs",
-              "ViewState": "AgIAABMAAAAAAAAAAAAAACYAAAAFAAAAAAAAAA==",
+              "Title": "IRolePrototype.cs",
+              "DocumentMoniker": "D:\\Studies\\Game\\ktu-mafia-game\\Mafia\\Mafia.Server\\Models\\Prototype\\IRolePrototype.cs",
+              "RelativeDocumentMoniker": "Mafia.Server\\Models\\Prototype\\IRolePrototype.cs",
+              "ToolTip": "D:\\Studies\\Game\\ktu-mafia-game\\Mafia\\Mafia.Server\\Models\\Prototype\\IRolePrototype.cs",
+              "RelativeToolTip": "Mafia.Server\\Models\\Prototype\\IRolePrototype.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAcAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2024-10-30T12:55:44.552Z",
+              "WhenOpened": "2024-11-01T11:45:10.913Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 3,
-              "Title": "ChatServiceAdapter.cs",
-              "DocumentMoniker": "D:\\Studies\\Game\\ktu-mafia-game\\Mafia\\Mafia.Server\\Models\\Adapter\\ChatServiceAdapter.cs",
-              "RelativeDocumentMoniker": "Mafia.Server\\Models\\Adapter\\ChatServiceAdapter.cs",
-              "ToolTip": "D:\\Studies\\Game\\ktu-mafia-game\\Mafia\\Mafia.Server\\Models\\Adapter\\ChatServiceAdapter.cs",
-              "RelativeToolTip": "Mafia.Server\\Models\\Adapter\\ChatServiceAdapter.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAYAAAAZAAAAAAAAAA==",
+              "DocumentIndex": 0,
+              "Title": "Role.cs",
+              "DocumentMoniker": "D:\\Studies\\Game\\ktu-mafia-game\\Mafia\\Mafia.Server\\Models\\AbstractFactory\\Roles\\Role.cs",
+              "RelativeDocumentMoniker": "Mafia.Server\\Models\\AbstractFactory\\Roles\\Role.cs",
+              "ToolTip": "D:\\Studies\\Game\\ktu-mafia-game\\Mafia\\Mafia.Server\\Models\\AbstractFactory\\Roles\\Role.cs",
+              "RelativeToolTip": "Mafia.Server\\Models\\AbstractFactory\\Roles\\Role.cs",
+              "ViewState": "AgIAAAUAAAAAAAAAAAAxwAsAAAAwAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2024-10-30T12:36:29.743Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 4,
-              "Title": "IChatServiceAdapter.cs",
-              "DocumentMoniker": "D:\\Studies\\Game\\ktu-mafia-game\\Mafia\\Mafia.Server\\Models\\Adapter\\IChatServiceAdapter.cs",
-              "RelativeDocumentMoniker": "Mafia.Server\\Models\\Adapter\\IChatServiceAdapter.cs",
-              "ToolTip": "D:\\Studies\\Game\\ktu-mafia-game\\Mafia\\Mafia.Server\\Models\\Adapter\\IChatServiceAdapter.cs",
-              "RelativeToolTip": "Mafia.Server\\Models\\Adapter\\IChatServiceAdapter.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAgAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2024-10-30T12:35:55.039Z",
+              "WhenOpened": "2024-11-01T11:44:57.243Z",
               "EditorCaption": ""
             },
             {
@@ -126,7 +58,7 @@
               "RelativeDocumentMoniker": "Mafia.Server\\Services\\GameService\\GameService.cs",
               "ToolTip": "D:\\Studies\\Game\\ktu-mafia-game\\Mafia\\Mafia.Server\\Services\\GameService\\GameService.cs",
               "RelativeToolTip": "Mafia.Server\\Services\\GameService\\GameService.cs",
-              "ViewState": "AgIAAEkAAAAAAAAAAAAgwJkCAAANAAAAAAAAAA==",
+              "ViewState": "AgIAAAkCAAAAAAAAAAAqwCoCAAA3AAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2024-10-27T19:11:10.788Z",
               "EditorCaption": ""

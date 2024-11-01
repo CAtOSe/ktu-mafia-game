@@ -554,7 +554,9 @@ public class GameService : IGameService
 
         // 1. Assign a random Killer role to one player
         int killerIndex = unassignedIndexes[random.Next(unassignedIndexes.Count)];
-        var killerRole = killerRoles[random.Next(killerRoles.Count)];
+
+        // PROTOTYPE
+        Role killerRole = (Role)killerRoles[random.Next(killerRoles.Count)].Clone();
 
         // BUILDER
         IPlayerBuilder killerBuilder = roleFactory.GetKillerBuilder(_currentPlayers[killerIndex].WebSocket);
@@ -583,9 +585,11 @@ public class GameService : IGameService
             if (unassignedIndexes.Count == 0) break;  // Safety check: stop if no players are left to assign
 
             int accompliceIndex = random.Next(unassignedIndexes.Count);
+
+            // PROTOTYPE
             Role accompliceRole = accompliceRoles.Count > 0
-                                    ? accompliceRoles[random.Next(accompliceRoles.Count)]
-                                    : new Lackey();
+                                    ? (Role)accompliceRoles[random.Next(accompliceRoles.Count)].Clone()
+                                    : (Role)new Lackey().Clone();
             // BUILDER
             IPlayerBuilder accompliceBuilder = roleFactory.GetAccompliceBuilder(_currentPlayers[accompliceIndex].WebSocket);
             var accomplicePlayer = accompliceBuilder.SetName(_currentPlayers[accompliceIndex].Name)
@@ -613,10 +617,13 @@ public class GameService : IGameService
         {
             int bystanderIndex = random.Next(unassignedIndexes.Count);
 
+            // PROTOTYPE
+            Role bystanderPlayerRole = (Role)new Bystander().Clone();
+
             // BUILDER
             IPlayerBuilder citizenBuilder = roleFactory.GetCitizenBuilder(_currentPlayers[bystanderIndex].WebSocket);
             var bystanderPlayer = citizenBuilder.SetName(_currentPlayers[bystanderIndex].Name)
-                                                .SetRole(new Bystander())
+                                                .SetRole(bystanderPlayerRole)
                                                 .SetAlive(true)
                                                 .SetLoggedIn(_currentPlayers[bystanderIndex].IsLoggedIn)
                                                 .SetHost(_currentPlayers[bystanderIndex].IsHost)
@@ -642,9 +649,10 @@ public class GameService : IGameService
         // 4. Assign remaining players random roles from citizenRoles
         foreach (var playerIndex in unassignedIndexes.ToList())  // Iterate over unassigned players
         {
+            // PROTOTYPE
             Role citizenRole = citizenRoles.Count > 0
-                           ? citizenRoles[random.Next(citizenRoles.Count)]
-                           : originalCitizenRoles[random.Next(originalCitizenRoles.Count)];
+                           ? (Role)citizenRoles[random.Next(citizenRoles.Count)].Clone()
+                           : (Role)originalCitizenRoles[random.Next(originalCitizenRoles.Count)].Clone();
             // BUILDER
             IPlayerBuilder citizenBuilder = roleFactory.GetCitizenBuilder(_currentPlayers[playerIndex].WebSocket);
             var citizenPlayer = citizenBuilder.SetName(_currentPlayers[playerIndex].Name)
