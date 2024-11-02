@@ -11,12 +11,16 @@
 @mixin list-box {
   padding: 20px;
   width: 200px;
-  margin: 20px;
 
   h3 {
     margin: 0;
     padding-bottom: 10px;
     text-align: center;
     font-size: 18px;
+  }
+
+  ul {
+    margin: 0;
+    padding: 0;
   }
 }
