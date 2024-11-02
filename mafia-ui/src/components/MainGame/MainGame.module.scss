@@ -1,85 +1,33 @@
 @use '@/styles/common/list-styles';
 
 .main-game {
-  position: relative; /* For absolute positioning of child components */
   width: 100vw;
-  display: flex; /* So that the Graveyard could be placed to the right of the Role list */
+  display: grid;
+  grid-template-columns: 1fr min-content 1fr;
+  grid-template-rows: min-content 1fr min-content;
 }
 
 /* Top right corner */
 .role-information {
-  position: absolute;
-  top: 20px;
-  right: 20px;
-  margin-left: auto;
-}
-
-.list-box {
-  @include list-styles.list-box;
+  grid-row: 1 / 2;
+  grid-column: 3 / 4;
 }
 
 /* Top middle */
 .day-tracker {
-  position: absolute;
-  top: 20px;
-  left: 50%;
-  transform: translateX(-50%);
   display: flex;
   justify-content: center;
   align-items: center;
+  grid-row: 1 / 2;
+  grid-column: 2 / 3;
 }
 
-/* Style the list and player rows */
-.main-game ul {
-  list-style-type: none; /* No bullet points */
-  padding: 0;
-  margin: 0;
-}
-
-.main-game li {
-  border-bottom: 1px solid rgb(255 255 255 / 10%); /* Separator line */
-}
-
-.player-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 3px 0;
-  border-bottom: 1px solid rgb(255 255 255 / 10%); /* Separator line */
-}
-
-.player-info {
-  font-size: 13px;
-  flex: 1;
-}
-
-/* Button styling */
-.action-button {
-  background-color: #ff6ec4;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  padding: 3px 8px;
-  font-size: 12px;
-  cursor: pointer;
-  transition: background-color 0.3s ease;
-}
-
-.action-button:hover {
-  background-color: #7873f5;
-}
-
-/* Bottom left corner */
 .chatbox-container {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  margin: 20px;
+  grid-column: 1 / 4;
+  grid-row: 3 / 4;
 }
 
-/* Bottom right corner */
 .alive-players-list {
-  position: absolute;
-  bottom: 0;
-  right: 0;
+  grid-column: 1 / 2;
+  grid-row: 2 / 3;
 }
