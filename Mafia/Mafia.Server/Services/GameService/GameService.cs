@@ -543,7 +543,7 @@ public class GameService : IGameService
         _morningAnnouncer = roleFactory.GetAnnouncer();
 
 
-        // Store the original citizen roles for duplication purposes
+        // PROTOTYPE
         List<Role> originalCitizenRoles = new List<Role>(citizenRoles);
 
         int accompliceCount = GetAccompliceCount(_currentPlayers.Count);
@@ -600,9 +600,9 @@ public class GameService : IGameService
                                                     .SetHost(_currentPlayers[accompliceIndex].IsHost)
                                                     .Build();
 
-            _currentPlayers[accompliceIndex] = accomplicePlayer;
+            _currentPlayers[unassignedIndexes[accompliceIndex]] = accomplicePlayer;
             accompliceRoles.Remove(accompliceRole);
-            unassignedIndexes.Remove(accompliceIndex);
+            unassignedIndexes.Remove(unassignedIndexes[accompliceIndex]);
 
         }
 
@@ -630,8 +630,8 @@ public class GameService : IGameService
                                                 .SetHost(_currentPlayers[bystanderIndex].IsHost)
                                                 .Build();
 
-            _currentPlayers[bystanderIndex] = bystanderPlayer;
-            unassignedIndexes.Remove(bystanderIndex);
+            _currentPlayers[unassignedIndexes[bystanderIndex]] = bystanderPlayer;
+            unassignedIndexes.Remove(unassignedIndexes[bystanderIndex]);
 
         }
 
@@ -665,7 +665,6 @@ public class GameService : IGameService
 
             _currentPlayers[playerIndex] = citizenPlayer;
             citizenRoles.Remove(citizenRole);
-
         }
 
         Console.WriteLine("Built Citizen");

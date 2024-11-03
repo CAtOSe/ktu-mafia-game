@@ -1,12 +1,11 @@
 ﻿namespace Mafia.Server.Models.Decorator
 {
-    public class DeathAnnouncementDecorator : Decorator
+    public class DeathAnnouncementComponent : MorningAnnouncer
     {
-        public DeathAnnouncementDecorator(MorningAnnouncer wrappee) : base(wrappee) { }
+        public DeathAnnouncementComponent() { }
 
         public override void DayStartAnnouncements(List<Player> currentPlayers, List<Player> playersWhoDied, List<ChatMessage> dayAnnouncements)
         {
-            base.DayStartAnnouncements(currentPlayers, playersWhoDied, dayAnnouncements);
             foreach (var player in playersWhoDied)
             {
                 var dayAnnouncement = new ChatMessage("", player.Name + " has died in the night.", "everyone", "dayNotification");
@@ -21,7 +20,6 @@
         }
         public override void VotingEnd(Player votedOff, List<ChatMessage> votingResults)
         {
-            base.VotingEnd(votedOff, votingResults);
             var votingResultMessage = new ChatMessage("", votedOff.Name + " has been voted off by the town.", "everyone", "dayNotification");
             votingResults.Add(votingResultMessage);
         }
