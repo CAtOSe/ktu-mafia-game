@@ -557,7 +557,7 @@ public class GameService : IGameService
         int killerIndex = unassignedIndexes[random.Next(unassignedIndexes.Count)];
 
         // PROTOTYPE
-        Role killerRole = (Role)killerRoles[random.Next(killerRoles.Count)].Clone();
+        Role killerRole = (Role)killerRoles[random.Next(killerRoles.Count)];
 
         // BUILDER
         IPlayerBuilder killerBuilder = roleFactory.GetKillerBuilder(_currentPlayers[killerIndex].WebSocket);
@@ -619,7 +619,14 @@ public class GameService : IGameService
             int bystanderIndex = random.Next(unassignedIndexes.Count);
 
             // PROTOTYPE
-            Role bystanderPlayerRole = (Role)new Bystander().Clone();
+            Role bystanderPlayerRole = (Role)new Bystander().Clone(); // Shallow copy
+
+            /*
+            Role bystanderPlayerRoleCopy = new Bystander().DeepCopy();// Deep copy
+            Console.WriteLine("Shallow BYSTANDER copy: " + bystanderPlayerRole.GetHashCode().ToString());
+            Console.WriteLine("Deep BYSTANDER copy: " + bystanderPlayerRoleCopy.GetHashCode().ToString());
+            Console.WriteLine("Is same reference: " + Object.ReferenceEquals(bystanderPlayerRole, bystanderPlayerRoleCopy));
+            */
 
             // BUILDER
             IPlayerBuilder citizenBuilder = roleFactory.GetCitizenBuilder(_currentPlayers[bystanderIndex].WebSocket);

@@ -17,5 +17,16 @@ namespace Mafia.Server.Models.AbstractFactory.Roles.Citizens
             var clone = (Bystander)this.MemberwiseClone();
             return clone;
         }
+
+
+        public Bystander DeepCopy()
+        {
+            return new Bystander
+            {
+                Name = "Bystander",
+                Ability = "You have no ability",
+                AbilityUsesLeft = 0
+            };
+        }
     }
 }
