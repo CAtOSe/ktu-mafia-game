@@ -17,5 +17,6 @@ namespace Mafia.Server.Models.AbstractFactory.Roles.Accomplices
             var clone = (Lackey)this.MemberwiseClone();
             return clone;
         }
+
     }
 }
