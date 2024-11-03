@@ -9,14 +9,8 @@ namespace Mafia.Server.Services.ChatService;
 public class ChatService : IChatService
 {
     List<ChatMessage> messages = new List<ChatMessage>();
-    private readonly IMessageHandler _messageHandler;
-
     private List<Player> players; 
     
-    public ChatService(IMessageHandler messageHandler)
-    {
-        _messageHandler = messageHandler;
-    }
 
     public void SetPlayers(List<Player> newPlayers)
     {
@@ -35,7 +29,6 @@ public class ChatService : IChatService
         //return SendOutFilteredChats();
         var chatMessage = new ChatMessage(sender, content, recipient, category, messages.Count);
         messages.Add(chatMessage);
-        _messageHandler.HandleChat(chatMessage);
 
         return SendOutFilteredChats();
     }

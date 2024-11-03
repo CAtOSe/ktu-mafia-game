@@ -28,8 +28,7 @@ builder.Services.AddSingleton<IMessageResolver, MessageResolver>();
 builder.Services.AddSingleton<IChatService, ChatService>();
 builder.Services.AddSingleton<IChatServiceAdapter, ChatServiceAdapter>();
 
-builder.Services.AddSingleton<IMessageHandler, ChatServiceHandler>();
-builder.Services.AddSingleton<IMessageHandler, GameServiceHandler>();
+//builder.Services.AddSingleton<IMessageHandler, ChatServiceHandler>();
 
 builder.Services.AddSingleton<RoleFactorySelector>();
 builder.Services.AddSingleton<ICommand, PauseResumeFacade>();

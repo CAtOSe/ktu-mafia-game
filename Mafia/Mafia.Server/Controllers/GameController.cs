@@ -83,13 +83,6 @@ namespace Mafia.Server.Controllers
             return Ok();
         }
         
-        [HttpPost("executeCommand")]
-        public IActionResult ExecuteGameCommand([FromBody] CommandMessage command)
-        {
-            _gameService.ExecuteGameCommand(command);
-            return Ok();
-        }
-        
         [HttpPost("assign-role")]
         public IActionResult AssignRole([FromBody] string playerId, string roleType)
         {

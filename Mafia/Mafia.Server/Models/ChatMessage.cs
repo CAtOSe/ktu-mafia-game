@@ -3,7 +3,7 @@ using Mafia.Server.Models.Bridge;
 
 namespace Mafia.Server.Models;
 
-public class ChatMessage : IMessage
+public class ChatMessage
 {
     [JsonPropertyName("sender")]
     public string Sender { get; set; }
@@ -28,9 +28,5 @@ public class ChatMessage : IMessage
         Recipient = recipient;
         TimeSent = timeSent;
         ChatCategory = ((ChatCategory)Enum.Parse(typeof(ChatCategory), category, true)).ToString();
-    }
-    public void ProcessMessage(IMessageHandler handler)
-    {
-        handler.HandleChat(this);
     }
 }
