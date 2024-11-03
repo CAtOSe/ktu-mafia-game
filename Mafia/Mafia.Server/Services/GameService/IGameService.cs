@@ -16,6 +16,5 @@ public interface IGameService
     void ResumeTimer();
     public bool IsPaused { get; }
     public bool GameStarted { get; }
-    public void ExecuteGameCommand(CommandMessage message);
     public void AssignRole(string playerId, string presetName, string roleType);
 }

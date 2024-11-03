@@ -1,4 +1,5 @@
-﻿using Mafia.Server.Models.Prototype;
+﻿using Mafia.Server.Models.Bridge;
+using Mafia.Server.Models.Prototype;
 using Mafia.Server.Models.Strategy;
 
 namespace Mafia.Server.Models.AbstractFactory.Roles
@@ -14,8 +15,10 @@ namespace Mafia.Server.Models.AbstractFactory.Roles
 
         public IRoleAction RoleAlgorithm { get; set; }
         public IRoleAction RoleAlgorithmPoisoned { get; set; }
+        
+        private IRoleActionExecutor _actionExecutor;
 
-        public virtual Task ExecuteAction(Player user, Player target, RoleActionContext context, List<ChatMessage> nightMessages)
+        /*public virtual Task ExecuteAction(Player user, Player target, RoleActionContext context, List<ChatMessage> nightMessages)
         {
             if (user.IsPoisoned)
             {
@@ -27,6 +30,15 @@ namespace Mafia.Server.Models.AbstractFactory.Roles
             }
 
             return Task.CompletedTask;
+        }*/
+        public void SetActionExecutor(IRoleActionExecutor actionExecutor)
+        {
+            _actionExecutor = actionExecutor;
+        }
+
+        public virtual Task ExecuteAction(Player user, Player target, RoleActionContext context, List<ChatMessage> nightMessages)
+        {
+            return _actionExecutor.ExecuteAction(user, target, context, nightMessages);
         }
 
         public virtual IRolePrototype Clone()

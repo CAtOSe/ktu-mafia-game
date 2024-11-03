@@ -27,7 +27,6 @@ public class GameService : IGameService
 {
     private readonly IChatService _chatService;
     private readonly TimeProvider _timeProvider;
-    private readonly IMessageHandler _messageHandler;
     private readonly IChatServiceAdapter _chatAdapter;
     private readonly GameRoleFacade _gameRoleFacade;
 
@@ -51,12 +50,11 @@ public class GameService : IGameService
     public bool GameStarted { get; private set; }
     
     public GameService(IChatService chatService, TimeProvider timeProvider, 
-                       IMessageHandler messageHandler, IChatServiceAdapter chatAdapter, GameRoleFacade gameRoleFacade)
+                       IChatServiceAdapter chatAdapter, GameRoleFacade gameRoleFacade)
     {
         IsPaused = false;
         _chatService = chatService;
         _timeProvider = timeProvider;
-        _messageHandler = messageHandler;
         _chatAdapter = chatAdapter;
         _gameRoleFacade = gameRoleFacade;
     }
@@ -65,10 +63,6 @@ public class GameService : IGameService
     {
         // Use GameRoleFacade to assign role
         _gameRoleFacade.AssignRoleToPlayer(playerId, roleType);
-    }
-    public void ExecuteGameCommand(CommandMessage message)
-    {
-        _messageHandler.HandleCommand(message);
     }
 
     public void PauseTimer()
@@ -249,6 +243,38 @@ public class GameService : IGameService
 
     public async Task VoteFor(Player player, string username)
     {
+        // Find the target player by username
+        var targetPlayer = _currentPlayers.FirstOrDefault(x => x.Name.Equals(username, StringComparison.OrdinalIgnoreCase));
+    
+        // Check if it's the day phase and if the target is not null
+        if (!_isDayPhase || targetPlayer is null) return;
+
+        // Use the Bridge pattern - set the action executor based on player state
+        IRoleActionExecutor actionExecutor = player.IsPoisoned
+            ? new PoisonedActionExecutor(player.Role.RoleAlgorithmPoisoned)
+            : new StandardActionExecutor(player.Role.RoleAlgorithm);
+
+        // Assign the action executor to the role
+        player.Role.SetActionExecutor(actionExecutor);
+
+        // Execute the voting action with the assigned executor
+        await player.Role.ExecuteAction(player, targetPlayer, null, new List<ChatMessage>());
+    
+        // Send appropriate message based on vote selection or cancellation
+        if (player.CurrentVote != targetPlayer)
+        {
+            await _chatAdapter.SendMessage("", $"You have chosen {targetPlayer.Name}", player.Name, "dayAction");
+            player.CurrentVote = targetPlayer;
+        }
+        else
+        {
+            await _chatAdapter.SendMessage("", "You have canceled your selection", player.Name, "dayAction");
+            player.CurrentVote = null;
+        }
+    }
+    //BEFORE BRIDGE
+    /*public async Task VoteFor(Player player, string username)
+    {
         player = _currentPlayers.FirstOrDefault(x => x.Name.Equals(player.Name, StringComparison.OrdinalIgnoreCase));
 
         var targetPlayer =
@@ -265,9 +291,49 @@ public class GameService : IGameService
             await _chatAdapter.SendMessage("", "You have canceled your selection", player.Name, "dayAction");
             player.CurrentVote = null;
         }
-    }
+    }*/
 
     private async Task ExecuteNightActions()
+    {
+        // Initialize the context for night actions
+        var context = new RoleActionContext
+        {
+            Players = _currentPlayers,
+            QueuedActions = _actionQueue,
+        };
+
+        List<ChatMessage> nightMessages = new List<ChatMessage>();
+
+        // Start executing night actions in the queue
+        foreach (var nightAction in _actionQueue)
+        {
+            var user = nightAction.User;
+            var target = nightAction.Target;
+
+            // Use the Bridge pattern - set the executor based on the user's state
+            IRoleActionExecutor actionExecutor = user.IsPoisoned
+                ? new PoisonedActionExecutor(user.Role.RoleAlgorithmPoisoned)
+                : new StandardActionExecutor(user.Role.RoleAlgorithm);
+
+            // Assign the action executor to the role
+            user.Role.SetActionExecutor(actionExecutor);
+
+            // Execute the action logic through the assigned executor
+            await user.Role.ExecuteAction(user, target, context, nightMessages);
+        }
+
+        // Send messages about night actions (e.g., notifications to the chat)
+        foreach (var nightMessage in nightMessages)
+        {
+            await _chatAdapter.SendMessage(nightMessage);
+        }
+
+        // Clear the action queue after all actions have been executed
+        _actionQueue.Clear();
+    }
+
+    //BEFORE BRIDGE
+    /*private async Task ExecuteNightActions()
     {
         // Sort nightActions by actionType based on the custom order
         // nightActions = nightActions.OrderBy(action => actionOrder.IndexOf(action.Target.RoleName)).ToList();
@@ -329,13 +395,13 @@ public class GameService : IGameService
         {
             var dayAnnouncement = new ChatMessage("","No one has died in the night.", "everyone", "dayNotification");
             _dayStartAnnouncements.Add(dayAnnouncement);
-        }*/
+        }
 
         await SendAlivePlayerList();
 
         // Clear the nightActions list after processing all actions
         _actionQueue.Clear();
-    }
+    }*/
 
     private async Task ExecuteDayActions()
     {

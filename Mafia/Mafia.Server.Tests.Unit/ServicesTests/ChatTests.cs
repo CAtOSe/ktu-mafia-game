@@ -16,11 +16,10 @@ public class ChatTests
     private readonly List<Player> _testPlayers;
     private readonly Player _alivePlayer;
     private readonly Player _deadPlayer;
-    private readonly IMessageHandler _messageHandler;
 
     public ChatTests()
     {
-        _sut = new ChatService(_messageHandler);
+        _sut = new ChatService();
         _alivePlayer = new Player(MockWebSocket.Get()) { IsAlive = true, Name = "AlivePlayer" };
         _deadPlayer = new Player(MockWebSocket.Get()) { IsAlive = false, Name = "DeadPlayer" };
 
