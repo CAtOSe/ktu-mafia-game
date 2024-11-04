@@ -1,12 +1,9 @@
+using Mafia.Server.Logging;
 using Mafia.Server.Models.Adapter;
-using Mafia.Server.Models.Bridge;
-using Mafia.Server.Models.Facade;
-using Mafia.Server.Command;
 using Mafia.Server.Services.ChatService;
 using Mafia.Server.Services.GameService;
 using Mafia.Server.Services.MessageResolver;
 using Mafia.Server.Services.SessionHandler;
-using Microsoft.Extensions.DependencyInjection.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -20,20 +17,17 @@ builder.Services.AddCors(options =>
     });
 });
 
+var gameLogger = GameLogger.Instance;
+gameLogger.Attach(new ConsoleLoggerObserver());
+gameLogger.Attach(new FileLoggerObserver());
+
 builder.Services.AddControllers();
 
 builder.Services.AddSingleton<IGameService, GameService>();
 builder.Services.AddSingleton<ISessionHandler, SessionHandler>();
-builder.Services.AddSingleton<IMessageResolver, MessageResolver>();
+builder.Services.AddSingleton<IMessageResolverFacade, MessageResolverFacade>();
 builder.Services.AddSingleton<IChatService, ChatService>();
 builder.Services.AddSingleton<IChatServiceAdapter, ChatServiceAdapter>();
-
-//builder.Services.AddSingleton<IMessageHandler, ChatServiceHandler>();
-
-builder.Services.AddSingleton<RoleFactorySelector>();
-builder.Services.AddSingleton<ICommand, PauseResumeFacade>();
-builder.Services.AddSingleton<GameRoleFacade>();
-
 builder.Services.AddSingleton(TimeProvider.System);
 
 var app = builder.Build();

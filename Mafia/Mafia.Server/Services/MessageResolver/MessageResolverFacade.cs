@@ -1,26 +1,27 @@
-using Mafia.Server.Models;
+using System.Net.WebSockets;
 using Mafia.Server.Models.Messages;
 using Mafia.Server.Services.ChatService;
 using Mafia.Server.Services.GameService;
 
 namespace Mafia.Server.Services.MessageResolver;
 
-public class MessageResolver(IGameService gameService, IChatService chatService) : IMessageResolver
+public class MessageResolverFacade(IGameService gameService, IChatService chatService) : IMessageResolverFacade
 {
-    public async Task HandleMessage(Player player, string message)
+    public async Task HandleMessage(WebSocket webSocket, string message)
     {
+        var player = gameService.GetPlayers().FirstOrDefault(x => x.WebSocket == webSocket);
         var command = CommandMessage.FromString(message);
         switch (command.Base)
         {
             case RequestCommands.Login when command.Arguments.Count == 1:
             {
                 var username = command.Arguments[0];
-                await gameService.TryAddPlayer(player, username);
+                await gameService.TryAddPlayer(webSocket, username);
                 return;
             }
             case RequestCommands.Disconnect:
             {
-                await gameService.DisconnectPlayer(player);
+                await gameService.DisconnectPlayer(webSocket);
                 return;
             }
             case RequestCommands.StartGame when command.Arguments.Count == 1:
@@ -36,7 +37,7 @@ public class MessageResolver(IGameService gameService, IChatService chatService)
                 await gameService.AddNightActionToList(player, actionTarget, actionType);
                 return;
             }
-            case RequestCommands.Chat when command.Arguments.Count == 3:
+            case RequestCommands.Chat when command.Arguments.Count == 3 && player is not null:
             {
                 var content = command.Arguments[0];
                 var recipient = command.Arguments[1];

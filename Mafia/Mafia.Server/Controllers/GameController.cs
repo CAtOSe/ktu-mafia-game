@@ -1,11 +1,13 @@
 ﻿using System.Net.WebSockets;
 using Mafia.Server.Command;
+using Mafia.Server.Logging;
 using Mafia.Server.Models;
 using Mafia.Server.Models.Messages;
 using Mafia.Server.Services.ChatService;
 using Mafia.Server.Services.GameService;
 using Mafia.Server.Services.SessionHandler;
 using Microsoft.AspNetCore.Mvc;
+using LogLevel = Mafia.Server.Logging.LogLevel;
 
 namespace Mafia.Server.Controllers
 {
@@ -16,14 +18,16 @@ namespace Mafia.Server.Controllers
         private readonly IGameService _gameService; 
         private readonly ISessionHandler _sessionHandler;
         private readonly IHostApplicationLifetime _hostLifetime;
-        private readonly IChatService _chatService;
+        private readonly GameLogger _logger = GameLogger.Instance;
 
-        public GameController(ISessionHandler sessionHandler, IHostApplicationLifetime hostLifetime, IGameService gameService, IChatService chatService)
+        public GameController(
+            ISessionHandler sessionHandler,
+            IHostApplicationLifetime hostLifetime,
+            IGameService gameService)
         {
             _sessionHandler = sessionHandler;
             _hostLifetime = hostLifetime;
             _gameService = gameService;
-            _chatService = chatService;
         }
 
         [Route("/ws")]
@@ -38,13 +42,13 @@ namespace Mafia.Server.Controllers
                 }
                 catch (OperationCanceledException)
                 {
-                    Console.WriteLine("Terminating connection.");
+                    _logger.Log(LogLevel.Error, "Terminating connection.");
                 }
                 catch (WebSocketException e)
                 {
                     if (e.WebSocketErrorCode == WebSocketError.ConnectionClosedPrematurely)
                     {
-                        Console.WriteLine($"Unexpected connection close ({e.WebSocketErrorCode})");
+                        _logger.Log(LogLevel.Error, $"Unexpected connection close ({e.WebSocketErrorCode})");
                     }
                     else
                     {
@@ -71,24 +75,9 @@ namespace Mafia.Server.Controllers
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error in TogglePauseResume: {ex.Message}");
+                _logger.Log(LogLevel.Error, $"Error in TogglePauseResume: {ex.Message}");
                 return StatusCode(500, "Internal Server Error");
             }
         }
-
-        [HttpPost("sendMessage")]
-        public IActionResult SendMessage([FromBody] ChatMessage message)
-        {
-            _chatService.SendChatMessage(message); 
-            return Ok();
-        }
-        
-        [HttpPost("assign-role")]
-        public IActionResult AssignRole([FromBody] string playerId, string roleType)
-        {
-            _gameService.AssignRole(playerId, "basic", roleType); // Adjust "basic" as needed
-            return Ok($"Role {roleType} assigned to player {playerId}");
-        }
-
     }
 }

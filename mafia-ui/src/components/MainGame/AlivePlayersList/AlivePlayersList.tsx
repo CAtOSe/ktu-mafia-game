@@ -17,7 +17,9 @@ const AlivePlayersList: React.FC = () => {
   const websocket = useContext(WebsocketContext);
   const { isDay } = useDayNight();
 
-  const [actionCounts, setActionCounts] = useState<{ [key: string]: number }>({});
+  const [actionCounts, setActionCounts] = useState<{ [key: string]: number }>(
+    {},
+  );
 
   const handleActionClick = (targetUsername: string, actionType: string) => {
     if (websocket) {
@@ -29,8 +31,8 @@ const AlivePlayersList: React.FC = () => {
       ); // Create the message
       websocket.sendMessage(message); // Send the message via WebSocket
 
-      // Update the action count 
-      setActionCounts((prevCounts: { [x: string]: any; }) => ({
+      // Update the action count
+      setActionCounts((prevCounts: { [x: string]: number }) => ({
         ...prevCounts,
         [username]: (prevCounts[username] || 0) + 1,
       }));
@@ -46,38 +48,49 @@ const AlivePlayersList: React.FC = () => {
             <li key={player} className={cn('player-row')}>
               <span className="player-info">
                 {player === username ? (
-                  <>[Actions: {actionCounts[player] || '0'}] {player}</>
+                  <>
+                    [Actions: {actionCounts[player] || '0'}] {player}
+                  </>
                 ) : (
                   <>{player}</>
                 )}
               </span>
 
-              {!isDay && isAlive && role === 'Assassin' && player !== username && (
-                <Button
-                  className={cn('action-button', 'night-action-button')}
-                  onClick={() => handleActionClick(player, 'kill')}
-                >
-                  Kill
-                </Button>
-              )}
+              {!isDay &&
+                isAlive &&
+                role === 'Assassin' &&
+                player !== username && (
+                  <Button
+                    className={cn('action-button', 'night-action-button')}
+                    onClick={() => handleActionClick(player, 'kill')}
+                  >
+                    Kill
+                  </Button>
+                )}
 
-              {!isDay && isAlive && (role === 'Poisoner' || role === 'Hemlock') && player !== username && (
-                <Button
-                  className={cn('action-button', 'night-action-button')}
-                  onClick={() => handleActionClick(player, 'poison')}
-                >
-                  Poison
-                </Button>
-              )}
+              {!isDay &&
+                isAlive &&
+                (role === 'Poisoner' || role === 'Hemlock') &&
+                player !== username && (
+                  <Button
+                    className={cn('action-button', 'night-action-button')}
+                    onClick={() => handleActionClick(player, 'poison')}
+                  >
+                    Poison
+                  </Button>
+                )}
 
-              {!isDay && isAlive && role === 'Tracker' && player !== username && (
-                <Button
-                  className={cn('action-button', 'night-action-button')}
-                  onClick={() => handleActionClick(player, 'information')}
-                >
-                  Track
-                </Button>
-              )}
+              {!isDay &&
+                isAlive &&
+                role === 'Tracker' &&
+                player !== username && (
+                  <Button
+                    className={cn('action-button', 'night-action-button')}
+                    onClick={() => handleActionClick(player, 'information')}
+                  >
+                    Track
+                  </Button>
+                )}
 
               {!isDay && isAlive && role === 'Spy' && player !== username && (
                 <Button
@@ -88,23 +101,29 @@ const AlivePlayersList: React.FC = () => {
                 </Button>
               )}
 
-              {!isDay && isAlive && role === 'Doctor' && player !== username && (
-                <Button
-                  className={cn('action-button', 'night-action-button')}
-                  onClick={() => handleActionClick(player, 'protect')}
-                >
-                  Protect
-                </Button>
-              )}
+              {!isDay &&
+                isAlive &&
+                role === 'Doctor' &&
+                player !== username && (
+                  <Button
+                    className={cn('action-button', 'night-action-button')}
+                    onClick={() => handleActionClick(player, 'protect')}
+                  >
+                    Protect
+                  </Button>
+                )}
 
-              {!isDay && isAlive && role === 'Soldier' && player === username && (
-                <Button
-                  className={cn('action-button', 'night-action-button')}
-                  onClick={() => handleActionClick(player, 'protect')}
-                >
-                  Use Shield
-                </Button>
-              )}
+              {!isDay &&
+                isAlive &&
+                role === 'Soldier' &&
+                player === username && (
+                  <Button
+                    className={cn('action-button', 'night-action-button')}
+                    onClick={() => handleActionClick(player, 'protect')}
+                  >
+                    Use Shield
+                  </Button>
+                )}
 
               {isDay && isAlive && player !== username && (
                 <Button

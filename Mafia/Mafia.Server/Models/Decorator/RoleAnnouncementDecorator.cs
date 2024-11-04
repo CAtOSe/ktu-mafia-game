@@ -1,4 +1,6 @@
 ﻿using System.Numerics;
+using Mafia.Server.Logging;
+using LogLevel = Mafia.Server.Logging.LogLevel;
 
 namespace Mafia.Server.Models.Decorator
 {
@@ -14,7 +16,9 @@ namespace Mafia.Server.Models.Decorator
                 var dayAnnouncement = new ChatMessage("", player.Name + "'s role was " + player.RoleName + ".", "everyone", "dayNotification");
                 dayAnnouncements.Add(dayAnnouncement);
             }
-            Console.WriteLine("RoleAnnouncementDecorator triggered.");
+
+            var logger = GameLogger.Instance;
+            logger.Log(LogLevel.Debug, "RoleAnnouncementDecorator triggered.");
         }
 
         public override void VotingEnd(Player votedOff, List<ChatMessage> votingResults)

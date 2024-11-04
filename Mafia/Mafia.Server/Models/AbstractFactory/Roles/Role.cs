@@ -45,6 +45,5 @@ namespace Mafia.Server.Models.AbstractFactory.Roles
         {
             return (IRolePrototype)this.MemberwiseClone(); 
         }
-
     }
 }

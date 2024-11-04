@@ -4,7 +4,7 @@ namespace Mafia.Server.Models.Adapter
 {
     public class ChatServiceAdapter : IChatServiceAdapter
     {
-        private IChatService _chatService;
+        private readonly IChatService _chatService;
 
         public ChatServiceAdapter(IChatService chatService)
         {

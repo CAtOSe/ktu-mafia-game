@@ -17,10 +17,13 @@ public class Player(WebSocket webSocket)
     public bool IsAlive { get; set; } = true;
 
     public bool IsPoisoned { get; set; } = false;
-    public List<Item> Inventory { get; set; } = new();
-    public WebSocket WebSocket = webSocket;
 
     public Player CurrentVote;
+    
+    public WebSocket WebSocket
+    {
+        get => webSocket;
+    }
     
     public async Task SendMessage(CommandMessage commandMessage)
     {
@@ -32,7 +35,6 @@ public class Player(WebSocket webSocket)
     {
         if (webSocket.State != WebSocketState.Open) return;
         
-        Console.WriteLine("Connection closed.");
         await webSocket.SendMessage(RequestCommands.Disconnect);
         await webSocket.CloseAsync(WebSocketCloseStatus.NormalClosure, 
             "GameService:CloseConnection",

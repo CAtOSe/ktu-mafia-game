@@ -6,8 +6,8 @@ namespace Mafia.Server.Services.GameService;
 
 public interface IGameService
 {
-    public Task DisconnectPlayer(Player player);
-    public Task TryAddPlayer(Player player, string username);
+    public Task DisconnectPlayer(WebSocket webSocket);
+    public Task TryAddPlayer(WebSocket webSocket, string username);
     public Task StartGame(string difficultyLevel);
     public List<Player> GetPlayers();
     public Task AddNightActionToList(Player actionUser, string actionTarget, string actionType);
@@ -16,5 +16,4 @@ public interface IGameService
     void ResumeTimer();
     public bool IsPaused { get; }
     public bool GameStarted { get; }
-    public void AssignRole(string playerId, string presetName, string roleType);
 }

@@ -1,4 +1,7 @@
-﻿namespace Mafia.Server.Models.Decorator
+﻿using Mafia.Server.Logging;
+using LogLevel = Mafia.Server.Logging.LogLevel;
+
+namespace Mafia.Server.Models.Decorator
 {
     public class DeathAnnouncementComponent : MorningAnnouncer
     {
@@ -16,7 +19,9 @@
                 var dayAnnouncement = new ChatMessage("", "No one has died in the night.", "everyone", "dayNotification");
                 dayAnnouncements.Add(dayAnnouncement);
             }
-            Console.WriteLine("DeathAnnouncementDecorator triggered.");
+
+            var logger = GameLogger.Instance;
+            logger.Log(LogLevel.Debug, "DeathAnnouncementDecorator triggered.");
         }
         public override void VotingEnd(Player votedOff, List<ChatMessage> votingResults)
         {

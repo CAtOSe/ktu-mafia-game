@@ -8,37 +8,27 @@ const cn = classNames.bind(styles);
 
 const RoleInformation: React.FC = () => {
   const { gameState } = useContext(GameStateContext);
-  const { username, role } = gameState; 
-
-  let alignment: string;
-  let goal: string;
-  let primaryAbility: string;
-  const item: string = 'None';
-
-  if (role === 'Citizen') {
-    alignment = 'Town';
-    primaryAbility = 'Vote';
-    goal = 'Eliminate mafia';
-  } else if (role === 'Killer') {
-    alignment = 'Mafia';
-    primaryAbility = 'Kill';
-    goal = 'Kill all town members';
-  } else {
-    alignment = 'Unknown';
-    primaryAbility = 'Unknown';
-    goal = 'Unknown';
-  }
+  const { username, role, roleAlignment, roleGoal, roleAbility } = gameState;
 
   return (
     <div className={cn('gradient-border-element')}>
       <div className={cn('info-section')}>
         <ul className={cn('info-list')}>
-          <li><strong>Username:</strong> {username}</li>
-          <li><strong>Role:</strong> {role}</li>
-          <li><strong>Alignment:</strong> {alignment}</li>
-          <li><strong>Ability:</strong> {primaryAbility}</li>
-          <li><strong>Goal:</strong> {goal}</li>
-          <li><strong>Item:</strong> {item}</li>
+          <li>
+            <strong>Username:</strong> {username}
+          </li>
+          <li>
+            <strong>Role:</strong> {role}
+          </li>
+          <li>
+            <strong>Alignment:</strong> {roleAlignment}
+          </li>
+          <li>
+            <strong>Ability:</strong> {roleAbility}
+          </li>
+          <li>
+            <strong>Goal:</strong> {roleGoal}
+          </li>
         </ul>
       </div>
     </div>

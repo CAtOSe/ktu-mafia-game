@@ -1,6 +1,5 @@
 using System.Text.Json;
 using Mafia.Server.Models;
-using Mafia.Server.Models.Bridge;
 using Mafia.Server.Models.Messages;
 using CommandMessage = Mafia.Server.Models.Messages.CommandMessage;
 
@@ -8,45 +7,41 @@ namespace Mafia.Server.Services.ChatService;
 
 public class ChatService : IChatService
 {
-    List<ChatMessage> messages = new List<ChatMessage>();
-    private List<Player> players; 
+    private List<ChatMessage> _messages = [];
+    private List<Player> _players; 
     
-
     public void SetPlayers(List<Player> newPlayers)
     {
-        players = newPlayers;
+        _players = newPlayers;
     }
 
     public void ResetChat()
     {
-        messages = new List<ChatMessage>();
+        _messages = [];
     }
 
     public Task SendChatMessage(string sender, string content, string recipient, string category)
     {
-        //Console.WriteLine($"We added a message from: {sender} who has written to chat: {content}");
-        //messages.Add(new ChatMessage(sender, content, recipient, category, messages.Count));
-        //return SendOutFilteredChats();
-        var chatMessage = new ChatMessage(sender, content, recipient, category, messages.Count);
-        messages.Add(chatMessage);
+        var chatMessage = new ChatMessage(sender, content, recipient, category, _messages.Count);
+        _messages.Add(chatMessage);
 
         return SendOutFilteredChats();
     }
 
     public Task SendChatMessage(ChatMessage chatMessage)
     {
-        chatMessage.TimeSent = messages.Count;
-        messages.Add(chatMessage);
+        chatMessage.TimeSent = _messages.Count;
+        _messages.Add(chatMessage);
         return SendOutFilteredChats();
     }
 
     public async Task SendOutFilteredChats()
     {
-        foreach (Player p in players)
+        foreach (Player p in _players)
         {
             // 1. Only dead players should see "deadPlayer" messages
             // 2. Player should only get messages that are sent to them or everyone
-            List<ChatMessage> filteredMessages = messages
+            List<ChatMessage> filteredMessages = _messages
                 .Where(msg => (!p.IsAlive || msg.ChatCategory != "deadPlayer") &&
                               (msg.Recipient == p.Name || msg.Recipient == "everyone"))
                 .ToList();
@@ -59,7 +54,6 @@ public class ChatService : IChatService
     {
         string chatMessagesJson = JsonSerializer.Serialize(chatList);
         string customChatMessagesJson = chatMessagesJson.Replace(":", "|");
-        //Console.WriteLine("Serialized chat messages: " + customChatMessagesJson);
         await player.SendMessage(new CommandMessage
         {
             Base = ResponseCommands.ReceiveChatList,
@@ -70,13 +64,13 @@ public class ChatService : IChatService
     // Returns all messages (for testing purposes)
     public List<ChatMessage> GetMessages()
     {
-        return messages;
+        return _messages;
     }
 
     // Filters messages for a specific player based on their status and recipient
     public List<ChatMessage> FilterMessagesForPlayer(Player player)
     {
-        return messages
+        return _messages
             .Where(msg => (!player.IsAlive || msg.ChatCategory != "deadPlayer") &&
                           (msg.Recipient == player.Name || msg.Recipient == "everyone"))
             .ToList();

@@ -16,9 +16,7 @@
                 chatMessageToUser = new ChatMessage("", messageToUser, user.Name, "nightNotification");
                 messages.Add(chatMessageToUser);
             }
-
-            Console.Write(messageToUser);
-
+            
             return Task.CompletedTask;
         }
     }

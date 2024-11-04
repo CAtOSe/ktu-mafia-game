@@ -1,4 +1,7 @@
-﻿namespace Mafia.Server.Models.Decorator
+﻿using Mafia.Server.Logging;
+using LogLevel = Mafia.Server.Logging.LogLevel;
+
+namespace Mafia.Server.Models.Decorator
 {
     public class DesignPatternIndicatorDecorator : Decorator
     {
@@ -9,7 +12,9 @@
             base.DayStartAnnouncements(currentPlayers, playersWhoDied, dayAnnouncements);
             var dayAnnouncement = new ChatMessage("", "DECORATOR:", "everyone", "server");
             dayAnnouncements.Add(dayAnnouncement);
-            Console.WriteLine("DesignPatternIndicatorDecorator triggered.");
+
+            var logger = GameLogger.Instance;
+            logger.Log(LogLevel.Debug, "DesignPatternIndicatorDecorator triggered.");
         }
     }
 }
