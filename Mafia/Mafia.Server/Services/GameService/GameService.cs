@@ -748,7 +748,13 @@ public class GameService : IGameService
             await player.SendMessage(new CommandMessage
             {
                 Base = ResponseCommands.RoleAssigned,
-                Arguments = new string[] { player.RoleName }
+                Arguments = new string[]
+                {
+                    player.RoleName,
+                    player.Role.Alignment,
+                    player.Role.Ability,
+                    player.Role.Goal
+                }
             });
         }
     }

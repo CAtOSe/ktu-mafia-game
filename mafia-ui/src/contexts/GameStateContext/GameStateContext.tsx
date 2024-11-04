@@ -76,7 +76,12 @@ export const GameStateContextProvider = ({
           return;
 
         case ResponseMessages.RoleAssigned:
-          updateGameState({ role: message.arguments?.[0] });
+          updateGameState({
+            role: message.arguments?.[0],
+            roleAlignment: message.arguments?.[1],
+            roleAbility: message.arguments?.[2],
+            roleGoal: message.arguments?.[3],
+          });
           return;
 
         case ResponseMessages.AlivePlayerListUpdate: {

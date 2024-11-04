@@ -52,6 +52,9 @@ export interface GameState {
   gameStage: GameStage;
   username: string;
   role: string;
+  roleAlignment?: string;
+  roleAbility?: string;
+  roleGoal?: string;
   players: string[];
   alivePlayers: string[];
   isHost: boolean;

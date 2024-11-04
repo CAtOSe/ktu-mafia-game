@@ -35,19 +35,25 @@ public record CommandMessage
     public override string ToString()
     {
         var messageBuilder = new StringBuilder();
-        messageBuilder.Append(Base);
+        messageBuilder.Append(SanitizeString(Base));
 
         if (!string.IsNullOrWhiteSpace(Error))
         {
             messageBuilder.Append(':');
-            messageBuilder.Append(Error);
+            messageBuilder.Append(SanitizeString(Error));
         }
         else if (Arguments is not null && Arguments.Count > 0)
         {
+            var sanitizedArguments = Arguments.Select(SanitizeString);
             messageBuilder.Append(':');
-            messageBuilder.Append(string.Join(';', Arguments));
+            messageBuilder.Append(string.Join(';', sanitizedArguments));
         }
 
         return messageBuilder.ToString();
+    }
+
+    private string SanitizeString(string input)
+    {
+        return input.Replace(":", "").Replace(";", "");
     }
 }
