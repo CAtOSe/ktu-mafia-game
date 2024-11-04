@@ -30,8 +30,6 @@
                 }
             }
 
-            Console.Write(messageToUser);
-
             return Task.CompletedTask;
         }
     }

@@ -13,26 +13,26 @@ const DayTracker: React.FC = () => {
   const displayTime = Math.trunc(timeRemaining / 1000);
 
   const togglePauseResume = async () => {
-    console.log("Sending pause/resume request...");
+    console.log('Sending pause/resume request...');
     setIsPaused(!isPaused); // Changing local button status
 
     try {
-      const response = await fetch("http://localhost:5141/api/gamecontrol/toggle", {
-        method: "POST",
+      const response = await fetch('http://localhost:5141/api/gamecontrol/toggle', {
+        method: 'POST',
         headers: {
-          "Content-Type": "application/json",
+          'Content-Type': 'application/json',
         },
         body: JSON.stringify({ pause: !contextPaused }), // Sending status change
       });
 
       if (response.ok) {
         const result = await response.text();
-        console.log("Server response:", result);
+        console.log('Server response:', result);
       } else {
-        console.error("Request failed:", response.statusText);
+        console.error('Request failed:', response.statusText);
       }
     } catch (error) {
-      console.error("Error sending request:", error);
+      console.error('Error sending request:', error);
     }
   };
 

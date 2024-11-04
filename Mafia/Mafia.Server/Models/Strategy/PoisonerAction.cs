@@ -11,9 +11,7 @@
             messages.Add(chatMessageToUser);
 
             target.IsPoisoned = true;
-
-            Console.Write(messageToUser);
-
+            
             return Task.CompletedTask;
         }
     }

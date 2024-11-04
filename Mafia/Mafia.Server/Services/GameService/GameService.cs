@@ -1,5 +1,4 @@
 ﻿using Mafia.Server.Models;
-using Mafia.Server.Models.AbstractFactory;
 using Mafia.Server.Models.AbstractFactory.Roles;
 using Mafia.Server.Models.AbstractFactory.Roles.Accomplices;
 using Mafia.Server.Models.AbstractFactory.Roles.Citizens;
@@ -7,18 +6,16 @@ using Mafia.Server.Models.Messages;
 using Mafia.Server.Services.ChatService;
 using System.Text;
 using Mafia.Server.Models.Strategy;
-
-using System.Threading;
-using System.Threading.Tasks;
 using Mafia.Server.Models.Decorator;
-using System.Xml.Linq;
 using Mafia.Server.Models.Builder;
-using System.Numerics;
-using System.Linq;
+using System.Net.WebSockets;
+using Mafia.Server.Extensions;
+using Mafia.Server.Logging;
 using Mafia.Server.Models.Bridge;
 using CommandMessage = Mafia.Server.Models.Messages.CommandMessage;
 using Mafia.Server.Models.Adapter;
-using Mafia.Server.Models.Facade;
+using Mafia.Server.Models.GameConfigurationFactory;
+using LogLevel = Mafia.Server.Logging.LogLevel;
 using RoleFactorySelector = Mafia.Server.Models.AbstractFactory.RoleFactorySelector;
 
 namespace Mafia.Server.Services.GameService;
@@ -28,7 +25,8 @@ public class GameService : IGameService
     private readonly IChatService _chatService;
     private readonly TimeProvider _timeProvider;
     private readonly IChatServiceAdapter _chatAdapter;
-    private readonly GameRoleFacade _gameRoleFacade;
+    private IGameConfiguration _gameConfiguration;
+    private GameLogger _logger;
 
     private volatile int _phaseCounter = 1;
     private volatile bool _isDayPhase = true;
@@ -50,26 +48,20 @@ public class GameService : IGameService
     public bool GameStarted { get; private set; }
     
     public GameService(IChatService chatService, TimeProvider timeProvider, 
-                       IChatServiceAdapter chatAdapter, GameRoleFacade gameRoleFacade)
+                       IChatServiceAdapter chatAdapter)
     {
         IsPaused = false;
         _chatService = chatService;
         _timeProvider = timeProvider;
         _chatAdapter = chatAdapter;
-        _gameRoleFacade = gameRoleFacade;
+        _logger = GameLogger.Instance;
     }
     
-    public void AssignRole(string playerId, string presetName, string roleType)
-    {
-        // Use GameRoleFacade to assign role
-        _gameRoleFacade.AssignRoleToPlayer(playerId, roleType);
-    }
-
     public void PauseTimer()
     {
         IsPaused = true;
         _phaseCancelTokenSource.Cancel();
-        var phaseTime = _isDayPhase ? GameConfiguration.DayPhaseDuration : GameConfiguration.NightPhaseDuration;
+        var phaseTime = _isDayPhase ? _gameConfiguration.DayPhaseDuration : _gameConfiguration.NightPhaseDuration;
         _remainingPhaseTime = phaseTime - (int) (_timeProvider.GetUtcNow() - _lastPhaseChange).TotalMilliseconds;
         var updateMessage = new CommandMessage
         {
@@ -90,11 +82,12 @@ public class GameService : IGameService
         NotifyAllPlayers(updateMessage);
         StartDayNightCycle(_remainingPhaseTime);
     }
-
-
-
-    public async Task DisconnectPlayer(Player player)
+    
+    public async Task DisconnectPlayer(WebSocket webSocket)
     {
+        var player = GetByConnection(webSocket);
+        if (player is null) return;
+        
         _currentPlayers.Remove(player);
         await player.SendMessage(new CommandMessage
         {
@@ -122,15 +115,16 @@ public class GameService : IGameService
         }
     }
     
-    public async Task TryAddPlayer(Player player, string username)
+    public async Task TryAddPlayer(WebSocket webSocket, string username)
     {
-        if (player.IsLoggedIn)
+        var existingPlayer = GetByConnection(webSocket);
+        if (existingPlayer is not null && existingPlayer.IsLoggedIn)
         {
-            await player.SendMessage(new CommandMessage
+            await webSocket.SendMessage(new CommandMessage
             {
                 Base = ResponseCommands.Error,
                 Error = ErrorMessages.AlreadyLoggedIn,
-            });
+            }.ToString());
             return;
         }
         
@@ -138,17 +132,19 @@ public class GameService : IGameService
             p.Name.Equals(username, StringComparison.OrdinalIgnoreCase));
         if (usernameTaken)
         {
-            await player.SendMessage(new CommandMessage
+            await webSocket.SendMessage(new CommandMessage
             {
                 Base = ResponseCommands.Error,
                 Error = ErrorMessages.UsernameTaken
-            });
+            }.ToString());
             return;
         }
 
-        player.IsLoggedIn = true;
-        player.Name = username;
-        player.IsHost = _currentPlayers.Count == 0;
+        var playerBuilder = new PlayerBuilder(webSocket);
+        playerBuilder.SetName(username);
+        playerBuilder.SetHost(_currentPlayers.Count == 0);
+        playerBuilder.SetAlive(true);
+        var player = playerBuilder.Build();
         
         _currentPlayers.Add(player);
         await player.SendMessage(new CommandMessage
@@ -175,7 +171,7 @@ public class GameService : IGameService
     {
         if (GameStarted)
         {
-            Console.WriteLine("Game already started");
+            _logger.Log("Game already started");
             return;
         }
 
@@ -184,13 +180,15 @@ public class GameService : IGameService
             throw new InvalidOperationException("There must be at least 3 players to start the game.");
         }
 
-        Console.WriteLine("Assigning roles and starting the countdown.");
+        _gameConfiguration = GameConfigurationFactory.GetGameConfiguration(difficultyLevel);
+
+        _logger.Log("Assigning roles and starting the countdown.");
         await NotifyAllPlayers(new CommandMessage
         {
             Base = ResponseCommands.StartCountdown,
-            Arguments = [GameConfiguration.BeginCountdown.ToString()]
+            Arguments = [_gameConfiguration.BeginCountdown.ToString()]
         });
-        var gameStartTask = Task.Delay(GameConfiguration.BeginCountdown).ContinueWith(async t =>
+        var gameStartTask = Task.Delay(_gameConfiguration.BeginCountdown).ContinueWith(async t =>
         {
             await NotifyAllPlayers(new CommandMessage
             {
@@ -212,11 +210,11 @@ public class GameService : IGameService
         var targetPlayer = _currentPlayers.FirstOrDefault(p => p.Name.Equals(actionTarget, StringComparison.OrdinalIgnoreCase));
         if (targetPlayer == null)
         {
-            Console.WriteLine("Invalid action: Either the user or the target player does not exist.");
+            _logger.Log(LogLevel.Error, "Invalid action: Either the user or the target player does not exist.");
             return;
         }
 
-        Console.WriteLine("Received NIGHT ACTION: " + actionUser.Name + " " + actionUser.Role + ", " + targetPlayer.Name);
+        _logger.Log(LogLevel.PlayerAction, "Received NIGHT ACTION: " + actionUser.Name + " " + actionUser.Role + ", " + targetPlayer.Name);
 
         // If it is the same action that we already have, treat it as canceling action
         var previousAction = _actionQueue.FirstOrDefault(p => p.User == actionUser); 
@@ -514,8 +512,8 @@ public class GameService : IGameService
             else
             {
                 var totalPhaseTime = _isDayPhase ?
-                    GameConfiguration.DayPhaseDuration :
-                    GameConfiguration.NightPhaseDuration;
+                    _gameConfiguration.DayPhaseDuration :
+                    _gameConfiguration.NightPhaseDuration;
                 var elapsedPhaseTime = totalPhaseTime - remainingPhaseTime;
                 _lastPhaseChange = _timeProvider.GetUtcNow().Subtract(TimeSpan.FromMilliseconds(elapsedPhaseTime));
             }
@@ -524,14 +522,14 @@ public class GameService : IGameService
             {
                 if (_isDayPhase)
                 {
-                    await Task.Delay(remainingPhaseTime == 0 ? GameConfiguration.DayPhaseDuration : remainingPhaseTime,
+                    await Task.Delay(remainingPhaseTime == 0 ? _gameConfiguration.DayPhaseDuration : remainingPhaseTime,
                         token);
                     await ExecuteDayActions();
                 }
                 else
                 {
                     await Task.Delay(
-                        remainingPhaseTime == 0 ? GameConfiguration.NightPhaseDuration : remainingPhaseTime, token);
+                        remainingPhaseTime == 0 ? _gameConfiguration.NightPhaseDuration : remainingPhaseTime, token);
                     _phaseCounter = _phaseCounter + 1;
                     await ExecuteNightActions();
                 }
@@ -552,8 +550,8 @@ public class GameService : IGameService
         await SendAlivePlayerList();
 
         var phaseName = _isDayPhase ? "day" : "night";
-        var timeoutDuration = _isDayPhase ? GameConfiguration.DayPhaseDuration : GameConfiguration.NightPhaseDuration;
-        Console.WriteLine($"\nNew phase: {phaseName} {_phaseCounter}");
+        var timeoutDuration = _isDayPhase ? _gameConfiguration.DayPhaseDuration : _gameConfiguration.NightPhaseDuration;
+        _logger.Log(LogLevel.CycleUpdate, $"New phase: {phaseName} {_phaseCounter}");
         await NotifyAllPlayers(new CommandMessage
         {
             Base = ResponseCommands.PhaseChange,
@@ -562,7 +560,7 @@ public class GameService : IGameService
         string winnerTeam = DidAnyTeamWin();
         if (winnerTeam != null)
         {
-            Console.WriteLine(winnerTeam + " team has won the game!");
+            _logger.Log(winnerTeam + " team has won the game!");
             await _chatAdapter.SendMessage("", winnerTeam + " team has won the game!", "everyone", "server");
             await NotifyAllPlayers(new CommandMessage
             {
@@ -598,39 +596,38 @@ public class GameService : IGameService
     
     private async Task AssignRoles(string preset)
     {
-        RoleFactorySelector roleFactorySelector = new RoleFactorySelector();
-        RoleFactory roleFactory = roleFactorySelector.FactoryMethod(preset);
+        var roleFactorySelector = new RoleFactorySelector();
+        var roleFactory = roleFactorySelector.FactoryMethod(preset);
 
         // ABSTRACT FACTORY
-        List<Role> killerRoles = roleFactory.GetKillerRoles();
-        List<Role> accompliceRoles = roleFactory.GetAccompliceRoles();
-        List<Role> citizenRoles = roleFactory.GetCitizenRoles();
+        var killerRoles = roleFactory.GetKillerRoles();
+        var accompliceRoles = roleFactory.GetAccompliceRoles();
+        var citizenRoles = roleFactory.GetCitizenRoles();
         // DECORATOR
         _morningAnnouncer = roleFactory.GetAnnouncer();
 
 
         // PROTOTYPE
-        List<Role> originalCitizenRoles = new List<Role>(citizenRoles);
+        var originalCitizenRoles = new List<Role>(citizenRoles);
 
-        int accompliceCount = GetAccompliceCount(_currentPlayers.Count);
+        var accompliceCount = GetAccompliceCount(_currentPlayers.Count);
 
         var random = new Random();
 
         // Create a list to track unassigned players by index
-        List<int> unassignedIndexes = Enumerable.Range(0, _currentPlayers.Count).ToList();
+        var unassignedIndexes = Enumerable.Range(0, _currentPlayers.Count).ToList();
 
         // 1. Assign a random Killer role to one player
-        int killerIndex = unassignedIndexes[random.Next(unassignedIndexes.Count)];
+        var killerIndex = unassignedIndexes[random.Next(unassignedIndexes.Count)];
 
         // PROTOTYPE
-        Role killerRole = (Role)killerRoles[random.Next(killerRoles.Count)];
+        var killerRole = killerRoles[random.Next(killerRoles.Count)];
 
         // BUILDER
-        IPlayerBuilder killerBuilder = roleFactory.GetKillerBuilder(_currentPlayers[killerIndex].WebSocket);
+        var killerBuilder = new PlayerBuilder(_currentPlayers[killerIndex].WebSocket);
         var killerPlayer = killerBuilder.SetName(_currentPlayers[killerIndex].Name)
                                         .SetRole(killerRole)
                                         .SetAlive(true)
-                                        .SetLoggedIn(_currentPlayers[killerIndex].IsLoggedIn)
                                         .SetHost(_currentPlayers[killerIndex].IsHost)
                                         .Build();
 
@@ -640,52 +637,51 @@ public class GameService : IGameService
         killerRoles.Remove(killerPlayer.Role);
         unassignedIndexes.Remove(killerIndex);
 
-        Console.WriteLine("Built Killer");
+        _logger.Log(LogLevel.Debug, "Built Killer");
         foreach (var player in _currentPlayers)
         {
-            Console.WriteLine($"{player.Name} | {player.Role}");
+            _logger.Log(LogLevel.Debug, $"{player.Name} | {player.Role}");
         }
 
         // 2. Assign accomplice roles
-        for (int i = 0; i < accompliceCount; i++)
+        for (var i = 0; i < accompliceCount; i++)
         {
             if (unassignedIndexes.Count == 0) break;  // Safety check: stop if no players are left to assign
 
-            int accompliceIndex = random.Next(unassignedIndexes.Count);
+            var accompliceIndex = unassignedIndexes[random.Next(unassignedIndexes.Count)];
 
             // PROTOTYPE
-            Role accompliceRole = accompliceRoles.Count > 0
+            var accompliceRole = accompliceRoles.Count > 0
                                     ? (Role)accompliceRoles[random.Next(accompliceRoles.Count)].Clone()
                                     : (Role)new Lackey().Clone();
             // BUILDER
-            IPlayerBuilder accompliceBuilder = roleFactory.GetAccompliceBuilder(_currentPlayers[accompliceIndex].WebSocket);
+            var accompliceBuilder = new PlayerBuilder(_currentPlayers[accompliceIndex].WebSocket);
             var accomplicePlayer = accompliceBuilder.SetName(_currentPlayers[accompliceIndex].Name)
                                                     .SetRole(accompliceRole)
                                                     .SetAlive(true)
-                                                    .SetLoggedIn(_currentPlayers[accompliceIndex].IsLoggedIn)
                                                     .SetHost(_currentPlayers[accompliceIndex].IsHost)
                                                     .Build();
 
-            _currentPlayers[unassignedIndexes[accompliceIndex]] = accomplicePlayer;
+            _currentPlayers[accompliceIndex] = accomplicePlayer;
             accompliceRoles.Remove(accompliceRole);
-            unassignedIndexes.Remove(unassignedIndexes[accompliceIndex]);
+            unassignedIndexes.Remove(accompliceIndex);
 
         }
 
-        Console.WriteLine("Built Accomplice");
+        _logger.Log(LogLevel.Debug, "Built Accomplice");
         foreach (var player in _currentPlayers)
         {
-            Console.WriteLine($"{player.Name} | {player.Role}");
+            _logger.Log(LogLevel.Debug, $"{player.Name} | {player.Role}");
         }
 
         // 3. Randomly assign 0 to 2 players the Bystander role
-        int bystanderCount = random.Next(3);  // Random number between 0 and 2
-        for (int i = 0; i < bystanderCount && unassignedIndexes.Count > 0; i++)
+        var bystanderCount = random.Next(3);  // Random number between 0 and 2
+        for (var i = 0; i < bystanderCount && unassignedIndexes.Count > 0; i++)
         {
-            int bystanderIndex = random.Next(unassignedIndexes.Count);
+            var bystanderIndex = unassignedIndexes[random.Next(unassignedIndexes.Count)];
 
             // PROTOTYPE
-            Role bystanderPlayerRole = (Role)new Bystander().Clone(); // Shallow copy
+            var bystanderPlayerRole = (Role)new Bystander().Clone(); // Shallow copy
 
             /*
             Role bystanderPlayerRoleCopy = new Bystander().DeepCopy();// Deep copy
@@ -695,44 +691,41 @@ public class GameService : IGameService
             */
 
             // BUILDER
-            IPlayerBuilder citizenBuilder = roleFactory.GetCitizenBuilder(_currentPlayers[bystanderIndex].WebSocket);
+            var citizenBuilder = new PlayerBuilder(_currentPlayers[bystanderIndex].WebSocket);
             var bystanderPlayer = citizenBuilder.SetName(_currentPlayers[bystanderIndex].Name)
                                                 .SetRole(bystanderPlayerRole)
                                                 .SetAlive(true)
-                                                .SetLoggedIn(_currentPlayers[bystanderIndex].IsLoggedIn)
                                                 .SetHost(_currentPlayers[bystanderIndex].IsHost)
                                                 .Build();
 
-            _currentPlayers[unassignedIndexes[bystanderIndex]] = bystanderPlayer;
-            unassignedIndexes.Remove(unassignedIndexes[bystanderIndex]);
-
+            _currentPlayers[bystanderIndex] = bystanderPlayer;
+            unassignedIndexes.Remove(bystanderIndex);
         }
 
-        Console.WriteLine("Built Bystander");
+        _logger.Log(LogLevel.Debug, "Built Bystander");
         foreach (var player in _currentPlayers)
         {
-            Console.WriteLine($"{player.Name} | {player.Role}");
+            _logger.Log(LogLevel.Debug, $"{player.Name} | {player.Role}");
         }
 
-        Console.WriteLine("Unassigned indexes:");
+        _logger.Log(LogLevel.Debug, "Unassigned indexes:");
         foreach (var playerIndex in unassignedIndexes.ToList())  // Iterate over unassigned players
         {
-            Console.WriteLine(playerIndex);
+            _logger.Log(LogLevel.Debug, $"{playerIndex}");
         }
 
         // 4. Assign remaining players random roles from citizenRoles
         foreach (var playerIndex in unassignedIndexes.ToList())  // Iterate over unassigned players
         {
             // PROTOTYPE
-            Role citizenRole = citizenRoles.Count > 0
+            var citizenRole = citizenRoles.Count > 0
                            ? (Role)citizenRoles[random.Next(citizenRoles.Count)].Clone()
                            : (Role)originalCitizenRoles[random.Next(originalCitizenRoles.Count)].Clone();
             // BUILDER
-            IPlayerBuilder citizenBuilder = roleFactory.GetCitizenBuilder(_currentPlayers[playerIndex].WebSocket);
+            var citizenBuilder = new PlayerBuilder(_currentPlayers[playerIndex].WebSocket);
             var citizenPlayer = citizenBuilder.SetName(_currentPlayers[playerIndex].Name)
                                               .SetRole(citizenRole)
                                               .SetAlive(true)
-                                              .SetLoggedIn(_currentPlayers[playerIndex].IsLoggedIn)
                                               .SetHost(_currentPlayers[playerIndex].IsHost)
                                               .Build();
 
@@ -740,18 +733,18 @@ public class GameService : IGameService
             citizenRoles.Remove(citizenRole);
         }
 
-        Console.WriteLine("Built Citizen");
+        _logger.Log(LogLevel.Debug, "Built Citizen");
         foreach (var player in _currentPlayers)
         {
-            Console.WriteLine($"{player.Name} | {player.Role}");
+            _logger.Log(LogLevel.Debug, $"{player.Name} | {player.Role}");
         }
 
-        Console.WriteLine("Final");
+        _logger.Log(LogLevel.Debug, "Finished building roles");
 
         // Notify each player of their assigned role
         foreach (var player in _currentPlayers)
         {
-            Console.WriteLine($"{player.Name} | {player.RoleName}");
+            _logger.Log($"{player.Name} | {player.RoleName}");
             await player.SendMessage(new CommandMessage
             {
                 Base = ResponseCommands.RoleAssigned,
@@ -760,6 +753,8 @@ public class GameService : IGameService
         }
     }
 
+    private Player GetByConnection(WebSocket webSocket) =>
+        _currentPlayers.FirstOrDefault(x => x.WebSocket == webSocket);
 
     private int GetAccompliceCount(int playerCount)
     {

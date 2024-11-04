@@ -1,12 +1,13 @@
+using Mafia.Server.Models;
 using Mafia.Server.Models.Strategy;
 
 namespace Mafia.Server;
 
-public static class GameConfiguration
+public class BasicGameConfiguration : IGameConfiguration
 {
-    public const int BeginCountdown = 5000;
-    public const int DayPhaseDuration = 10 * 1000;
-    public const int NightPhaseDuration = 20 * 1000;
+    public int BeginCountdown => 5000;
+    public int DayPhaseDuration => 10 * 1000;
+    public int NightPhaseDuration => 20 * 1000;
     
     public static List<string> ActionOrder = new()
     {

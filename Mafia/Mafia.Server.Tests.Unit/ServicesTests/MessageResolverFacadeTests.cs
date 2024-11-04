@@ -1,3 +1,4 @@
+using System.Net.WebSockets;
 using Mafia.Server.Models;
 using Mafia.Server.Services.ChatService;
 using Mafia.Server.Services.GameService;
@@ -7,22 +8,24 @@ using Moq;
 
 namespace Mafia.Server.Tests.Unit.ServicesTests;
 
-public class MessageResolverTests
+public class MessageResolverFacadeTests
 {
-    private readonly IMessageResolver _sut;
+    private readonly IMessageResolverFacade _sut;
     private readonly Mock<IGameService> _gameServiceMock;
     private readonly Mock<IChatService> _chatServiceMock;
+    private readonly Mock<WebSocket> _socketMock;
 
     private readonly Player _testPlayer;
 
-    public MessageResolverTests()
+    public MessageResolverFacadeTests()
     {
         _gameServiceMock = new Mock<IGameService>();
         _chatServiceMock = new Mock<IChatService>();
+        _socketMock = new Mock<WebSocket>();
 
-        _sut = new MessageResolver(_gameServiceMock.Object, _chatServiceMock.Object);
+        _sut = new MessageResolverFacade(_gameServiceMock.Object, _chatServiceMock.Object);
 
-        _testPlayer = new Player(MockWebSocket.Get());
+        _testPlayer = new Player(_socketMock.Object);
     }
 
     [Fact]
@@ -30,10 +33,10 @@ public class MessageResolverTests
     {
         // Arrange
         var message = "login:my_username";
-        _gameServiceMock.Setup(x => x.TryAddPlayer(_testPlayer, "my_username"));
+        _gameServiceMock.Setup(x => x.TryAddPlayer(_socketMock.Object, "my_username"));
         
         // Act
-        _sut.HandleMessage(_testPlayer, message);
+        _sut.HandleMessage(_socketMock.Object, message);
         
         // Assert
         _gameServiceMock.VerifyAll();
@@ -44,10 +47,10 @@ public class MessageResolverTests
     {
         // Arrange
         var message = "disconnect";
-        _gameServiceMock.Setup(x => x.DisconnectPlayer(_testPlayer));
+        _gameServiceMock.Setup(x => x.DisconnectPlayer(_socketMock.Object));
         
         // Act
-        _sut.HandleMessage(_testPlayer, message);
+        _sut.HandleMessage(_socketMock.Object, message);
         
         // Assert
         _gameServiceMock.VerifyAll();

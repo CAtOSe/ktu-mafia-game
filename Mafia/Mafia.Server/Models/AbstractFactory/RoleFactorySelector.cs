@@ -10,8 +10,6 @@
                     return new BasicRoleFactory();
                 case "advanced":
                     return new AdvancedRoleFactory();
-                /*case "Expert":
-                    return new ExpertRoleFactory();*/
                 default:
                     return null;
             }
