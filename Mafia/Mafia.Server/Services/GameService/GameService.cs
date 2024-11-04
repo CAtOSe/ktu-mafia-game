@@ -25,6 +25,7 @@ public class GameService : IGameService
     private readonly IChatService _chatService;
     private readonly TimeProvider _timeProvider;
     private readonly IChatServiceAdapter _chatAdapter;
+    private readonly IGameConfigurationFactory _gameConfigurationFactory;
     private IGameConfiguration _gameConfiguration;
     private GameLogger _logger;
 
@@ -47,13 +48,17 @@ public class GameService : IGameService
     public bool IsPaused { get; private set; }
     public bool GameStarted { get; private set; }
     
-    public GameService(IChatService chatService, TimeProvider timeProvider, 
-                       IChatServiceAdapter chatAdapter)
+    public GameService(
+        IChatService chatService,
+        TimeProvider timeProvider, 
+        IChatServiceAdapter chatAdapter,
+        IGameConfigurationFactory gameConfigurationFactory)
     {
         IsPaused = false;
         _chatService = chatService;
         _timeProvider = timeProvider;
         _chatAdapter = chatAdapter;
+        _gameConfigurationFactory = gameConfigurationFactory;
         _logger = GameLogger.Instance;
     }
     
@@ -175,12 +180,12 @@ public class GameService : IGameService
             return;
         }
 
-        if (_currentPlayers.Count < 2)
+        if (_currentPlayers.Count < 3)
         {
             throw new InvalidOperationException("There must be at least 3 players to start the game.");
         }
 
-        _gameConfiguration = GameConfigurationFactory.GetGameConfiguration(difficultyLevel);
+        _gameConfiguration = _gameConfigurationFactory.GetGameConfiguration(difficultyLevel);
 
         _logger.Log("Assigning roles and starting the countdown.");
         await NotifyAllPlayers(new CommandMessage
