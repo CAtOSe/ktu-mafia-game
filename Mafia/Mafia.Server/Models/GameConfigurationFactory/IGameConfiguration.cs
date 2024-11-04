@@ -1,4 +1,4 @@
-namespace Mafia.Server.Models;
+namespace Mafia.Server.Models.GameConfigurationFactory;
 
 public interface IGameConfiguration
 {

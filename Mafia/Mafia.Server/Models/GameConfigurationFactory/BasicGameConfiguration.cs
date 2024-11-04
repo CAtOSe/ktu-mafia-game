@@ -1,4 +1,5 @@
 using Mafia.Server.Models;
+using Mafia.Server.Models.GameConfigurationFactory;
 using Mafia.Server.Models.Strategy;
 
 namespace Mafia.Server;
