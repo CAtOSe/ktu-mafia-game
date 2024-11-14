@@ -36,10 +36,23 @@ namespace Mafia.Server.Models.AbstractFactory.Roles
             _actionExecutor = actionExecutor;
         }
 
+        // TEMPLATE METHOD
         public virtual Task ExecuteAction(Player user, Player target, RoleActionContext context, List<ChatMessage> nightMessages)
         {
-            return _actionExecutor.ExecuteAction(user, target, context, nightMessages);
+            // Run before-action hook
+            BeforeAction(user, target, nightMessages);
+
+            // Delegate to the assigned executor (Strategy pattern)
+            _actionExecutor.ExecuteAction(user, target, context, nightMessages);
+
+            // Run after-action hook
+            AfterAction(user, target, nightMessages);
+
+            return Task.CompletedTask;
         }
+
+        protected virtual Task BeforeAction(Player user, Player target, List<ChatMessage> nightMessages) => Task.CompletedTask;
+        protected virtual Task AfterAction(Player user, Player target, List<ChatMessage> nightMessages) => Task.CompletedTask;
 
         public virtual IRolePrototype Clone()
         {

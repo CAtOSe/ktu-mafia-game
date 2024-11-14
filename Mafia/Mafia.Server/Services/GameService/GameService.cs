@@ -339,7 +339,7 @@ public class GameService : IGameService
             // Assign the action executor to the role
             user.Role.SetActionExecutor(actionExecutor);
 
-            // Execute the action logic through the assigned executor
+            // Execute the action logic through the assigned executor, uses TEMPLATE METHOD
             await user.Role.ExecuteAction(user, target, context, nightMessages);
         }
 
