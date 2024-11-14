@@ -12,7 +12,10 @@ public class StandardActionExecutor : IRoleActionExecutor
 
     public Task ExecuteAction(Player user, Player target, RoleActionContext context, List<ChatMessage> messages)
     {
-        _roleAction.Execute(user, target, context, messages);
+        if (context != null)
+        {
+            _roleAction.Execute(user, target, context, messages);
+        }
         return Task.CompletedTask;
     }
 }

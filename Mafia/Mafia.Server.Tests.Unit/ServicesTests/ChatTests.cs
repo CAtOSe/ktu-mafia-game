@@ -20,8 +20,8 @@ public class ChatTests
     public ChatTests()
     {
         _sut = new ChatService();
-        _alivePlayer = new Player(MockWebSocket.Get()) { IsAlive = true, Name = "AlivePlayer" };
-        _deadPlayer = new Player(MockWebSocket.Get()) { IsAlive = false, Name = "DeadPlayer" };
+        _alivePlayer = new Player(MockSocketHandler.Get()) { IsAlive = true, Name = "AlivePlayer" };
+        _deadPlayer = new Player(MockSocketHandler.Get()) { IsAlive = false, Name = "DeadPlayer" };
 
         _testPlayers = new List<Player> { _alivePlayer, _deadPlayer };
         _sut.SetPlayers(_testPlayers);

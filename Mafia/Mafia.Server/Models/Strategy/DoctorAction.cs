@@ -21,7 +21,7 @@
                 chatMessageToUser = new ChatMessage("", messageToUser, user.Name, "nightNotification");
                 messages.Add(chatMessageToUser);
 
-                var killer = context.QueuedActions.FirstOrDefault(a => a.Target == target && a.User != user)?.Target;
+                var killer = context.QueuedActions.FirstOrDefault(a => a.Target == target && a.User.Role.RoleType == "Killer")?.User;
                 if (killer is not null)
                 {
                     string messageToKiller = "Your target survived the attack.";

@@ -1,5 +1,6 @@
 ﻿using Mafia.Server.Models.AbstractFactory.Roles.Accomplices;
 using Mafia.Server.Models.Prototype;
+using Mafia.Server.Models.Strategy;
 
 namespace Mafia.Server.Models.AbstractFactory.Roles.Citizens
 {
@@ -10,6 +11,8 @@ namespace Mafia.Server.Models.AbstractFactory.Roles.Citizens
             Name = "Bystander";
             Ability = "You have no ability";
             AbilityUsesLeft = abilityUses;
+            RoleAlgorithm = new NoAction();
+            RoleAlgorithmPoisoned = new NoAction();
         }
 
         public override IRolePrototype Clone()

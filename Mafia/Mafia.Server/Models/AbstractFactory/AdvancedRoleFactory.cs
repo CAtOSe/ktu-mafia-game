@@ -28,8 +28,8 @@ namespace Mafia.Server.Models.AbstractFactory
             MorningAnnouncer announcer = new MorningAnnouncer();
             // DECORATOR
             DeathAnnouncementComponent deathAnnouncementComponent = new DeathAnnouncementComponent();
-            announcer = new DesignPatternIndicatorDecorator(deathAnnouncementComponent);
-            announcer = new AlignmentAnnouncementDecorator(announcer);
+            announcer = new AlignmentAnnouncementDecorator(deathAnnouncementComponent);
+            announcer = new DesignPatternIndicatorDecorator(announcer);
 
             return announcer;
         }

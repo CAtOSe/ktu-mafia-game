@@ -25,6 +25,7 @@ public class GameService : IGameService
     private readonly IChatService _chatService;
     private readonly TimeProvider _timeProvider;
     private readonly IChatServiceAdapter _chatAdapter;
+    private readonly IGameConfigurationFactory _gameConfigurationFactory;
     private IGameConfiguration _gameConfiguration;
     private GameLogger _logger;
 
@@ -47,13 +48,17 @@ public class GameService : IGameService
     public bool IsPaused { get; private set; }
     public bool GameStarted { get; private set; }
     
-    public GameService(IChatService chatService, TimeProvider timeProvider, 
-                       IChatServiceAdapter chatAdapter)
+    public GameService(
+        IChatService chatService,
+        TimeProvider timeProvider, 
+        IChatServiceAdapter chatAdapter,
+        IGameConfigurationFactory gameConfigurationFactory)
     {
         IsPaused = false;
         _chatService = chatService;
         _timeProvider = timeProvider;
         _chatAdapter = chatAdapter;
+        _gameConfigurationFactory = gameConfigurationFactory;
         _logger = GameLogger.Instance;
     }
     
@@ -175,12 +180,12 @@ public class GameService : IGameService
             return;
         }
 
-        if (_currentPlayers.Count < 2)
+        if (_currentPlayers.Count < 3)
         {
             throw new InvalidOperationException("There must be at least 3 players to start the game.");
         }
 
-        _gameConfiguration = GameConfigurationFactory.GetGameConfiguration(difficultyLevel);
+        _gameConfiguration = _gameConfigurationFactory.GetGameConfiguration(difficultyLevel);
 
         _logger.Log("Assigning roles and starting the countdown.");
         await NotifyAllPlayers(new CommandMessage
@@ -293,6 +298,15 @@ public class GameService : IGameService
 
     private async Task ExecuteNightActions()
     {
+        var actionOrder = new List<string>
+        {
+            "Poisoner", "Assassin", "Hemlock",
+            "Soldier", "Tracker", "Lookout", "Doctor"
+        };
+
+        // Sort nightActions by actionType based on the custom order
+        _actionQueue = _actionQueue.OrderBy(action => actionOrder.IndexOf(action.User.RoleName)).ToList();
+
         // Initialize the context for night actions
         var context = new RoleActionContext
         {
@@ -301,6 +315,15 @@ public class GameService : IGameService
         };
 
         List<ChatMessage> nightMessages = new List<ChatMessage>();
+
+        // Dictionary to track players' alive status before the actions
+        Dictionary<Player, bool> initialAliveStatus = new Dictionary<Player, bool>();
+
+        foreach (var player in _currentPlayers)
+        {
+            player.IsPoisoned = false;
+            initialAliveStatus[player] = player.IsAlive;
+        }
 
         // Start executing night actions in the queue
         foreach (var nightAction in _actionQueue)
@@ -328,6 +351,26 @@ public class GameService : IGameService
 
         // Clear the action queue after all actions have been executed
         _actionQueue.Clear();
+
+        // Day Start Announcements
+        int deathInNightCount = 0;
+        foreach (var player in _currentPlayers)
+        {
+            // Check if the player died (alive status changed from true to false)
+            if (initialAliveStatus[player] && !player.IsAlive)
+            {
+                deathInNightCount++;
+                var deathMessage = new ChatMessage("", "You died.", player.Name, "nightNotification");
+                _playersWhoDiedInTheNight.Add(player);
+                await _chatAdapter.SendMessage(deathMessage);
+            }
+        }
+    }
+        /*if(deathInNightCount == 0)
+        {
+            var dayAnnouncement = new ChatMessage("","No one has died in the night.", "everyone", "dayNotification");
+            _dayStartAnnouncements.Add(dayAnnouncement);
+        }
     }
 
     //BEFORE BRIDGE
@@ -401,16 +444,8 @@ public class GameService : IGameService
         _actionQueue.Clear();
     }*/
 
-    private async Task ExecuteDayActions()
+        private async Task ExecuteDayActions()
     {
-        _morningAnnouncer.DayStartAnnouncements(_currentPlayers, _playersWhoDiedInTheNight, _dayStartAnnouncements); // DECORATOR
-        //Sending "Player 1 has died in the night."
-        foreach (ChatMessage announcement in _dayStartAnnouncements)
-        {
-            await _chatAdapter.SendMessage(announcement);
-        }
-        _dayStartAnnouncements.Clear();
-        _playersWhoDiedInTheNight.Clear();
         
         var playerVotes = _currentPlayers.ToDictionary(x => x, _ => 0);
         
@@ -508,6 +543,7 @@ public class GameService : IGameService
                 await _chatAdapter.SendMessage("", phaseName + " " + _phaseCounter, "everyone",
                     chatMessageType); // DAY 1 / NIGHT 1
                 await UpdateDayNightPhase();
+                await AnnounceNightDeaths();
             }
             else
             {
@@ -544,7 +580,21 @@ public class GameService : IGameService
         }
     }
 
-    
+    private async Task AnnounceNightDeaths()
+    {
+        if (_isDayPhase)
+        {
+            _morningAnnouncer.DayStartAnnouncements(_currentPlayers, _playersWhoDiedInTheNight, _dayStartAnnouncements); // DECORATOR
+            //Sending "Player 1 has died in the night."
+            foreach (ChatMessage announcement in _dayStartAnnouncements)
+            {
+                await _chatAdapter.SendMessage(announcement);
+            }
+            _dayStartAnnouncements.Clear();
+            _playersWhoDiedInTheNight.Clear();
+        }
+    }
+
     private async Task UpdateDayNightPhase()
     {
         await SendAlivePlayerList();
