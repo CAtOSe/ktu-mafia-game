@@ -15,6 +15,38 @@ namespace Mafia.Server.Models.AbstractFactory.Roles.Citizens
             RoleAlgorithmPoisoned = new SoldierActionPoisoned();
         }
 
+        // TEMPLATE METHOD: Pre-action hook
+        protected override Task BeforeAction(Player user, Player target, List<ChatMessage> messages)
+        {
+            string text = string.Empty;
+            if (AbilityUsesLeft <= 0)
+            {
+                text = "You have no abilities left.";
+            }
+            else
+            {
+                text = $"Your action target: {target.Name}.";
+            }
+
+            messages.Add(new ChatMessage("", $"TEMPLATE METHOD: {text}", user.Name, "nightNotification"));
+            Console.WriteLine($"TEMPLATE METHOD: Before action of {Name}");
+            return Task.CompletedTask;
+        }
+
+        // TEMPLATE METHOD: Post-action hook
+        protected override Task AfterAction(Player user, Player target, List<ChatMessage> messages)
+        {
+            if (target != null && !target.IsAlive)
+            {
+                target.IsAlive = true;
+                AbilityUsesLeft--;
+                messages.Add(new ChatMessage("", "TEMPLATE METHOD: Your shield protected you from an attack!",
+                    user.Name, "nightNotification"));
+            }
+            Console.WriteLine($"TEMPLATE METHOD: After action of {Name}");
+            return Task.CompletedTask;
+        }
+
         public override IRolePrototype Clone()
         {
             var clone = (Soldier)this.MemberwiseClone();
