@@ -15,32 +15,42 @@ namespace Mafia.Server.Models.AbstractFactory.Roles.Accomplices
             RoleAlgorithmPoisoned = new PoisonerAction();
         }
 
-        // TEMPLATE METHOD: Pre-action hook
-        protected override Task BeforeAction(Player user, Player target, List<ChatMessage> messages)
+        // TEMPLATE METHOD hook
+        protected override bool NeedBeforeAction()
         {
-            string text = string.Empty;
             if (AbilityUsesLeft <= 0)
             {
-                text = "You have no abilities left.";
+                return false;
             }
-            else
-            {
-                text = $"Your action target: {target.Name}.";
-            }
+            return true;
+        }
 
+        // TEMPLATE METHOD hook
+        protected override bool NeedAfterAction(Player target)
+        {
+            if (target != null)
+            {
+                return true;
+            }
+            return false;
+        }
+
+        // TEMPLATE METHOD: Pre-action
+        protected override Task BeforeAction(Player user, Player target, List<ChatMessage> messages)
+        {
+            string text = $"Your action target: {target.Name}.";
+            
             messages.Add(new ChatMessage("", $"TEMPLATE METHOD: {text}", user.Name, "nightNotification"));
             Console.WriteLine($"TEMPLATE METHOD: Before action of {Name}");
             return Task.CompletedTask;
         }
 
-        // TEMPLATE METHOD: Post-action hook
+        // TEMPLATE METHOD: Post-action
         protected override Task AfterAction(Player user, Player target, List<ChatMessage> messages)
         {
-            if (target != null)
-            {
-                messages.Add(new ChatMessage("", $"TEMPLATE METHOD: {target.Name} has been poisoned and cannot use their abilities tonight.",
-                    user.Name, "nightNotification"));
-            }
+            messages.Add(new ChatMessage("", $"TEMPLATE METHOD: {target.Name} has been poisoned and cannot use their abilities tonight.",
+                user.Name, "nightNotification"));
+            
             Console.WriteLine($"TEMPLATE METHOD: After action of {Name}");
             return Task.CompletedTask;
         }

@@ -1,6 +1,7 @@
 ﻿using Mafia.Server.Models.Bridge;
 using Mafia.Server.Models.Prototype;
 using Mafia.Server.Models.Strategy;
+using System.Reflection.Metadata.Ecma335;
 
 namespace Mafia.Server.Models.AbstractFactory.Roles
 {
@@ -39,18 +40,24 @@ namespace Mafia.Server.Models.AbstractFactory.Roles
         // TEMPLATE METHOD
         public virtual Task ExecuteAction(Player user, Player target, RoleActionContext context, List<ChatMessage> nightMessages)
         {
-            // Run before-action hook
-            BeforeAction(user, target, nightMessages);
+            if (NeedBeforeAction()) // hook
+            {
+                BeforeAction(user, target, nightMessages);
+            }
 
             // Delegate to the assigned executor (Strategy pattern)
             _actionExecutor.ExecuteAction(user, target, context, nightMessages);
 
-            // Run after-action hook
-            AfterAction(user, target, nightMessages);
+            if (NeedAfterAction(target)) // hook
+            {
+                AfterAction(user, target, nightMessages);
+            }
 
             return Task.CompletedTask;
         }
 
+        protected virtual bool NeedBeforeAction() => false;
+        protected virtual bool NeedAfterAction(Player target) => false;
         protected virtual Task BeforeAction(Player user, Player target, List<ChatMessage> nightMessages) => Task.CompletedTask;
         protected virtual Task AfterAction(Player user, Player target, List<ChatMessage> nightMessages) => Task.CompletedTask;
 
