@@ -40,26 +40,31 @@ namespace Mafia.Server.Models.AbstractFactory.Roles
         // TEMPLATE METHOD
         public virtual Task ExecuteAction(Player user, Player target, RoleActionContext context, List<ChatMessage> nightMessages)
         {
-            if (NeedBeforeAction()) // hook
+            if (HasAbilitiesLeft()) // hook
             {
-                BeforeAction(user, target, nightMessages);
+                ShowAbilitiesCount(user, target, nightMessages); // perform template
+
+                if (IsTargetAcceptable(target)) // hook
+                {
+                    // Delegate to the assigned executor (Strategy pattern)
+                    _actionExecutor.ExecuteAction(user, target, context, nightMessages);
+
+                    ShowSuccessMessage(user, target, nightMessages); // perform template
+                }              
             }
-
-            // Delegate to the assigned executor (Strategy pattern)
-            _actionExecutor.ExecuteAction(user, target, context, nightMessages);
-
-            if (NeedAfterAction(target)) // hook
+            else
             {
-                AfterAction(user, target, nightMessages);
-            }
-
+                ShowErrorMessage(user, nightMessages); // perform template
+            }         
+        
             return Task.CompletedTask;
         }
 
-        protected virtual bool NeedBeforeAction() => false;
-        protected virtual bool NeedAfterAction(Player target) => false;
-        protected virtual Task BeforeAction(Player user, Player target, List<ChatMessage> nightMessages) => Task.CompletedTask;
-        protected virtual Task AfterAction(Player user, Player target, List<ChatMessage> nightMessages) => Task.CompletedTask;
+        protected virtual bool HasAbilitiesLeft() => false;
+        protected virtual bool IsTargetAcceptable(Player target) => false;
+        protected virtual Task ShowAbilitiesCount(Player user, Player target, List<ChatMessage> nightMessages) => Task.CompletedTask;
+        protected virtual Task ShowSuccessMessage(Player user, Player target, List<ChatMessage> nightMessages) => Task.CompletedTask;
+        protected virtual Task ShowErrorMessage(Player user, List<ChatMessage> nightMessages) => Task.CompletedTask;
 
         public virtual IRolePrototype Clone()
         {
