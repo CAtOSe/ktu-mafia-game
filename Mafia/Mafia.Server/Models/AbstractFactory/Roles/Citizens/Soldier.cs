@@ -15,34 +15,43 @@ namespace Mafia.Server.Models.AbstractFactory.Roles.Citizens
             RoleAlgorithmPoisoned = new SoldierActionPoisoned();
         }
 
-        // TEMPLATE METHOD: Pre-action hook
-        protected override Task BeforeAction(Player user, Player target, List<ChatMessage> messages)
+        // TEMPLATE METHOD hook
+        protected override bool NeedBeforeAction()
         {
-            string text = string.Empty;
             if (AbilityUsesLeft <= 0)
             {
-                text = "You have no abilities left.";
+                return false;
             }
-            else
-            {
-                text = $"Your action target: {target.Name}.";
-            }
+            return true;
+        }
 
+        // TEMPLATE METHOD hook
+        protected override bool NeedAfterAction(Player target)
+        {
+            if (target != null && !target.IsAlive)
+            {
+                return true;
+            }
+            return false;
+        }
+
+        // TEMPLATE METHOD: Pre-action
+        protected override Task BeforeAction(Player user, Player target, List<ChatMessage> messages)
+        {
+            string text = $"Your action target: {target.Name}.";
             messages.Add(new ChatMessage("", $"TEMPLATE METHOD: {text}", user.Name, "nightNotification"));
             Console.WriteLine($"TEMPLATE METHOD: Before action of {Name}");
             return Task.CompletedTask;
         }
 
-        // TEMPLATE METHOD: Post-action hook
+        // TEMPLATE METHOD: Post-action
         protected override Task AfterAction(Player user, Player target, List<ChatMessage> messages)
         {
-            if (target != null && !target.IsAlive)
-            {
-                target.IsAlive = true;
-                AbilityUsesLeft--;
-                messages.Add(new ChatMessage("", "TEMPLATE METHOD: Your shield protected you from an attack!",
-                    user.Name, "nightNotification"));
-            }
+            target.IsAlive = true;
+            AbilityUsesLeft--;
+            messages.Add(new ChatMessage("", "TEMPLATE METHOD: Your shield protected you from an attack!",
+                user.Name, "nightNotification"));
+            
             Console.WriteLine($"TEMPLATE METHOD: After action of {Name}");
             return Task.CompletedTask;
         }
