@@ -16,7 +16,7 @@ namespace Mafia.Server.Models.AbstractFactory.Roles.Killers
         }
 
         // TEMPLATE METHOD hook
-        protected override bool NeedBeforeAction()
+        protected override bool HasAbilitiesLeft()
         {
             if (AbilityUsesLeft <= 0)
             {
@@ -26,7 +26,7 @@ namespace Mafia.Server.Models.AbstractFactory.Roles.Killers
         }
 
         // TEMPLATE METHOD hook
-        protected override bool NeedAfterAction(Player target)
+        protected override bool IsTargetAcceptable(Player target)
         {
             if (target != null)
             {
@@ -35,23 +35,34 @@ namespace Mafia.Server.Models.AbstractFactory.Roles.Killers
             return false;
         }
 
-        // TEMPLATE METHOD: Pre-action
-        protected override Task BeforeAction(Player user, Player target, List<ChatMessage> messages)
+        // TEMPLATE METHOD: abilities count
+        protected override Task ShowAbilitiesCount(Player user, Player target, List<ChatMessage> messages)
         {
-            string text = $"Your action target: {target.Name}.";            
-
+            int abilitiesLeft = AbilityUsesLeft - 1;
+            string text = $"You have remaining abilities: {abilitiesLeft}.";
             messages.Add(new ChatMessage("", $"TEMPLATE METHOD: {text}", user.Name, "nightNotification"));
-            Console.WriteLine($"TEMPLATE METHOD: Before action of {Name}");
+            Console.WriteLine($"TEMPLATE METHOD: abilities count was shown to {user.Name} ({Name})");
             return Task.CompletedTask;
         }
 
-        // TEMPLATE METHOD: Post-action
-        protected override Task AfterAction(Player user, Player target, List<ChatMessage> messages)
+        // TEMPLATE METHOD: success message
+        protected override Task ShowSuccessMessage(Player user, Player target, List<ChatMessage> messages)
         {
+            if (AbilityUsesLeft > 0) AbilityUsesLeft--; // Decrease ability uses
             messages.Add(new ChatMessage("", $"TEMPLATE METHOD: {target.Name} has been poisoned and will die the next night.",
                 user.Name, "nightNotification"));
-            
-            Console.WriteLine($"TEMPLATE METHOD: After action of {Name}");
+
+            Console.WriteLine($"TEMPLATE METHOD: success message was shown to {user.Name} ({Name})");
+            return Task.CompletedTask;
+        }
+
+        // TEMPLATE METHOD: error message
+        protected override Task ShowErrorMessage(Player user, List<ChatMessage> messages)
+        {
+            messages.Add(new ChatMessage("", "TEMPLATE METHOD: You have no remaining abilities!",
+                user.Name, "nightNotification"));
+
+            Console.WriteLine($"TEMPLATE METHOD: error message was shown to {user.Name} ({Name})");
             return Task.CompletedTask;
         }
 
