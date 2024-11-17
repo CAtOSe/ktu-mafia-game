@@ -26,6 +26,7 @@ public class MessageResolverFacadeTests
         _sut = new MessageResolverFacade(_gameServiceMock.Object, _chatServiceMock.Object);
 
         _testPlayer = new Player(_socketMock.Object);
+        _gameServiceMock.Setup(x => x.GetPlayers()).Returns([]);
     }
 
     [Fact]

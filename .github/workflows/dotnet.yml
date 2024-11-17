@@ -1,0 +1,44 @@
+# This workflow will build a .NET project
+# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-net
+
+name: Backend build & test
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: 8.0.x
+    - name: Restore dependencies
+      run: dotnet restore
+      working-directory: ./Mafia
+    - name: Build
+      run: dotnet build --no-restore
+      working-directory: ./Mafia
+    - name: Test and collect coverage
+      run: dotnet test --no-build --logger "trx" --collect:"XPlat Code Coverage" --results-directory ./TestResults
+      working-directory: ./Mafia
+    - name: Generate Coverage Report
+      working-directory: ./Mafia
+      run: |
+        dotnet tool install --global dotnet-reportgenerator-globaltool
+        reportgenerator \
+        -reports:TestResults/**/coverage.cobertura.xml \
+        -targetdir:TestResults/CoverageReport \
+        -reporttypes:Html
+    - name: Upload Coverage Report
+      uses: actions/upload-artifact@v3
+      with:
+        name: coverage-report
+        path: Mafia/TestResults/CoverageReport
