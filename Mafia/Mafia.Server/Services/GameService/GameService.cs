@@ -14,6 +14,7 @@ using Mafia.Server.Logging;
 using Mafia.Server.Models.Bridge;
 using CommandMessage = Mafia.Server.Models.Messages.CommandMessage;
 using Mafia.Server.Models.Adapter;
+using Mafia.Server.Models.Flyweight;
 using Mafia.Server.Models.GameConfigurationFactory;
 using LogLevel = Mafia.Server.Logging.LogLevel;
 using RoleFactorySelector = Mafia.Server.Models.AbstractFactory.RoleFactorySelector;
@@ -690,6 +691,7 @@ public class GameService : IGameService
         {
             _logger.Log(LogLevel.Debug, $"{player.Name} | {player.Role}");
         }
+        
 
         // 2. Assign accomplice roles
         for (var i = 0; i < accompliceCount; i++)
@@ -790,7 +792,7 @@ public class GameService : IGameService
         _logger.Log(LogLevel.Debug, "Finished building roles");
 
         // Notify each player of their assigned role
-        foreach (var player in _currentPlayers)
+        /*foreach (var player in _currentPlayers)
         {
             _logger.Log($"{player.Name} | {player.RoleName}");
             await player.SendMessage(new CommandMessage
@@ -802,6 +804,26 @@ public class GameService : IGameService
                     player.Role.Alignment,
                     player.Role.Ability,
                     player.Role.Goal
+                }
+            });
+        }*/
+        // ADDED FLYWEIGHT
+        // Notify each player of their assigned role and image
+        foreach (var player in _currentPlayers)
+        {
+            var roleImagePath = RoleImageFactory.GetRoleImage(player.RoleName);
+
+            // Notify each player of their assigned role, including the image path
+            await player.SendMessage(new CommandMessage
+            {
+                Base = ResponseCommands.RoleAssigned,
+                Arguments = new string[]
+                {
+                    player.RoleName,
+                    player.Role.Alignment,
+                    player.Role.Ability,
+                    player.Role.Goal,
+                    roleImagePath // Includes the image path
                 }
             });
         }
