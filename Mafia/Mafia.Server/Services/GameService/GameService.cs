@@ -17,6 +17,7 @@ using Mafia.Server.Models.Adapter;
 using Mafia.Server.Models.GameConfigurationFactory;
 using LogLevel = Mafia.Server.Logging.LogLevel;
 using RoleFactorySelector = Mafia.Server.Models.AbstractFactory.RoleFactorySelector;
+using Mafia.Server.Models.Iterator;
 
 namespace Mafia.Server.Services.GameService;
 
@@ -298,14 +299,11 @@ public class GameService : IGameService
 
     private async Task ExecuteNightActions()
     {
-        var actionOrder = new List<string>
-        {
-            "Poisoner", "Assassin", "Hemlock",
-            "Soldier", "Tracker", "Lookout", "Doctor"
-        };
+        // Create Concrete Aggregator
+        var actionQueue = new ActionQueue(_actionQueue);
 
-        // Sort nightActions by actionType based on the custom order
-        _actionQueue = _actionQueue.OrderBy(action => actionOrder.IndexOf(action.User.RoleName)).ToList();
+        // Get the iterator from the ActionQueue
+        var iterator = actionQueue.CreateIterator();
 
         // Initialize the context for night actions
         var context = new RoleActionContext
@@ -325,8 +323,8 @@ public class GameService : IGameService
             initialAliveStatus[player] = player.IsAlive;
         }
 
-        // Start executing night actions in the queue
-        foreach (var nightAction in _actionQueue)
+        // Start executing night actions in the queue, using Iterator
+        for (var nightAction = iterator.First(); nightAction != null; nightAction = iterator.Next()) // Iterator
         {
             var user = nightAction.User;
             var target = nightAction.Target;
