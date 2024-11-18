@@ -2,6 +2,8 @@
 using Mafia.Server.Command;
 using Mafia.Server.Logging;
 using Mafia.Server.Models;
+using Mafia.Server.Models.AbstractFactory.Roles;
+using Mafia.Server.Models.Flyweight;
 using Mafia.Server.Models.Messages;
 using Mafia.Server.Services.ChatService;
 using Mafia.Server.Services.GameService;
@@ -79,5 +81,28 @@ namespace Mafia.Server.Controllers
                 return StatusCode(500, "Internal Server Error");
             }
         }
+        //Flyweight
+        /*[HttpGet("{roleName}")]
+        public IActionResult GetRoleImage(string role)
+        {
+            var imagePath = RoleImageFactory.GetRoleImage(role);
+            return Ok(new { Role = role, ImagePath = imagePath });
+        }*/
+        
+        [HttpGet("{roleName}")]
+        public IActionResult GetRoleImage(string roleName)
+        {
+            // Path to the pictures folder
+            var imagePath = Path.Combine(Directory.GetCurrentDirectory(), "Models", "Flyweight", "pictures", $"{roleName.ToLower()}.png");
+
+            if (!System.IO.File.Exists(imagePath))
+            {
+                return NotFound($"Image for role '{roleName}' not found.");
+            }
+
+            var fileBytes = System.IO.File.ReadAllBytes(imagePath);
+            return File(fileBytes, "image/png");
+        }
+
     }
 }
