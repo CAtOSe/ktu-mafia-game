@@ -790,28 +790,14 @@ public class GameService : IGameService
         }
 
         _logger.Log(LogLevel.Debug, "Finished building roles");
-
-        // Notify each player of their assigned role
-        /*foreach (var player in _currentPlayers)
-        {
-            _logger.Log($"{player.Name} | {player.RoleName}");
-            await player.SendMessage(new CommandMessage
-            {
-                Base = ResponseCommands.RoleAssigned,
-                Arguments = new string[]
-                {
-                    player.RoleName,
-                    player.Role.Alignment,
-                    player.Role.Ability,
-                    player.Role.Goal
-                }
-            });
-        }*/
         // ADDED FLYWEIGHT
         // Notify each player of their assigned role and image
         foreach (var player in _currentPlayers)
         {
-            var roleImagePath = RoleImageFactory.GetRoleImage(player.RoleName);
+            var roleImage = RoleImageFactory.GetRoleImage(player.RoleName);
+
+            // Retrieve the image path as a string
+            var roleImagePath = roleImage.GetImagePath();
 
             // Notify each player of their assigned role, including the image path
             await player.SendMessage(new CommandMessage
