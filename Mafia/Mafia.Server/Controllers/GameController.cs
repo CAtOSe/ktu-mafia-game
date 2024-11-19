@@ -81,14 +81,8 @@ namespace Mafia.Server.Controllers
                 return StatusCode(500, "Internal Server Error");
             }
         }
-        //Flyweight
-        /*[HttpGet("{roleName}")]
-        public IActionResult GetRoleImage(string role)
-        {
-            var imagePath = RoleImageFactory.GetRoleImage(role);
-            return Ok(new { Role = role, ImagePath = imagePath });
-        }*/
         
+        //FLYWEIGHT
         [HttpGet("{roleName}")]
         public IActionResult GetRoleImage(string roleName)
         {
