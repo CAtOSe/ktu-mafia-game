@@ -2,28 +2,49 @@
 
 .gradient-border-element {
   background-color: #333;
+  max-width: 400px;
   color: white;
   box-shadow: 0 4px 10px rgb(0 0 0 / 30%);
   overflow: hidden;
   border: 2px solid transparent;
   border-image: linear-gradient(45deg, #ff6ec4, #7873f5) 1;
-  padding: 1px;
+  padding: 3px;
+  margin-left: auto; /* Push the container to the right */
+  margin-right: 5px;
 }
 
 .info-section {
+  display: flex; 
+  max-width: 400px; 
+  justify-content: space-between;
+  align-items: flex-start; 
   padding: 5px;
-  width: 200px;
+  width: auto; 
   margin: 5px;
   font-size: 12px;
 }
 
 .info-list {
+  flex: 1; 
   display: grid;
   grid-template-columns: auto 1fr;
   gap: 5px 10px;
   padding: 0;
   margin: 10px 0;
   font-size: 12px;
+}
+
+.role-image-container {
+  display: flex;
+  align-items: center; 
+  margin-left: 10px; 
+}
+
+.role-image {
+  max-width: 10px;
+  max-height: 10px;
+  border-radius: 5px;
+  margin-left: auto;
 }
 
 .info-list li {

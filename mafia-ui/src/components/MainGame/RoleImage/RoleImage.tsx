@@ -34,7 +34,12 @@ const RoleImage: React.FC<RoleImageProps> = ({ roleName }) => {
     return <p>Loading image...</p>;
   }
 
-  return <img className="role-image" src={imageSrc} alt={`${roleName} role`} />;
+  return <img
+    className="role-image"
+    src={imageSrc}
+    alt={`${roleName} role`}
+    style={{width: '200px', height: '200px'}} 
+  />;
 };
 
 export default RoleImage;
