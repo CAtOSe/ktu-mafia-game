@@ -1,4 +1,4 @@
-﻿namespace Mafia.Server.Models.Iterator
+﻿namespace Mafia.Server.Models.Iterator.ActionQueue
 {
     public interface IActionQueue // Aggregator
     {

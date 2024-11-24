@@ -41,18 +41,18 @@ public class GameService : IGameService
     private MorningAnnouncer _morningAnnouncer;
 
     private CancellationTokenSource _phaseCancelTokenSource; //  Token for canceling the phase cycle
-    
+
     public List<Player> GetPlayers() => _currentPlayers;
 
     private DateTimeOffset _lastPhaseChange;
     private int _remainingPhaseTime;
-    
+
     public bool IsPaused { get; private set; }
     public bool GameStarted { get; private set; }
-    
+
     public GameService(
         IChatService chatService,
-        TimeProvider timeProvider, 
+        TimeProvider timeProvider,
         IChatServiceAdapter chatAdapter,
         IGameConfigurationFactory gameConfigurationFactory)
     {
@@ -63,13 +63,13 @@ public class GameService : IGameService
         _gameConfigurationFactory = gameConfigurationFactory;
         _logger = GameLogger.Instance;
     }
-    
+
     public void PauseTimer()
     {
         IsPaused = true;
         _phaseCancelTokenSource.Cancel();
         var phaseTime = _isDayPhase ? _gameConfiguration.DayPhaseDuration : _gameConfiguration.NightPhaseDuration;
-        _remainingPhaseTime = phaseTime - (int) (_timeProvider.GetUtcNow() - _lastPhaseChange).TotalMilliseconds;
+        _remainingPhaseTime = phaseTime - (int)(_timeProvider.GetUtcNow() - _lastPhaseChange).TotalMilliseconds;
         var updateMessage = new CommandMessage
         {
             Base = ResponseCommands.GameUpdate,
@@ -89,12 +89,12 @@ public class GameService : IGameService
         NotifyAllPlayers(updateMessage);
         StartDayNightCycle(_remainingPhaseTime);
     }
-    
+
     public async Task DisconnectPlayer(WebSocket webSocket)
     {
         var player = GetByConnection(webSocket);
         if (player is null) return;
-        
+
         _currentPlayers.Remove(player);
         await player.SendMessage(new CommandMessage
         {
@@ -117,11 +117,11 @@ public class GameService : IGameService
                     Arguments = ["host"]
                 });
             }
-            
+
             await SendPlayerList();
         }
     }
-    
+
     public async Task TryAddPlayer(WebSocket webSocket, string username)
     {
         var existingPlayer = GetByConnection(webSocket);
@@ -134,7 +134,7 @@ public class GameService : IGameService
             }.ToString());
             return;
         }
-        
+
         var usernameTaken = _currentPlayers.Any(p =>
             p.Name.Equals(username, StringComparison.OrdinalIgnoreCase));
         if (usernameTaken)
@@ -152,7 +152,7 @@ public class GameService : IGameService
         playerBuilder.SetHost(_currentPlayers.Count == 0);
         playerBuilder.SetAlive(true);
         var player = playerBuilder.Build();
-        
+
         _currentPlayers.Add(player);
         await player.SendMessage(new CommandMessage
         {
@@ -161,7 +161,7 @@ public class GameService : IGameService
         });
         await SendPlayerList();
     }
-    
+
     private Task SendPlayerList()
     {
         _chatService.SetPlayers(_currentPlayers);
@@ -224,7 +224,7 @@ public class GameService : IGameService
         _logger.Log(LogLevel.PlayerAction, "Received NIGHT ACTION: " + actionUser.Name + " " + actionUser.Role + ", " + targetPlayer.Name);
 
         // If it is the same action that we already have, treat it as canceling action
-        var previousAction = _actionQueue.FirstOrDefault(p => p.User == actionUser); 
+        var previousAction = _actionQueue.FirstOrDefault(p => p.User == actionUser);
         bool cancelAction = previousAction != null && previousAction.Target == targetPlayer;
 
         // Remove any existing night actions from the same actionUser
@@ -238,7 +238,7 @@ public class GameService : IGameService
                 User = actionUser,
                 Target = targetPlayer
             });
-            await _chatAdapter.SendMessage("","You have chosen " + targetPlayer.Name, actionUser.Name, "nightAction");
+            await _chatAdapter.SendMessage("", "You have chosen " + targetPlayer.Name, actionUser.Name, "nightAction");
         }
         else
         {
@@ -250,7 +250,7 @@ public class GameService : IGameService
     {
         // Find the target player by username
         var targetPlayer = _currentPlayers.FirstOrDefault(x => x.Name.Equals(username, StringComparison.OrdinalIgnoreCase));
-    
+
         // Check if it's the day phase and if the target is not null
         if (!_isDayPhase || targetPlayer is null) return;
 
@@ -264,7 +264,7 @@ public class GameService : IGameService
 
         // Execute the voting action with the assigned executor
         await player.Role.ExecuteAction(player, targetPlayer, null, new List<ChatMessage>());
-    
+
         // Send appropriate message based on vote selection or cancellation
         if (player.CurrentVote != targetPlayer)
         {
@@ -365,89 +365,89 @@ public class GameService : IGameService
             }
         }
     }
-        /*if(deathInNightCount == 0)
-        {
-            var dayAnnouncement = new ChatMessage("","No one has died in the night.", "everyone", "dayNotification");
-            _dayStartAnnouncements.Add(dayAnnouncement);
-        }
+    /*if(deathInNightCount == 0)
+    {
+        var dayAnnouncement = new ChatMessage("","No one has died in the night.", "everyone", "dayNotification");
+        _dayStartAnnouncements.Add(dayAnnouncement);
+    }
+}
+
+//BEFORE BRIDGE
+/*private async Task ExecuteNightActions()
+{
+    // Sort nightActions by actionType based on the custom order
+    // nightActions = nightActions.OrderBy(action => actionOrder.IndexOf(action.Target.RoleName)).ToList();
+
+    _actionQueue = _actionQueue.Select(a =>
+    {
+        var index = GameConfiguration.ActionOrder.IndexOf(a.User.Role.RoleAlgorithm.Name);
+        var order = index == -1 ? int.MaxValue : index;
+        return new KeyValuePair<int, ActionQueueEntry>(order, a);
+    })
+        .OrderBy(x => x.Key)
+        .Select(x => x.Value)
+        .ToList();
+
+    // Dictionary to track players' alive status before the actions
+    Dictionary<Player, bool> initialAliveStatus = new Dictionary<Player, bool>();
+
+    foreach (var player in _currentPlayers)
+    {
+        player.IsPoisoned = false;
+        initialAliveStatus[player] = player.IsAlive;
     }
 
-    //BEFORE BRIDGE
-    /*private async Task ExecuteNightActions()
+    List<ChatMessage> nightMessages = new List<ChatMessage>();
+    // Perform the night actions
+    var context = new RoleActionContext
     {
-        // Sort nightActions by actionType based on the custom order
-        // nightActions = nightActions.OrderBy(action => actionOrder.IndexOf(action.Target.RoleName)).ToList();
-
-        _actionQueue = _actionQueue.Select(a =>
-        {
-            var index = GameConfiguration.ActionOrder.IndexOf(a.User.Role.RoleAlgorithm.Name);
-            var order = index == -1 ? int.MaxValue : index;
-            return new KeyValuePair<int, ActionQueueEntry>(order, a);
-        })
-            .OrderBy(x => x.Key)
-            .Select(x => x.Value)
-            .ToList();
-
-        // Dictionary to track players' alive status before the actions
-        Dictionary<Player, bool> initialAliveStatus = new Dictionary<Player, bool>();
-
-        foreach (var player in _currentPlayers)
-        {
-            player.IsPoisoned = false;
-            initialAliveStatus[player] = player.IsAlive;
-        }
-        
-        List<ChatMessage> nightMessages = new List<ChatMessage>();
-        // Perform the night actions
-        var context = new RoleActionContext
-        {
-            Players = _currentPlayers,
-            QueuedActions = _actionQueue,
-        };
-        foreach (var nightAction in _actionQueue)
-        {
-            Console.WriteLine("Doing NIGHT ACTION: " + nightAction.User.RoleName + " " + nightAction.User.IsPoisoned);
-            await nightAction.User.Role.ExecuteAction(nightAction.User, nightAction.Target, context, nightMessages);
-            nightAction.User.Role.AbilityUsesLeft--;
-        }
-
-        // Send Messages about night actions
-        foreach (var nightMessage in nightMessages)
-        {
-            await _chatAdapter.SendMessage(nightMessage);
-        }
-
-        int deathInNightCount = 0;
-        foreach (var player in _currentPlayers)
-        {
-            // Check if the player died (alive status changed from true to false)
-            if (initialAliveStatus[player] && !player.IsAlive)
-            {
-                deathInNightCount++;
-                var deathMessage = new ChatMessage("", "You died.", player.Name, "nightNotification");
-                _playersWhoDiedInTheNight.Add(player);
-                //var dayAnnouncement = new ChatMessage("", player.Name + " has died in the night.", "everyone", "dayNotification");
-                //_dayStartAnnouncements.Add(dayAnnouncement);
-                await _chatAdapter.SendMessage(deathMessage);
-            }
-        }
-        /*if(deathInNightCount == 0)
-        {
-            var dayAnnouncement = new ChatMessage("","No one has died in the night.", "everyone", "dayNotification");
-            _dayStartAnnouncements.Add(dayAnnouncement);
-        }
-
-        await SendAlivePlayerList();
-
-        // Clear the nightActions list after processing all actions
-        _actionQueue.Clear();
-    }*/
-
-        private async Task ExecuteDayActions()
+        Players = _currentPlayers,
+        QueuedActions = _actionQueue,
+    };
+    foreach (var nightAction in _actionQueue)
     {
-        
+        Console.WriteLine("Doing NIGHT ACTION: " + nightAction.User.RoleName + " " + nightAction.User.IsPoisoned);
+        await nightAction.User.Role.ExecuteAction(nightAction.User, nightAction.Target, context, nightMessages);
+        nightAction.User.Role.AbilityUsesLeft--;
+    }
+
+    // Send Messages about night actions
+    foreach (var nightMessage in nightMessages)
+    {
+        await _chatAdapter.SendMessage(nightMessage);
+    }
+
+    int deathInNightCount = 0;
+    foreach (var player in _currentPlayers)
+    {
+        // Check if the player died (alive status changed from true to false)
+        if (initialAliveStatus[player] && !player.IsAlive)
+        {
+            deathInNightCount++;
+            var deathMessage = new ChatMessage("", "You died.", player.Name, "nightNotification");
+            _playersWhoDiedInTheNight.Add(player);
+            //var dayAnnouncement = new ChatMessage("", player.Name + " has died in the night.", "everyone", "dayNotification");
+            //_dayStartAnnouncements.Add(dayAnnouncement);
+            await _chatAdapter.SendMessage(deathMessage);
+        }
+    }
+    /*if(deathInNightCount == 0)
+    {
+        var dayAnnouncement = new ChatMessage("","No one has died in the night.", "everyone", "dayNotification");
+        _dayStartAnnouncements.Add(dayAnnouncement);
+    }
+
+    await SendAlivePlayerList();
+
+    // Clear the nightActions list after processing all actions
+    _actionQueue.Clear();
+}*/
+
+    private async Task ExecuteDayActions()
+    {
+
         var playerVotes = _currentPlayers.ToDictionary(x => x, _ => 0);
-        
+
         foreach (var player in _currentPlayers.Where(player => player.CurrentVote is not null))
         {
             playerVotes[player.CurrentVote]++;
@@ -475,7 +475,7 @@ public class GameService : IGameService
         {
             return;
         }
-        
+
         if (votes.Count == 1 || votes[1].Value != votes[0].Value) // One max value
         {
             var votedOff = votes[0].Key;
@@ -484,7 +484,7 @@ public class GameService : IGameService
             List<ChatMessage> votingResultsMessages = new List<ChatMessage>();
             _morningAnnouncer.VotingEnd(votedOff, votingResultsMessages);
             //var votingResultMessage = new ChatMessage("", votedOff.Name + " has been voted off by the town.", "everyone", "dayNotification");
-            foreach(var votingResultMessage in votingResultsMessages)
+            foreach (var votingResultMessage in votingResultsMessages)
             {
                 await _chatAdapter.SendMessage(votingResultMessage);
             }
@@ -498,7 +498,7 @@ public class GameService : IGameService
         }
     }
 
-    
+
     private Task SendAlivePlayerList()
     {
         var alivePlayers = _currentPlayers.Where(p => p.IsAlive).Select(p => p.Name).ToList();
@@ -510,7 +510,7 @@ public class GameService : IGameService
         };
         return NotifyAllPlayers(message);
     }
-    
+
     internal Task NotifyAllPlayers(CommandMessage commandMessage)
     {
         var notifications = _currentPlayers.Select(p => p.SendMessage(commandMessage));
@@ -552,7 +552,7 @@ public class GameService : IGameService
                 var elapsedPhaseTime = totalPhaseTime - remainingPhaseTime;
                 _lastPhaseChange = _timeProvider.GetUtcNow().Subtract(TimeSpan.FromMilliseconds(elapsedPhaseTime));
             }
-            
+
             try
             {
                 if (_isDayPhase)
@@ -583,14 +583,43 @@ public class GameService : IGameService
     {
         if (_isDayPhase)
         {
-            _morningAnnouncer.DayStartAnnouncements(_currentPlayers, _playersWhoDiedInTheNight, _dayStartAnnouncements); // DECORATOR
-            //Sending "Player 1 has died in the night."
-            foreach (ChatMessage announcement in _dayStartAnnouncements)
+            if (_phaseCounter != 1) // Not on the first day
             {
-                await _chatAdapter.SendMessage(announcement);
+                _morningAnnouncer.DayStartAnnouncements(_currentPlayers, _playersWhoDiedInTheNight, _dayStartAnnouncements); // DECORATOR
+                //Sending "Player 1 has died in the night."
+                foreach (ChatMessage announcement in _dayStartAnnouncements)
+                {
+                    await _chatAdapter.SendMessage(announcement);
+                }
+                _dayStartAnnouncements.Clear();
+                _playersWhoDiedInTheNight.Clear();
             }
-            _dayStartAnnouncements.Clear();
-            _playersWhoDiedInTheNight.Clear();
+            else // On the first day, notify evil players of all the evil team members.
+            {
+                List<ChatMessage> evilTeamMessages = new List<ChatMessage>();
+                // Create Concrete Aggregator
+                var evilPlayersList = new EvilPlayerList(_currentPlayers);
+
+                // Get the iterator from the ActionQueue
+                var recipientsIterator = evilPlayersList.CreateIterator();
+                var evilTeamIterator = evilPlayersList.CreateIterator();
+
+                for (var evilPlayerToSendTo = recipientsIterator.First(); evilPlayerToSendTo != null; evilPlayerToSendTo = recipientsIterator.Next()) // Iterator
+                {
+                    evilTeamMessages.Add(new ChatMessage("", "Your evil team consists of these players:", evilPlayerToSendTo.Name, "dayNotification"));
+
+                    for (var evilPlayerOnTeam = evilTeamIterator.First(); evilPlayerOnTeam != null; evilPlayerOnTeam = evilTeamIterator.Next()) // Iterator
+                    {
+                        evilTeamMessages.Add(new ChatMessage("", evilPlayerOnTeam.Name + " is " + evilPlayerOnTeam.RoleName, evilPlayerToSendTo.Name, "dayNotification"));
+                    }
+                }
+                //evilTeamMessages.Add(new ChatMessage("", "Your evil team consists of these players:", ))
+
+                foreach (ChatMessage announcement in evilTeamMessages)
+                {
+                    await _chatAdapter.SendMessage(announcement);
+                }
+            }
         }
     }
 
@@ -642,7 +671,7 @@ public class GameService : IGameService
         // If no team has won yet
         return null;
     }
-    
+
     private async Task AssignRoles(string preset)
     {
         var roleFactorySelector = new RoleFactorySelector();
@@ -691,7 +720,7 @@ public class GameService : IGameService
         {
             _logger.Log(LogLevel.Debug, $"{player.Name} | {player.Role}");
         }
-        
+
 
         // 2. Assign accomplice roles
         for (var i = 0; i < accompliceCount; i++)
@@ -827,6 +856,6 @@ public class GameService : IGameService
 
         return 0;
     }
-    
+
 }
 

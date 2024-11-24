@@ -1,4 +1,4 @@
-﻿namespace Mafia.Server.Models.Iterator
+﻿namespace Mafia.Server.Models.Iterator.ActionQueue
 {
     using Mafia.Server.Models.Strategy;
     using System.Collections.Generic;

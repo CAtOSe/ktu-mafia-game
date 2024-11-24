@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 
 
-namespace Mafia.Server.Models.Iterator;
+namespace Mafia.Server.Models.Iterator.ActionQueue;
 public class ActionQueue : IActionQueue // Concrete Aggregator
 {
     private readonly List<ActionQueueEntry> _entries;
@@ -12,8 +12,8 @@ public class ActionQueue : IActionQueue // Concrete Aggregator
     // Custom order for sorting actions
     private readonly List<string> _actionOrder = new()
     {
-        "Poisoner", "Assassin", "Hemlock",
-        "Soldier", "Tracker", "Lookout", "Doctor"
+        "Illusionist", "Poisoner", "Assassin", "Hemlock",
+        "Soldier", "Doctor", "Tracker", "Lookout", "Oracle"
     };
 
     public ActionQueue(IEnumerable<ActionQueueEntry> entries)

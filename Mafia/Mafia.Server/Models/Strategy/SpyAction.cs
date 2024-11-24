@@ -2,7 +2,7 @@
 {
     public class SpyAction : IRoleAction
     {
-        public string Name => nameof(PoisonerAction);
+        public string Name => nameof(SpyAction);
 
         public Task Execute(Player user, Player target, RoleActionContext context, List<ChatMessage> messages)
         {
