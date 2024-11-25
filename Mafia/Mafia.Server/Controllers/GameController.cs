@@ -5,6 +5,7 @@ using Mafia.Server.Models;
 using Mafia.Server.Models.AbstractFactory.Roles;
 using Mafia.Server.Models.Flyweight;
 using Mafia.Server.Models.Messages;
+using Mafia.Server.Models.State;
 using Mafia.Server.Services.ChatService;
 using Mafia.Server.Services.GameService;
 using Mafia.Server.Services.SessionHandler;
@@ -21,7 +22,8 @@ namespace Mafia.Server.Controllers
         private readonly ISessionHandler _sessionHandler;
         private readonly IHostApplicationLifetime _hostLifetime;
         private readonly GameLogger _logger = GameLogger.Instance;
-
+        private IGameState _currentState;
+        
         public GameController(
             ISessionHandler sessionHandler,
             IHostApplicationLifetime hostLifetime,
@@ -30,6 +32,7 @@ namespace Mafia.Server.Controllers
             _sessionHandler = sessionHandler;
             _hostLifetime = hostLifetime;
             _gameService = gameService;
+            _currentState = new PlayingState(); // Primary state
         }
 
         [Route("/ws")]
@@ -70,7 +73,7 @@ namespace Mafia.Server.Controllers
         {
             try
             {
-                var command = new PauseResumeCommand(_gameService, !_gameService.IsPaused);
+                var command = new PauseResumeCommand(_gameService, !_gameService.IsPaused, this);
                 var result = command.Execute(); 
 
                 return Ok(result);
@@ -96,6 +99,34 @@ namespace Mafia.Server.Controllers
 
             var fileBytes = System.IO.File.ReadAllBytes(imagePath);
             return File(fileBytes, "image/png");
+        }
+        
+        //STATE
+        public void ChangeState(IGameState newState)
+        {
+            _currentState = newState;
+            _logger.Log(LogLevel.Information, $"State changed to: {_currentState.Name}");
+        }
+
+        [HttpPost("start")]
+        public IActionResult StartGame()
+        {
+            _currentState.Start(this);
+            return Ok($"Game state is now: {_currentState.Name}");
+        }
+
+        [HttpPost("stop")]
+        public IActionResult StopGame()
+        {
+            _currentState.Stop(this);
+            return Ok($"Game state is now: {_currentState.Name}");
+        }
+
+        [HttpPost("end")]
+        public IActionResult EndGame()
+        {
+            _currentState.End(this);
+            return Ok($"Game state is now: {_currentState.Name}");
         }
 
     }
