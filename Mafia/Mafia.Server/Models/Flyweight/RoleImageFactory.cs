@@ -1,4 +1,5 @@
 using Mafia.Server.Models.AbstractFactory.Roles;
+using Mafia.Server.Models.Proxy;
 
 /*namespace Mafia.Server.Models.Flyweight;
 
@@ -21,7 +22,7 @@ namespace Mafia.Server.Models.Flyweight;
 
 public static class RoleImageFactory
 {
-    private static readonly Dictionary<string, RoleImage> _roleImageCache = new(); // Cache of shared images
+    private static readonly Dictionary<string, IRoleImage> _roleImageCache = new(); // Cache of shared images
     private const string DefaultImagePath = "/pictures/default.png"; // Fallback image path
 
     public static IRoleImage GetRoleImage(string roleName)
@@ -31,22 +32,23 @@ public static class RoleImageFactory
         {
             string imagePath = Path.Combine("Models", "Flyweight", "pictures", $"{roleName.ToLower()}.png");
 
-            if (File.Exists(imagePath))
-            {
-                // Add to cache if it exists
-                var roleImage = new RoleImage(imagePath);
-                _roleImageCache[roleName] = roleImage;
+            if (File.Exists(imagePath)) // Add to cache if it exists
+            {                
+                // PROXY
+                var proxyImage = new RoleImageProxy(imagePath); // Lazy loading via proxy
+                _roleImageCache[roleName] = proxyImage;
                 Console.WriteLine($"Cached role image: {roleName} -> {imagePath}");
             }
             else
             {
-                // Log missing image and return an UnsharedConcreteFlyweight
+                // Log missing image and return a proxy with a default image
                 Console.WriteLine($"Image not found for role: {roleName}, using default.");
-                return new UnsharedRoleImage(DefaultImagePath);
+                var proxyImage = new RoleImageProxy(DefaultImagePath);
+                _roleImageCache[roleName] = proxyImage;
             }
         }
 
-        // Return the shared image from the cache
+        // Return the shared image or proxy image from the cache
         return _roleImageCache[roleName];
     }
 }
