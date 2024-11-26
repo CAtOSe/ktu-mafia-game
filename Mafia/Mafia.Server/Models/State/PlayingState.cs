@@ -7,17 +7,16 @@ public class PlayingState : IGameState
 
     public void Start(GameController controller)
     {
-        // Already playing
-        controller.ChangeState(new PlayingState());
+        // Already in Playing state, do nothing
     }
 
     public void Stop(GameController controller)
     {
-        controller.ChangeState(new StoppedState());
+        controller.StopGame();
     }
 
     public void End(GameController controller)
     {
-        controller.ChangeState(new EndedState());
+        controller.EndGame();
     }
 }

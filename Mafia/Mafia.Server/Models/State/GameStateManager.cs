@@ -1,38 +1,37 @@
 using Mafia.Server.Logging;
-
-namespace Mafia.Server.Models.State;
 using LogLevel = Mafia.Server.Logging.LogLevel;
 
-public class GameStateManager : IGameStateManager
+namespace Mafia.Server.Models.State
 {
-    private IGameState _currentState;
-    private readonly GameLogger _logger = GameLogger.Instance;
+    public class GameStateManager : IGameStateManager
+    {
+        private IGameState _currentState;
+        private readonly GameLogger _logger = GameLogger.Instance;
 
-    public GameStateManager()
-    {
-        _currentState = new PlayingState();
-    }
+        public GameStateManager()
+        {
+            _currentState = new StoppedState(); // Pradinė būsena
+        }
 
-    public void ChangeState(IGameState newState)
-    {
-        _currentState = newState;
-        _logger.Log(LogLevel.Information,$"State changed to: {_currentState.Name}");
-    }
+        public void ChangeState(IGameState newState)
+        {
+            _currentState = newState;
+            _logger.Log(LogLevel.Information, $"State changed to: {_currentState.Name}");
+        }
 
-    
-    public void StartGame()
-    {
-        ChangeState(new PlayingState());
-    }
+        public void StartGame()
+        {
+            ChangeState(new PlayingState());
+        }
 
-    
-    public void StopGame()
-    {
-        ChangeState(new StoppedState());
-    }
-    public void EndGame()
-    {
-        ChangeState(new EndedState());
-        //Console.WriteLine("Game has ended.");
+        public void StopGame()
+        {
+            ChangeState(new StoppedState());
+        }
+
+        public void EndGame()
+        {
+            ChangeState(new EndedState());
+        }
     }
 }

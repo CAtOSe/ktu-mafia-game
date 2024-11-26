@@ -32,7 +32,7 @@ builder.Services.AddSingleton<IMessageResolverFacade, MessageResolverFacade>();
 builder.Services.AddSingleton<IChatService, ChatService>();
 builder.Services.AddSingleton<IChatServiceAdapter, ChatServiceAdapter>();
 builder.Services.AddSingleton<IGameConfigurationFactory, GameConfigurationFactory>();
-//builder.Services.AddSingleton<IGameStateManager, GameStateManager>();
+builder.Services.AddSingleton<IGameStateManager, GameStateManager>();
 
 builder.Services.AddSingleton(TimeProvider.System);
 

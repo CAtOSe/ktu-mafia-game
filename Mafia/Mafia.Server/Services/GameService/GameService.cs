@@ -33,8 +33,8 @@ public class GameService : IGameService
     private readonly IGameConfigurationFactory _gameConfigurationFactory;
     private IGameConfiguration _gameConfiguration;
     private GameLogger _logger;
-    //private readonly IGameStateManager _stateManager;
-    private readonly GameController _gameController;
+    private readonly IGameStateManager _stateManager;
+    //private readonly GameController _gameController;
 
 
     private volatile int _phaseCounter = 1;
@@ -61,16 +61,16 @@ public class GameService : IGameService
         TimeProvider timeProvider,
         IChatServiceAdapter chatAdapter,
         IGameConfigurationFactory gameConfigurationFactory,
-        //IGameStateManager stateManager
-        GameController gameController)
+        IGameStateManager stateManager)
+        //GameController gameController)
     {
         IsPaused = false;
         _chatService = chatService;
         _timeProvider = timeProvider;
         _chatAdapter = chatAdapter;
         _gameConfigurationFactory = gameConfigurationFactory;
-        //_stateManager = stateManager;
-        _gameController = gameController;
+        _stateManager = stateManager;
+        //_gameController = gameController;
         _logger = GameLogger.Instance;
     }
 
@@ -648,8 +648,8 @@ public class GameService : IGameService
         string winnerTeam = DidAnyTeamWin();
         if (winnerTeam != null)
         {
-            //_stateManager.EndGame(); //STATE
-            _gameController.EndGame();
+            _stateManager.EndGame(); //STATE
+            //_gameController.EndGame();
             _logger.Log(winnerTeam + " team has won the game!");
             await _chatAdapter.SendMessage("", winnerTeam + " team has won the game!", "everyone", "server");
             await NotifyAllPlayers(new CommandMessage
