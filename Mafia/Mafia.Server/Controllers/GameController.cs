@@ -23,16 +23,19 @@ namespace Mafia.Server.Controllers
         private readonly IHostApplicationLifetime _hostLifetime;
         private readonly GameLogger _logger = GameLogger.Instance;
         private IGameState _currentState;
+        //private readonly IGameStateManager _gameStateManager;
         
         public GameController(
             ISessionHandler sessionHandler,
             IHostApplicationLifetime hostLifetime,
-            IGameService gameService)
+            IGameService gameService,
+            IGameStateManager gameStateManager)
         {
             _sessionHandler = sessionHandler;
             _hostLifetime = hostLifetime;
             _gameService = gameService;
             _currentState = new PlayingState(); // Primary state
+            //_gameStateManager = gameStateManager;
         }
 
         [Route("/ws")]
@@ -102,7 +105,7 @@ namespace Mafia.Server.Controllers
         }
         
         //STATE
-        public void ChangeState(IGameState newState)
+        /*public void ChangeState(IGameState newState)
         {
             _currentState = newState;
             _logger.Log(LogLevel.Information, $"State changed to: {_currentState.Name}");
@@ -120,13 +123,41 @@ namespace Mafia.Server.Controllers
         {
             _currentState.Stop(this);
             return Ok($"Game state is now: {_currentState.Name}");
-        }
+        }*/
 
-        [HttpPost("end")]
-        public IActionResult EndGame()
+        //[HttpPost("end")]
+        /*public IActionResult EndGame()
         {
             _currentState.End(this);
             return Ok($"Game state is now: {_currentState.Name}");
+        }*/
+        /*public void EndGame()
+        {
+            /*ChangeState(new EndedState());
+            _logger.Log(LogLevel.Information, "Game has ended.");
+            _gameStateManager.EndGame();
+        }*/
+        public void ChangeState(IGameState newState)
+        {
+            _currentState = newState;
+            _logger.Log(LogLevel.Information,$"State changed to: {_currentState.Name}");
+        }
+
+    
+        public void StartGame()
+        {
+            ChangeState(new PlayingState());
+        }
+
+    
+        public void StopGame()
+        {
+            ChangeState(new StoppedState());
+        }
+        public void EndGame()
+        {
+            ChangeState(new EndedState());
+            //Console.WriteLine("Game has ended.");
         }
 
     }

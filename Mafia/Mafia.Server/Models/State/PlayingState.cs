@@ -8,6 +8,7 @@ public class PlayingState : IGameState
     public void Start(GameController controller)
     {
         // Already playing
+        controller.ChangeState(new PlayingState());
     }
 
     public void Stop(GameController controller)

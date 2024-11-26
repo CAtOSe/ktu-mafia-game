@@ -9,15 +9,15 @@ namespace Mafia.Server.Command
     {
         private readonly IGameService _gameService;
         private readonly bool _pause;
-        //private IGameState _currentState;
         private GameController _gameController;
+        //private readonly IGameStateManager _gameStateManager;
 
-        public PauseResumeCommand(IGameService gameService, bool pause, GameController gameController)
+        public PauseResumeCommand(IGameService gameService, bool pause, /*IGameStateManager gameStateManager*/ GameController gameController)
         {
             _gameService = gameService;
             _pause = pause;
             _gameController = gameController;
-            //_currentState = new StoppedState();
+            //_gameStateManager = gameStateManager;
         }
 
         public string Execute()
@@ -29,7 +29,7 @@ namespace Mafia.Server.Command
 
             if (_gameController == null)
             {
-                return "GameController is null.";
+                return "GameStateManager is null.";
             }
             
             if (!_gameService.GameStarted)
@@ -39,19 +39,18 @@ namespace Mafia.Server.Command
             
             if (_pause && !_gameService.IsPaused)
             {
-                _gameController.StopGame();
                 _gameService.PauseTimer();
-                
+                _gameController.StopGame(); // STATE
                 return "Game Paused.";
             }
             
             if (!_pause && _gameService.IsPaused)
             {
                 _gameService.ResumeTimer();
-                _gameController.StartGame();
+                _gameController.StartGame(); // STATE
                 return "Game Resumed.";
             }
-            //_gameController.StartGame();
+
             return _gameService.IsPaused ? "Game already paused." : "Game already running.";
         }
     }

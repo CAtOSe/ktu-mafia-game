@@ -8,7 +8,7 @@ public class StoppedState : IGameState
 
     public void Start(GameController controller)
     {
-        controller.ChangeState(new PlayingState());
+        //controller.ChangeState(new PlayingState());
     }
 
     public void Stop(GameController controller)
