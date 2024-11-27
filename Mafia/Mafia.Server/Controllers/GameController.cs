@@ -81,6 +81,21 @@ namespace Mafia.Server.Controllers
                 return StatusCode(500, "Internal Server Error");
             }
         }
+        
+        [HttpGet("{roleName}")]
+        public IActionResult GetRoleImage(string roleName)
+        {
+            // Path to the pictures folder
+            var imagePath = Path.Combine(Directory.GetCurrentDirectory(), "Models", "Flyweight", "pictures", $"{roleName.ToLower()}.png");
+
+            if (!System.IO.File.Exists(imagePath))
+            {
+                return NotFound($"Image for role '{roleName}' not found.");
+            }
+
+            var fileBytes = System.IO.File.ReadAllBytes(imagePath);
+            return File(fileBytes, "image/png");
+        }
 
         [HttpPost("start")]
         public IActionResult StartGame()
