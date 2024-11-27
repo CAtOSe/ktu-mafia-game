@@ -10,7 +10,7 @@ namespace Mafia.Server.Models.State
 
         public GameStateManager()
         {
-            _currentState = new StoppedState(); // Pradinė būsena
+            _currentState = new PlayingState(); // Primary state
         }
 
         public void ChangeState(IGameState newState)
