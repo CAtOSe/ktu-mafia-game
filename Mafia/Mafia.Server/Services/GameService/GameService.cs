@@ -9,6 +9,7 @@ using Mafia.Server.Models.Strategy;
 using Mafia.Server.Models.Decorator;
 using Mafia.Server.Models.Builder;
 using System.Net.WebSockets;
+using Mafia.Server.Controllers;
 using Mafia.Server.Extensions;
 using Mafia.Server.Logging;
 using Mafia.Server.Models.Bridge;
@@ -20,6 +21,7 @@ using LogLevel = Mafia.Server.Logging.LogLevel;
 using RoleFactorySelector = Mafia.Server.Models.AbstractFactory.RoleFactorySelector;
 using Mafia.Server.Models.Iterator;
 using Mafia.Server.Models.Iterator.ActionQueue;
+using Mafia.Server.Models.State;
 
 namespace Mafia.Server.Services.GameService;
 
@@ -31,6 +33,9 @@ public class GameService : IGameService
     private readonly IGameConfigurationFactory _gameConfigurationFactory;
     private IGameConfiguration _gameConfiguration;
     private GameLogger _logger;
+    private readonly IGameStateManager _stateManager;
+    //private readonly GameController _gameController;
+
 
     private volatile int _phaseCounter = 1;
     private volatile bool _isDayPhase = true;
@@ -55,13 +60,17 @@ public class GameService : IGameService
         IChatService chatService,
         TimeProvider timeProvider,
         IChatServiceAdapter chatAdapter,
-        IGameConfigurationFactory gameConfigurationFactory)
+        IGameConfigurationFactory gameConfigurationFactory,
+        IGameStateManager stateManager)
+        //GameController gameController)
     {
         IsPaused = false;
         _chatService = chatService;
         _timeProvider = timeProvider;
         _chatAdapter = chatAdapter;
         _gameConfigurationFactory = gameConfigurationFactory;
+        _stateManager = stateManager;
+        //_gameController = gameController;
         _logger = GameLogger.Instance;
     }
 
@@ -639,6 +648,8 @@ public class GameService : IGameService
         string winnerTeam = DidAnyTeamWin();
         if (winnerTeam != null)
         {
+            _stateManager.EndGame(); //STATE
+            //_gameController.EndGame();
             _logger.Log(winnerTeam + " team has won the game!");
             await _chatAdapter.SendMessage("", winnerTeam + " team has won the game!", "everyone", "server");
             await NotifyAllPlayers(new CommandMessage

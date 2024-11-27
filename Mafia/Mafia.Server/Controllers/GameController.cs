@@ -1,11 +1,8 @@
 ﻿using System.Net.WebSockets;
 using Mafia.Server.Command;
 using Mafia.Server.Logging;
-using Mafia.Server.Models;
-using Mafia.Server.Models.AbstractFactory.Roles;
-using Mafia.Server.Models.Flyweight;
 using Mafia.Server.Models.Messages;
-using Mafia.Server.Services.ChatService;
+using Mafia.Server.Models.State;
 using Mafia.Server.Services.GameService;
 using Mafia.Server.Services.SessionHandler;
 using Microsoft.AspNetCore.Mvc;
@@ -17,19 +14,22 @@ namespace Mafia.Server.Controllers
     [Route("api/gamecontrol")]
     public class GameController : ControllerBase
     {
-        private readonly IGameService _gameService; 
+        private readonly IGameService _gameService;
         private readonly ISessionHandler _sessionHandler;
         private readonly IHostApplicationLifetime _hostLifetime;
         private readonly GameLogger _logger = GameLogger.Instance;
+        private readonly IGameStateManager _gameStateManager;
 
         public GameController(
             ISessionHandler sessionHandler,
             IHostApplicationLifetime hostLifetime,
-            IGameService gameService)
+            IGameService gameService,
+            IGameStateManager gameStateManager)
         {
             _sessionHandler = sessionHandler;
             _hostLifetime = hostLifetime;
             _gameService = gameService;
+            _gameStateManager = gameStateManager;
         }
 
         [Route("/ws")]
@@ -70,8 +70,8 @@ namespace Mafia.Server.Controllers
         {
             try
             {
-                var command = new PauseResumeCommand(_gameService, !_gameService.IsPaused);
-                var result = command.Execute(); 
+                var command = new PauseResumeCommand(_gameService, !_gameService.IsPaused, _gameStateManager);
+                var result = command.Execute();
 
                 return Ok(result);
             }
@@ -82,7 +82,6 @@ namespace Mafia.Server.Controllers
             }
         }
         
-        //FLYWEIGHT
         [HttpGet("{roleName}")]
         public IActionResult GetRoleImage(string roleName)
         {
@@ -98,5 +97,25 @@ namespace Mafia.Server.Controllers
             return File(fileBytes, "image/png");
         }
 
+        [HttpPost("start")]
+        public IActionResult StartGame()
+        {
+            _gameStateManager.StartGame();
+            return Ok("Game started.");
+        }
+
+        [HttpPost("stop")]
+        public IActionResult StopGame()
+        {
+            _gameStateManager.StopGame();
+            return Ok("Game stopped.");
+        }
+
+        [HttpPost("end")]
+        public IActionResult EndGame()
+        {
+            _gameStateManager.EndGame();
+            return Ok("Game ended.");
+        }
     }
 }

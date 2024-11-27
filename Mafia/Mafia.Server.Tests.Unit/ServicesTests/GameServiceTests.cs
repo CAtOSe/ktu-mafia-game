@@ -1,6 +1,8 @@
+using Mafia.Server.Controllers;
 using Mafia.Server.Models;
 using Mafia.Server.Models.Adapter;
 using Mafia.Server.Models.Messages;
+using Mafia.Server.Models.State;
 using Mafia.Server.Services.ChatService;
 using Mafia.Server.Services.GameService;
 using Mafia.Server.Tests.Unit.TestSetup;
@@ -14,6 +16,7 @@ public class GameServiceTests
     private readonly Mock<IChatService> _chatService;
     private readonly TimeProvider _timeProvider;
     private readonly Mock<IChatServiceAdapter> _chatAdapter;
+    private readonly Mock<IGameStateManager> _stateManager;
     
     private readonly MockSocketHandler _mockSocketHandler;
     private readonly Player _testPlayer;
@@ -25,13 +28,16 @@ public class GameServiceTests
         _chatService = new Mock<IChatService>();
         _chatAdapter = new Mock<IChatServiceAdapter>();
         _timeProvider = new FakeTimeProvider();
+        _stateManager = new Mock<IGameStateManager>();
         
         _mockSocketHandler = new MockSocketHandler();
 
-        _sut = new GameService(_chatService.Object,
+        _sut = new GameService(
+            _chatService.Object,
             _timeProvider,
             _chatAdapter.Object,
-            new GameConfigurationFactoryMock());
+            new GameConfigurationFactoryMock(),
+            _stateManager.Object);
 
         _testPlayer = new Player(_mockSocketHandler.Socket);
     }
