@@ -10,7 +10,11 @@ namespace Mafia.Server.Models.State
 
         public GameStateManager()
         {
+<<<<<<< Updated upstream
             _currentState = new StoppedState(); // Primary state
+=======
+            _currentState = new PlayingState(); // Primary state
+>>>>>>> Stashed changes
         }
 
         public void ChangeState(IGameState newState)
