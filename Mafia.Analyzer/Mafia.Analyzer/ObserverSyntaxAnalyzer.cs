@@ -9,7 +9,7 @@ using Microsoft.CodeAnalysis.Diagnostics;
 namespace Mafia.Analyzer;
 
 [DiagnosticAnalyzer(LanguageNames.CSharp)]
-public class SampleSyntaxAnalyzer : DiagnosticAnalyzer
+public class ObserverSyntaxAnalyzer : DiagnosticAnalyzer
 {
     public const string CompanyName = "KTU";
     public const string DiagnosticId = "MG0001";
@@ -31,14 +31,10 @@ public class SampleSyntaxAnalyzer : DiagnosticAnalyzer
     {
         context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None);
         context.EnableConcurrentExecution();
-        context.RegisterSyntaxNodeAction(AnalyzeSyntax, SyntaxKind.ClassDeclaration);
+        context.RegisterSyntaxNodeAction(AnalyzeClassSyntax, SyntaxKind.ClassDeclaration);
     }
-
-    /// <summary>
-    /// Executed for each Syntax Node with 'SyntaxKind' is 'ClassDeclaration'.
-    /// </summary>
-    /// <param name="context">Operation context.</param>
-    private void AnalyzeSyntax(SyntaxNodeAnalysisContext context)
+    
+    private void AnalyzeClassSyntax(SyntaxNodeAnalysisContext context)
     {
         if (context.Node is not ClassDeclarationSyntax classDeclarationNode) return;
         
