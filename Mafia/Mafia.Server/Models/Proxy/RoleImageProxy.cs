@@ -25,10 +25,7 @@ namespace Mafia.Server.Models.Proxy
 
         public void Render()
         {
-            if (_realRoleImage == null)
-            {
-                _realRoleImage = new RoleImage(_imagePath);
-            }
+            _realRoleImage ??= new RoleImage(_imagePath);
 
             _realRoleImage.Render();
         }

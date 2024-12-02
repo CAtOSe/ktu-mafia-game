@@ -10,12 +10,12 @@ public class BasicGameConfiguration : IGameConfiguration
     public int DayPhaseDuration => 10 * 1000;
     public int NightPhaseDuration => 20 * 1000;
     
-    public static List<string> ActionOrder = new()
-    {
+    public static List<string> ActionOrder =
+    [
         nameof(PoisonerAction),
         nameof(TrackerAction),
         nameof(AssassinAction),
         nameof(SoldierAction),
         nameof(DoctorAction)
-    };
+    ];
 }

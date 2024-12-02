@@ -1,7 +1,6 @@
 ﻿using System.Net.WebSockets;
 using Mafia.Server.Command;
 using Mafia.Server.Logging;
-using Mafia.Server.Models.Messages;
 using Mafia.Server.Models.State;
 using Mafia.Server.Services.GameService;
 using Mafia.Server.Services.SessionHandler;

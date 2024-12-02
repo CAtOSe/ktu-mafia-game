@@ -363,16 +363,12 @@ public class GameService : IGameService
 
         // Day Start Announcements
         int deathInNightCount = 0;
-        foreach (var player in _currentPlayers)
+        foreach (var player in _currentPlayers.Where(player => initialAliveStatus[player] && !player.IsAlive))
         {
-            // Check if the player died (alive status changed from true to false)
-            if (initialAliveStatus[player] && !player.IsAlive)
-            {
-                deathInNightCount++;
-                var deathMessage = new ChatMessage("", "You died.", player.Name, "nightNotification");
-                _playersWhoDiedInTheNight.Add(player);
-                await _chatAdapter.SendMessage(deathMessage);
-            }
+            deathInNightCount++;
+            var deathMessage = new ChatMessage("", "You died.", player.Name, "nightNotification");
+            _playersWhoDiedInTheNight.Add(player);
+            await _chatAdapter.SendMessage(deathMessage);
         }
     }
     /*if(deathInNightCount == 0)

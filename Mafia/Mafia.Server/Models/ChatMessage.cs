@@ -1,5 +1,4 @@
 using System.Text.Json.Serialization;
-using Mafia.Server.Models.Bridge;
 
 namespace Mafia.Server.Models;
 

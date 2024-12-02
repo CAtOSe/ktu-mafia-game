@@ -2,23 +2,16 @@
 
 namespace Mafia.Server.Models.Adapter
 {
-    public class ChatServiceAdapter : IChatServiceAdapter
+    public class ChatServiceAdapter(IChatService chatService) : IChatServiceAdapter
     {
-        private readonly IChatService _chatService;
-
-        public ChatServiceAdapter(IChatService chatService)
-        {
-            _chatService = chatService;
-        }
-
         public Task SendMessage(string sender, string message, string recipient, string messageType)
         {
-            return _chatService.SendChatMessage(sender, message, recipient, messageType);
+            return chatService.SendChatMessage(sender, message, recipient, messageType);
         }
 
         public async Task SendMessage(ChatMessage chatMessage)
         {
-            await _chatService.SendChatMessage(chatMessage);
+            await chatService.SendChatMessage(chatMessage);
         }
     }
 }
