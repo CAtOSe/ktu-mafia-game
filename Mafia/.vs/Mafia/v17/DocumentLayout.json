@@ -1,26 +1,10 @@
 {
   "Version": 1,
-  "WorkspaceRootPath": "D:\\Studies\\Game\\ktu-mafia-game\\Mafia\\",
+  "WorkspaceRootPath": "C:\\Studijos\\4_kursas\\Pirmas_pusmetis\\Objektinis_programu_projektavimas\\ktu-mafia-game\\Mafia\\",
   "Documents": [
     {
-      "AbsoluteMoniker": "D:0:0:{755CE962-0E0F-468B-B98B-67139D9CB31E}|Mafia.Server\\Mafia.Server.csproj|d:\\studies\\game\\ktu-mafia-game\\mafia\\mafia.server\\models\\flyweight\\roleimage.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{755CE962-0E0F-468B-B98B-67139D9CB31E}|Mafia.Server\\Mafia.Server.csproj|solutionrelative:mafia.server\\models\\flyweight\\roleimage.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{755CE962-0E0F-468B-B98B-67139D9CB31E}|Mafia.Server\\Mafia.Server.csproj|d:\\studies\\game\\ktu-mafia-game\\mafia\\mafia.server\\models\\flyweight\\roleimagefactory.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{755CE962-0E0F-468B-B98B-67139D9CB31E}|Mafia.Server\\Mafia.Server.csproj|solutionrelative:mafia.server\\models\\flyweight\\roleimagefactory.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{755CE962-0E0F-468B-B98B-67139D9CB31E}|Mafia.Server\\Mafia.Server.csproj|d:\\studies\\game\\ktu-mafia-game\\mafia\\mafia.server\\models\\proxy\\roleimageproxy.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{755CE962-0E0F-468B-B98B-67139D9CB31E}|Mafia.Server\\Mafia.Server.csproj|solutionrelative:mafia.server\\models\\proxy\\roleimageproxy.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{755CE962-0E0F-468B-B98B-67139D9CB31E}|Mafia.Server\\Mafia.Server.csproj|d:\\studies\\game\\ktu-mafia-game\\mafia\\mafia.server\\services\\gameservice\\gameservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{755CE962-0E0F-468B-B98B-67139D9CB31E}|Mafia.Server\\Mafia.Server.csproj|solutionrelative:mafia.server\\services\\gameservice\\gameservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{755CE962-0E0F-468B-B98B-67139D9CB31E}|Mafia.Server\\Mafia.Server.csproj|d:\\studies\\game\\ktu-mafia-game\\mafia\\mafia.server\\models\\flyweight\\iroleimage.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{755CE962-0E0F-468B-B98B-67139D9CB31E}|Mafia.Server\\Mafia.Server.csproj|solutionrelative:mafia.server\\models\\flyweight\\iroleimage.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{8A508F7B-E9EF-41A0-B94B-D692A9916ED5}|Mafia.Server.Tests.Unit\\Mafia.Server.Tests.Unit.csproj|c:\\studijos\\4_kursas\\pirmas_pusmetis\\objektinis_programu_projektavimas\\ktu-mafia-game\\mafia\\mafia.server.tests.unit\\servicestests\\chattests.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{8A508F7B-E9EF-41A0-B94B-D692A9916ED5}|Mafia.Server.Tests.Unit\\Mafia.Server.Tests.Unit.csproj|solutionrelative:mafia.server.tests.unit\\servicestests\\chattests.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     }
   ],
   "DocumentGroupContainers": [
@@ -30,72 +14,36 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 2,
+          "SelectedChildIndex": 3,
           "Children": [
             {
-              "$type": "Document",
-              "DocumentIndex": 3,
-              "Title": "GameService.cs",
-              "DocumentMoniker": "D:\\Studies\\Game\\ktu-mafia-game\\Mafia\\Mafia.Server\\Services\\GameService\\GameService.cs",
-              "RelativeDocumentMoniker": "Mafia.Server\\Services\\GameService\\GameService.cs",
-              "ToolTip": "D:\\Studies\\Game\\ktu-mafia-game\\Mafia\\Mafia.Server\\Services\\GameService\\GameService.cs",
-              "RelativeToolTip": "Mafia.Server\\Services\\GameService\\GameService.cs",
-              "ViewState": "AgIAACkDAAAAAAAAAAAiwDsDAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2024-11-26T18:58:11.279Z",
-              "EditorCaption": ""
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{1c4feeaa-4718-4aa9-859d-94ce25d182ba}"
             },
             {
-              "$type": "Document",
-              "DocumentIndex": 4,
-              "Title": "IRoleImage.cs",
-              "DocumentMoniker": "D:\\Studies\\Game\\ktu-mafia-game\\Mafia\\Mafia.Server\\Models\\Flyweight\\IRoleImage.cs",
-              "RelativeDocumentMoniker": "Mafia.Server\\Models\\Flyweight\\IRoleImage.cs",
-              "ToolTip": "D:\\Studies\\Game\\ktu-mafia-game\\Mafia\\Mafia.Server\\Models\\Flyweight\\IRoleImage.cs",
-              "RelativeToolTip": "Mafia.Server\\Models\\Flyweight\\IRoleImage.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAYAAAABAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2024-11-26T17:11:49.915Z",
-              "EditorCaption": ""
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{0ad07096-bba9-4900-a651-0598d26f6d24}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{34e76e81-ee4a-11d0-ae2e-00a0c90fffc3}"
             },
             {
               "$type": "Document",
               "DocumentIndex": 0,
-              "Title": "RoleImage.cs",
-              "DocumentMoniker": "D:\\Studies\\Game\\ktu-mafia-game\\Mafia\\Mafia.Server\\Models\\Flyweight\\RoleImage.cs",
-              "RelativeDocumentMoniker": "Mafia.Server\\Models\\Flyweight\\RoleImage.cs",
-              "ToolTip": "D:\\Studies\\Game\\ktu-mafia-game\\Mafia\\Mafia.Server\\Models\\Flyweight\\RoleImage.cs",
-              "RelativeToolTip": "Mafia.Server\\Models\\Flyweight\\RoleImage.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAUAAAAAAAAAAAAAAA==",
+              "Title": "ChatTests.cs",
+              "DocumentMoniker": "C:\\Studijos\\4_kursas\\Pirmas_pusmetis\\Objektinis_programu_projektavimas\\ktu-mafia-game\\Mafia\\Mafia.Server.Tests.Unit\\ServicesTests\\ChatTests.cs",
+              "RelativeDocumentMoniker": "Mafia.Server.Tests.Unit\\ServicesTests\\ChatTests.cs",
+              "ToolTip": "C:\\Studijos\\4_kursas\\Pirmas_pusmetis\\Objektinis_programu_projektavimas\\ktu-mafia-game\\Mafia\\Mafia.Server.Tests.Unit\\ServicesTests\\ChatTests.cs",
+              "RelativeToolTip": "Mafia.Server.Tests.Unit\\ServicesTests\\ChatTests.cs",
+              "ViewState": "AQIAACsAAAAAAAAAAAAnwDIAAAAKAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2024-11-26T18:03:34.847Z",
+              "WhenOpened": "2024-11-27T16:28:35.133Z",
               "EditorCaption": ""
             },
             {
-              "$type": "Document",
-              "DocumentIndex": 2,
-              "Title": "RoleImageProxy.cs",
-              "DocumentMoniker": "D:\\Studies\\Game\\ktu-mafia-game\\Mafia\\Mafia.Server\\Models\\Proxy\\RoleImageProxy.cs",
-              "RelativeDocumentMoniker": "Mafia.Server\\Models\\Proxy\\RoleImageProxy.cs",
-              "ToolTip": "D:\\Studies\\Game\\ktu-mafia-game\\Mafia\\Mafia.Server\\Models\\Proxy\\RoleImageProxy.cs",
-              "RelativeToolTip": "Mafia.Server\\Models\\Proxy\\RoleImageProxy.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAkAAAAvAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2024-11-26T17:15:41.396Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 1,
-              "Title": "RoleImageFactory.cs",
-              "DocumentMoniker": "D:\\Studies\\Game\\ktu-mafia-game\\Mafia\\Mafia.Server\\Models\\Flyweight\\RoleImageFactory.cs",
-              "RelativeDocumentMoniker": "Mafia.Server\\Models\\Flyweight\\RoleImageFactory.cs",
-              "ToolTip": "D:\\Studies\\Game\\ktu-mafia-game\\Mafia\\Mafia.Server\\Models\\Flyweight\\RoleImageFactory.cs",
-              "RelativeToolTip": "Mafia.Server\\Models\\Flyweight\\RoleImageFactory.cs",
-              "ViewState": "AgIAABIAAAAAAAAAAAAAACUAAABZAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2024-11-26T17:08:49.45Z",
-              "EditorCaption": ""
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{d78612c7-9962-4b83-95d9-268046dad23a}"
             }
           ]
         }

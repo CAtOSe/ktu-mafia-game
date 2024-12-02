@@ -18,7 +18,7 @@ namespace Mafia.Server.Models.Strategy
                 goodPlayer.IsPoisoned = true;
             }
 
-            string messageToUser = "Your grand performance poisoned every good player.";
+            const string messageToUser = "Your grand performance poisoned every good player.";
             ChatMessage chatMessageToUser = new ChatMessage("", messageToUser, user.Name, "nightNotification");
             messages.Add(chatMessageToUser);
             return Task.CompletedTask;
