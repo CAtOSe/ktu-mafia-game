@@ -31,7 +31,7 @@ public class ObserverInterfaceSyntaxAnalyzer : DiagnosticAnalyzer
     {
         context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None);
         context.EnableConcurrentExecution();
-        context.RegisterSyntaxNodeAction(AnalyzeInterfaceSyntax, SyntaxKind.Interpolation);
+        context.RegisterSyntaxNodeAction(AnalyzeInterfaceSyntax, SyntaxKind.InterfaceDeclaration);
     }
     
     private void AnalyzeInterfaceSyntax(SyntaxNodeAnalysisContext context)
