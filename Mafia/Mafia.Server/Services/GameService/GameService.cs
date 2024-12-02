@@ -593,6 +593,11 @@ public class GameService : IGameService
 
     private async Task AnnounceNightDeaths()
     {
+        HandlerContext handlerContext = new HandlerContext(_isDayPhase, _phaseCounter, _currentPlayers, _playersWhoDiedInTheNight,
+            _dayStartAnnouncements, _morningAnnouncer, _chatAdapter);
+        await phaseHandler.HandleRequest(handlerContext);
+
+        /*
         if (_isDayPhase)
         {
             if (_phaseCounter != 1) // Not on the first day
@@ -632,7 +637,7 @@ public class GameService : IGameService
                     await _chatAdapter.SendMessage(announcement);
                 }
             }
-        }
+        }*/
     }
 
     private async Task UpdateDayNightPhase()
@@ -699,7 +704,11 @@ public class GameService : IGameService
         _morningAnnouncer = roleFactory.GetAnnouncer();
         // CHAIN OF RESPONSIBILITY
         phaseHandler = new DayEndHandler();
-        phaseHandler.SetNext(new DayStartHandler());
+        var dayStartHandler = new DayStartHandler();
+        var firstDayStartHandler = new FirstDayStartHandler();
+
+        phaseHandler.SetNext(dayStartHandler);  // DayEndHandler -> DayStartHandler
+        dayStartHandler.SetNext(firstDayStartHandler); // DayStartHandler -> FirstDayStartHandler
 
 
         // PROTOTYPE

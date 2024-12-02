@@ -2,7 +2,7 @@
 
 namespace Mafia.Server.Models.ChainOfResponsibility
 {
-    public abstract class PhaseHandler : PhaseHandler
+    public abstract class PhaseHandler
     {
         protected PhaseHandler successor;
 
@@ -11,11 +11,11 @@ namespace Mafia.Server.Models.ChainOfResponsibility
             successor = nextHandler;
         }
 
-        public virtual void HandleRequest()
+        public virtual async Task HandleRequest(HandlerContext context)
         {
             if (successor != null)
             {
-                successor.HandleRequest();
+                await successor.HandleRequest(context);
             }
         }
    
