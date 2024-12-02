@@ -22,6 +22,7 @@ using RoleFactorySelector = Mafia.Server.Models.AbstractFactory.RoleFactorySelec
 using Mafia.Server.Models.Iterator;
 using Mafia.Server.Models.Iterator.ActionQueue;
 using Mafia.Server.Models.State;
+using Mafia.Server.Models.ChainOfResponsibility;
 
 namespace Mafia.Server.Services.GameService;
 
@@ -44,7 +45,8 @@ public class GameService : IGameService
     private List<ActionQueueEntry> _actionQueue = [];
     private List<ChatMessage> _dayStartAnnouncements = [];
     private List<Player> _playersWhoDiedInTheNight = [];
-    private MorningAnnouncer _morningAnnouncer;
+    private MorningAnnouncer _morningAnnouncer; // DECORATOR
+    private DayEndHandler phaseHandler; // CHAIN OF RESPONSIBILITY
 
     private CancellationTokenSource _phaseCancelTokenSource; //  Token for canceling the phase cycle
 
@@ -587,6 +589,11 @@ public class GameService : IGameService
 
     private async Task AnnounceNightDeaths()
     {
+        HandlerContext handlerContext = new HandlerContext(_isDayPhase, _phaseCounter, _currentPlayers, _playersWhoDiedInTheNight,
+            _dayStartAnnouncements, _morningAnnouncer, _chatAdapter);
+        await phaseHandler.HandleRequest(handlerContext);
+
+        /*
         if (_isDayPhase)
         {
             if (_phaseCounter != 1) // Not on the first day
@@ -626,7 +633,7 @@ public class GameService : IGameService
                     await _chatAdapter.SendMessage(announcement);
                 }
             }
-        }
+        }*/
     }
 
     private async Task UpdateDayNightPhase()
@@ -691,6 +698,13 @@ public class GameService : IGameService
         var citizenRoles = roleFactory.GetCitizenRoles();
         // DECORATOR
         _morningAnnouncer = roleFactory.GetAnnouncer();
+        // CHAIN OF RESPONSIBILITY
+        phaseHandler = new DayEndHandler();
+        var dayStartHandler = new DayStartHandler();
+        var firstDayStartHandler = new FirstDayStartHandler();
+
+        phaseHandler.SetNext(dayStartHandler);  // DayEndHandler -> DayStartHandler
+        dayStartHandler.SetNext(firstDayStartHandler); // DayStartHandler -> FirstDayStartHandler
 
 
         // PROTOTYPE
