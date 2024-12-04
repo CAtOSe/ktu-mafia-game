@@ -1,6 +1,7 @@
 using Mafia.Server.Controllers;
 using Mafia.Server.Logging;
 using Mafia.Server.Models.Adapter;
+using Mafia.Server.Models.Mediator;
 using Mafia.Server.Models.GameConfigurationFactory;
 using Mafia.Server.Models.State;
 using Mafia.Server.Services.ChatService;
@@ -31,6 +32,7 @@ builder.Services.AddSingleton<ISessionHandler, SessionHandler>();
 builder.Services.AddSingleton<IMessageResolverFacade, MessageResolverFacade>();
 builder.Services.AddSingleton<IChatService, ChatService>();
 builder.Services.AddSingleton<IChatServiceAdapter, ChatServiceAdapter>();
+builder.Services.AddSingleton<IChatMediator, ChatMediator>();
 builder.Services.AddSingleton<IGameConfigurationFactory, GameConfigurationFactory>();
 builder.Services.AddSingleton<IGameStateManager, GameStateManager>();
 
