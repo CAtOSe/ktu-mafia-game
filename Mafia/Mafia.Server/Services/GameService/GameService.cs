@@ -23,6 +23,7 @@ using Mafia.Server.Models.Iterator;
 using Mafia.Server.Models.Iterator.ActionQueue;
 using Mafia.Server.Models.State;
 using Mafia.Server.Models.ChainOfResponsibility;
+using Mafia.Server.Models.Mediator;
 
 namespace Mafia.Server.Services.GameService;
 
@@ -35,6 +36,7 @@ public class GameService : IGameService
     private IGameConfiguration _gameConfiguration;
     private GameLogger _logger;
     private readonly IGameStateManager _stateManager;
+    private readonly IChatMediator _chatMediator;
     //private readonly GameController _gameController;
 
 
@@ -63,7 +65,8 @@ public class GameService : IGameService
         TimeProvider timeProvider,
         IChatServiceAdapter chatAdapter,
         IGameConfigurationFactory gameConfigurationFactory,
-        IGameStateManager stateManager)
+        IGameStateManager stateManager,
+        IChatMediator chatMediator)
         //GameController gameController)
     {
         IsPaused = false;
@@ -72,6 +75,7 @@ public class GameService : IGameService
         _chatAdapter = chatAdapter;
         _gameConfigurationFactory = gameConfigurationFactory;
         _stateManager = stateManager;
+        _chatMediator = chatMediator;
         //_gameController = gameController;
         _logger = GameLogger.Instance;
     }
@@ -250,11 +254,11 @@ public class GameService : IGameService
                 User = actionUser,
                 Target = targetPlayer
             });
-            await _chatAdapter.SendMessage("", "You have chosen " + targetPlayer.Name, actionUser.Name, "nightAction");
+            await _chatMediator.SendMessage("", "You have chosen " + targetPlayer.Name, actionUser.Name, "nightAction");
         }
         else
         {
-            await _chatAdapter.SendMessage("", "You have canceled your selection", actionUser.Name, "nightAction");
+            await _chatMediator.SendMessage("", "You have canceled your selection", actionUser.Name, "nightAction");
         }
     }
 
@@ -280,12 +284,12 @@ public class GameService : IGameService
         // Send appropriate message based on vote selection or cancellation
         if (player.CurrentVote != targetPlayer)
         {
-            await _chatAdapter.SendMessage("", $"You have chosen {targetPlayer.Name}", player.Name, "dayAction");
+            await _chatMediator.SendMessage("", $"You have chosen {targetPlayer.Name}", player.Name, "dayAction");
             player.CurrentVote = targetPlayer;
         }
         else
         {
-            await _chatAdapter.SendMessage("", "You have canceled your selection", player.Name, "dayAction");
+            await _chatMediator.SendMessage("", "You have canceled your selection", player.Name, "dayAction");
             player.CurrentVote = null;
         }
     }
@@ -357,7 +361,7 @@ public class GameService : IGameService
         // Send messages about night actions (e.g., notifications to the chat)
         foreach (var nightMessage in nightMessages)
         {
-            await _chatAdapter.SendMessage(nightMessage);
+            await _chatMediator.SendMessage(nightMessage);
         }
 
         // Clear the action queue after all actions have been executed
@@ -370,7 +374,7 @@ public class GameService : IGameService
             deathInNightCount++;
             var deathMessage = new ChatMessage("", "You died.", player.Name, "nightNotification");
             _playersWhoDiedInTheNight.Add(player);
-            await _chatAdapter.SendMessage(deathMessage);
+            await _chatMediator.SendMessage(deathMessage);
         }
     }
     /*if(deathInNightCount == 0)
@@ -477,7 +481,7 @@ public class GameService : IGameService
         string votesResultMessage = votesResultBuilder.ToString();
 
         var finalVotesMessage = new ChatMessage("", votesResultMessage, "everyone", "server");
-        await _chatAdapter.SendMessage(finalVotesMessage);
+        await _chatMediator.SendMessage(finalVotesMessage);
 
         if (votes.Count == 0) // No players voted
         {
@@ -494,15 +498,15 @@ public class GameService : IGameService
             //var votingResultMessage = new ChatMessage("", votedOff.Name + " has been voted off by the town.", "everyone", "dayNotification");
             foreach (var votingResultMessage in votingResultsMessages)
             {
-                await _chatAdapter.SendMessage(votingResultMessage);
+                await _chatMediator.SendMessage(votingResultMessage);
             }
             var votingResultPersonalMessage = new ChatMessage("", "You died.", votedOff.Name, "dayNotification");
-            await _chatAdapter.SendMessage(votingResultPersonalMessage);
+            await _chatMediator.SendMessage(votingResultPersonalMessage);
         }
         else // More than one max value
         {
             var votingResultMessage = new ChatMessage("", "No player has been voted of by the town today. (Tie)", "everyone", "dayNotification");
-            await _chatAdapter.SendMessage(votingResultMessage);
+            await _chatMediator.SendMessage(votingResultMessage);
         }
     }
 
@@ -547,7 +551,7 @@ public class GameService : IGameService
                 _lastPhaseChange = _timeProvider.GetUtcNow();
                 string chatMessageType = _isDayPhase ? "dayStart" : "nightStart";
                 string phaseName = _isDayPhase ? "DAY" : "NIGHT";
-                await _chatAdapter.SendMessage("", phaseName + " " + _phaseCounter, "everyone",
+                await _chatMediator.SendMessage("", phaseName + " " + _phaseCounter, "everyone",
                     chatMessageType); // DAY 1 / NIGHT 1
                 await UpdateDayNightPhase();
                 await AnnounceNightDeaths();
@@ -654,7 +658,7 @@ public class GameService : IGameService
             _stateManager.EndGame(); //STATE
             //_gameController.EndGame();
             _logger.Log(winnerTeam + " team has won the game!");
-            await _chatAdapter.SendMessage("", winnerTeam + " team has won the game!", "everyone", "server");
+            await _chatMediator.SendMessage("", winnerTeam + " team has won the game!", "everyone", "server");
             await NotifyAllPlayers(new CommandMessage
             {
                 Base = ResponseCommands.EndGame,
