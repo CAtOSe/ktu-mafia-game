@@ -1,5 +1,6 @@
 using System.Net.WebSockets;
 using Mafia.Server.Models;
+using Mafia.Server.Models.Memento;
 using Mafia.Server.Models.Messages;
 
 namespace Mafia.Server.Services.GameService;
@@ -16,4 +17,5 @@ public interface IGameService
     void ResumeTimer();
     public bool IsPaused { get; }
     public bool GameStarted { get; }
+    public void RestoreGameState(GameStateMemento memento);
 }

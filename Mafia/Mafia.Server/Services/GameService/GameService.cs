@@ -24,6 +24,7 @@ using Mafia.Server.Models.Iterator.ActionQueue;
 using Mafia.Server.Models.State;
 using Mafia.Server.Models.ChainOfResponsibility;
 using Mafia.Server.Models.Mediator;
+using Mafia.Server.Models.Memento;
 
 namespace Mafia.Server.Services.GameService;
 
@@ -35,8 +36,10 @@ public class GameService : IGameService
     private readonly IGameConfigurationFactory _gameConfigurationFactory;
     private IGameConfiguration _gameConfiguration;
     private GameLogger _logger;
-    private readonly IGameStateManager _stateManager;
+    private readonly IGameStateManager _stateManager;//STATE
     private readonly IChatMediator _chatMediator;
+    private GameStateCaretaker _gameStateCaretaker = new(); // MEMENTO
+
     //private readonly GameController _gameController;
 
 
@@ -82,6 +85,7 @@ public class GameService : IGameService
 
     public void PauseTimer()
     {
+        SaveGameState(); //MEMENTO Save game state before pausing
         IsPaused = true;
         _phaseCancelTokenSource.Cancel();
         var phaseTime = _isDayPhase ? _gameConfiguration.DayPhaseDuration : _gameConfiguration.NightPhaseDuration;
@@ -96,6 +100,16 @@ public class GameService : IGameService
 
     public void ResumeTimer()
     {
+        var memento = _gameStateCaretaker.RestoreState();
+        if (memento != null)
+        {
+            RestoreGameState(memento); //MEMENTO Restore game state before resuming
+        }
+        else
+        {
+            _logger.Log(LogLevel.Error, "No saved game state to restore.");
+        }
+        
         IsPaused = false;
         var updateMessage = new CommandMessage
         {
@@ -105,6 +119,56 @@ public class GameService : IGameService
         NotifyAllPlayers(updateMessage);
         StartDayNightCycle(_remainingPhaseTime);
     }
+    //MEMENTO
+    public void SaveGameState()
+    {
+        var memento = new GameStateMemento(_currentPlayers, GameStarted, IsPaused);
+        _gameStateCaretaker.SaveState(memento);
+        _logger.Log(LogLevel.Debug, "Game state saved.");
+    }
+    public void RestoreGameState(GameStateMemento memento)
+    {
+        if (memento != null)
+        {
+            _currentPlayers.Clear();
+            _currentPlayers.AddRange(memento.Players);
+            GameStarted = memento.GameStarted;
+            IsPaused = memento.IsPaused;
+            
+            // Printing game state info to console
+            Console.WriteLine("\n===== Restored Game State =====");
+            Console.WriteLine($"GameStarted: {GameStarted}");
+            Console.WriteLine($"IsPaused: {IsPaused}");
+            Console.WriteLine($"Total Players: {_currentPlayers.Count}");
+        
+            Console.WriteLine("\nPlayers Info:");
+            foreach (var player in _currentPlayers)
+            {
+                Console.WriteLine($"Name: {player.Name}, Role: {player.RoleName}, Alive: {player.IsAlive}, Host: {player.IsHost}, Poisoned: {player.IsPoisoned}");
+            }
+            Console.WriteLine("================================\n");
+            
+            _logger.Log(LogLevel.Debug, "Game state restored from provided memento.");
+        }
+        else
+        {
+            Console.WriteLine("No game state to restore.");
+            _logger.Log(LogLevel.Error, "No game state to restore from the provided memento.");
+        }
+    }
+
+    /*public void PeekGameState()
+    {
+        var memento = _gameStateCaretaker.PeekState();
+        if (memento != null)
+        {
+            _logger.Log(LogLevel.Debug, $"Peeked Game State: Players: {memento.Players.Count}, GameStarted: {memento.GameStarted}, IsPaused: {memento.IsPaused}");
+        }
+        else
+        {
+            _logger.Log(LogLevel.Error, "No game state to peek.");
+        }
+    }*/
 
     public async Task DisconnectPlayer(WebSocket webSocket)
     {
@@ -536,6 +600,7 @@ public class GameService : IGameService
         _phaseCounter = 1;
         _chatService.ResetChat();
         _phaseCancelTokenSource?.Cancel(); // Stop the day/night cycle
+        _gameStateCaretaker = new GameStateCaretaker(); // Clear saved states
     }
 
     // Timer logic for day/night cycle 
