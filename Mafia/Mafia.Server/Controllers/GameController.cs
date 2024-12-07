@@ -6,6 +6,7 @@ using Mafia.Server.Services.GameService;
 using Mafia.Server.Services.SessionHandler;
 using Microsoft.AspNetCore.Mvc;
 using LogLevel = Mafia.Server.Logging.LogLevel;
+using Mafia.Server.Models.Memento;
 
 namespace Mafia.Server.Controllers
 {
@@ -18,6 +19,7 @@ namespace Mafia.Server.Controllers
         private readonly IHostApplicationLifetime _hostLifetime;
         private readonly GameLogger _logger = GameLogger.Instance;
         private readonly IGameStateManager _gameStateManager;
+        private readonly GameStateCaretaker _gameStateCaretaker;
 
         public GameController(
             ISessionHandler sessionHandler,
@@ -29,6 +31,7 @@ namespace Mafia.Server.Controllers
             _hostLifetime = hostLifetime;
             _gameService = gameService;
             _gameStateManager = gameStateManager;
+            _gameStateCaretaker = new GameStateCaretaker();
         }
 
         [Route("/ws")]
@@ -69,7 +72,7 @@ namespace Mafia.Server.Controllers
         {
             try
             {
-                var command = new PauseResumeCommand(_gameService, !_gameService.IsPaused, _gameStateManager);
+                var command = new PauseResumeCommand(_gameService, !_gameService.IsPaused, _gameStateManager, _gameStateCaretaker);
                 var result = command.Execute();
 
                 return Ok(result);
