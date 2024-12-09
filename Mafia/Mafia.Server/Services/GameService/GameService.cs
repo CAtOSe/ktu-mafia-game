@@ -26,6 +26,7 @@ using Mafia.Server.Models.ChainOfResponsibility;
 using Mafia.Server.Models.Composite;
 using Mafia.Server.Models.Mediator;
 using Mafia.Server.Models.Memento;
+using Mafia.Server.Models.Visitor;
 
 namespace Mafia.Server.Services.GameService;
 
@@ -52,7 +53,9 @@ public class GameService : IGameService
     private List<ChatMessage> _dayStartAnnouncements = [];
     private List<Player> _playersWhoDiedInTheNight = [];
     private MorningAnnouncer _morningAnnouncer; // DECORATOR
-    private DayEndHandler phaseHandler; // CHAIN OF RESPONSIBILITY
+    private DayEndHandler _phaseHandler; // CHAIN OF RESPONSIBILITY
+    private IScoreVisitor scoreForSurvivingVisitor; // VISITOR
+    private IScoreVisitor scoreForVotingVisitor; // VISITOR
 
     private CancellationTokenSource _phaseCancelTokenSource; //  Token for canceling the phase cycle
 
@@ -71,7 +74,7 @@ public class GameService : IGameService
         IGameConfigurationFactory gameConfigurationFactory,
         IGameStateManager stateManager,
         IChatMediator chatMediator)
-        //GameController gameController)
+    //GameController gameController)
     {
         IsPaused = false;
         _chatService = chatService;
@@ -110,7 +113,7 @@ public class GameService : IGameService
         {
             _logger.Log(LogLevel.Error, "No saved game state to restore.");
         }
-        
+
         IsPaused = false;
         var updateMessage = new CommandMessage
         {
@@ -135,20 +138,20 @@ public class GameService : IGameService
             _currentPlayers.AddRange(memento.Players);
             GameStarted = memento.GameStarted;
             IsPaused = memento.IsPaused;
-            
+
             // Printing game state info to console
             Console.WriteLine("\n===== Restored Game State =====");
             Console.WriteLine($"GameStarted: {GameStarted}");
             Console.WriteLine($"IsPaused: {IsPaused}");
             Console.WriteLine($"Total Players: {_currentPlayers.Count}");
-        
+
             Console.WriteLine("\nPlayers Info:");
             foreach (var player in _currentPlayers)
             {
                 Console.WriteLine($"Name: {player.Name}, Role: {player.RoleName}, Alive: {player.IsAlive}, Host: {player.IsHost}, Poisoned: {player.IsPoisoned}");
             }
             Console.WriteLine("================================\n");
-            
+
             _logger.Log(LogLevel.Debug, "Game state restored from provided memento.");
         }
         else
@@ -379,7 +382,7 @@ public class GameService : IGameService
         }
     }*/
 
-    private async Task ExecuteNightActions()
+    public async Task ExecuteNightActions()
     {
         // Create Concrete Aggregator
         var actionQueue = new ActionQueue(_actionQueue);
@@ -408,6 +411,7 @@ public class GameService : IGameService
         // Start executing night actions in the queue, using Iterator
         for (var nightAction = iterator.First(); nightAction != null; nightAction = iterator.Next()) // Iterator
         {
+            Console.WriteLine(nightAction.User.RoleName);
             var user = nightAction.User;
             var target = nightAction.Target;
 
@@ -520,8 +524,14 @@ public class GameService : IGameService
     _actionQueue.Clear();
 }*/
 
-    private async Task ExecuteDayActions()
+    public async Task ExecuteDayActions()
     {
+
+        // VISITOR
+        foreach (var player in _currentPlayers)
+        {
+            player.Role.Accept(scoreForVotingVisitor, player);
+        }
 
         var playerVotes = _currentPlayers.ToDictionary(x => x, _ => 0);
 
@@ -532,7 +542,6 @@ public class GameService : IGameService
         }
 
         var votes = playerVotes.OrderByDescending(x => x.Value).ToList();
-
 
         // Voting results message
         var votesResultBuilder = new StringBuilder();
@@ -572,6 +581,15 @@ public class GameService : IGameService
         {
             var votingResultMessage = new ChatMessage("", "No player has been voted of by the town today. (Tie)", "everyone", "dayNotification");
             await _chatMediator.SendMessage(votingResultMessage);
+        }
+
+        // VISITOR
+        foreach (var player in _currentPlayers)
+        {
+            if (player.IsAlive)
+            {
+                player.Role.Accept(scoreForSurvivingVisitor, player);
+            }
         }
     }
 
@@ -630,7 +648,7 @@ public class GameService : IGameService
                 var elapsedPhaseTime = totalPhaseTime - remainingPhaseTime;
                 _lastPhaseChange = _timeProvider.GetUtcNow().Subtract(TimeSpan.FromMilliseconds(elapsedPhaseTime));
             }
-
+            /*
             try
             {
                 if (_isDayPhase)
@@ -646,6 +664,24 @@ public class GameService : IGameService
                     _phaseCounter = _phaseCounter + 1;
                     await ExecuteNightActions();
                 }
+            }*/
+            try
+            {
+                var duration = _isDayPhase
+                    ? _gameConfiguration.DayPhaseDuration
+                    : _gameConfiguration.NightPhaseDuration;
+
+                await Task.Delay(remainingPhaseTime == 0 ? duration : remainingPhaseTime, token);
+
+                // CHAIN OF RESPONSIBILITY
+
+                var handlerContext = new HandlerContext(
+                    _isDayPhase, _phaseCounter, _currentPlayers, _playersWhoDiedInTheNight,
+                    _dayStartAnnouncements, _morningAnnouncer, _chatAdapter, this, true);
+
+                await _phaseHandler.HandleRequest(handlerContext);
+
+                _phaseCounter = _phaseCounter + 1;
             }
             catch (TaskCanceledException)
             {
@@ -660,8 +696,8 @@ public class GameService : IGameService
     private async Task AnnounceNightDeaths()
     {
         HandlerContext handlerContext = new HandlerContext(_isDayPhase, _phaseCounter, _currentPlayers, _playersWhoDiedInTheNight,
-            _dayStartAnnouncements, _morningAnnouncer, _chatAdapter);
-        await phaseHandler.HandleRequest(handlerContext);
+            _dayStartAnnouncements, _morningAnnouncer, _chatAdapter, this, false);
+        await _phaseHandler.HandleRequest(handlerContext);
 
         /*
         if (_isDayPhase)
@@ -769,12 +805,22 @@ public class GameService : IGameService
         // DECORATOR
         _morningAnnouncer = roleFactory.GetAnnouncer();
         // CHAIN OF RESPONSIBILITY
-        phaseHandler = new DayEndHandler();
+        _phaseHandler = new DayEndHandler();
         var dayStartHandler = new DayStartHandler();
         var firstDayStartHandler = new FirstDayStartHandler();
+        var nightEndHandler = new NightEndHandler();
+        var defaultHandler = new DefaultHandler();
 
-        phaseHandler.SetNext(dayStartHandler);  // DayEndHandler -> DayStartHandler
-        dayStartHandler.SetNext(firstDayStartHandler); // DayStartHandler -> FirstDayStartHandler
+
+
+        _phaseHandler.SetNext(dayStartHandler);  // DayEndHandler -> DayStartHandler
+        dayStartHandler.SetNext(nightEndHandler); // DayStartHandler -> NightEndHandler
+        nightEndHandler.SetNext(firstDayStartHandler); // NightEndHandler -> FirstDayStartHandler
+        firstDayStartHandler.SetNext(defaultHandler); // FirstDayStartHandler -> DefaultHandler
+
+        // VISITOR
+        scoreForSurvivingVisitor = new ScoreForSurvivingVisitor();
+        scoreForVotingVisitor = new ScoreForVotingVisitor();
 
 
         var accompliceCount = GetAccompliceCount(_currentPlayers.Count);
@@ -783,10 +829,10 @@ public class GameService : IGameService
         var bystanderCount = random.Next(3);
 
         var roleAssigner = new RoleAssignmentComposite();
-        roleAssigner.Add(new AlignmentComposite([..killerRoles]), 1);
-        roleAssigner.Add(new AlignmentComposite([..accompliceRoles]), accompliceCount);
+        roleAssigner.Add(new AlignmentComposite([.. killerRoles]), 1);
+        roleAssigner.Add(new AlignmentComposite([.. accompliceRoles]), accompliceCount);
         roleAssigner.Add(new AlignmentComposite([new Bystander()]), bystanderCount);
-        roleAssigner.Add(new AlignmentComposite([..citizenRoles]), _currentPlayers.Count);
+        roleAssigner.Add(new AlignmentComposite([.. citizenRoles]), _currentPlayers.Count);
         roleAssigner.AssignRole(_currentPlayers);
 
         /*
@@ -866,56 +912,56 @@ public class GameService : IGameService
             Console.WriteLine("Deep BYSTANDER copy: " + bystanderPlayerRoleCopy.GetHashCode().ToString());
             Console.WriteLine("Is same reference: " + Object.ReferenceEquals(bystanderPlayerRole, bystanderPlayerRoleCopy));
             */
-/*
-            // BUILDER
-            var citizenBuilder = new PlayerBuilder(_currentPlayers[bystanderIndex].WebSocket);
-            var bystanderPlayer = citizenBuilder.SetName(_currentPlayers[bystanderIndex].Name)
-                                                .SetRole(bystanderPlayerRole)
-                                                .SetAlive(true)
-                                                .SetHost(_currentPlayers[bystanderIndex].IsHost)
-                                                .Build();
+        /*
+                    // BUILDER
+                    var citizenBuilder = new PlayerBuilder(_currentPlayers[bystanderIndex].WebSocket);
+                    var bystanderPlayer = citizenBuilder.SetName(_currentPlayers[bystanderIndex].Name)
+                                                        .SetRole(bystanderPlayerRole)
+                                                        .SetAlive(true)
+                                                        .SetHost(_currentPlayers[bystanderIndex].IsHost)
+                                                        .Build();
 
-            _currentPlayers[bystanderIndex] = bystanderPlayer;
-            unassignedIndexes.Remove(bystanderIndex);
-        }
+                    _currentPlayers[bystanderIndex] = bystanderPlayer;
+                    unassignedIndexes.Remove(bystanderIndex);
+                }
 
-        _logger.Log(LogLevel.Debug, "Built Bystander");
-        foreach (var player in _currentPlayers)
-        {
-            _logger.Log(LogLevel.Debug, $"{player.Name} | {player.Role}");
-        }
+                _logger.Log(LogLevel.Debug, "Built Bystander");
+                foreach (var player in _currentPlayers)
+                {
+                    _logger.Log(LogLevel.Debug, $"{player.Name} | {player.Role}");
+                }
 
-        _logger.Log(LogLevel.Debug, "Unassigned indexes:");
-        foreach (var playerIndex in unassignedIndexes.ToList())  // Iterate over unassigned players
-        {
-            _logger.Log(LogLevel.Debug, $"{playerIndex}");
-        }
+                _logger.Log(LogLevel.Debug, "Unassigned indexes:");
+                foreach (var playerIndex in unassignedIndexes.ToList())  // Iterate over unassigned players
+                {
+                    _logger.Log(LogLevel.Debug, $"{playerIndex}");
+                }
 
-        // 4. Assign remaining players random roles from citizenRoles
-        foreach (var playerIndex in unassignedIndexes.ToList())  // Iterate over unassigned players
-        {
-            // PROTOTYPE
-            var citizenRole = citizenRoles.Count > 0
-                           ? (Role)citizenRoles[random.Next(citizenRoles.Count)].Clone()
-                           : (Role)originalCitizenRoles[random.Next(originalCitizenRoles.Count)].Clone();
-            // BUILDER
-            var citizenBuilder = new PlayerBuilder(_currentPlayers[playerIndex].WebSocket);
-            var citizenPlayer = citizenBuilder.SetName(_currentPlayers[playerIndex].Name)
-                                              .SetRole(citizenRole)
-                                              .SetAlive(true)
-                                              .SetHost(_currentPlayers[playerIndex].IsHost)
-                                              .Build();
+                // 4. Assign remaining players random roles from citizenRoles
+                foreach (var playerIndex in unassignedIndexes.ToList())  // Iterate over unassigned players
+                {
+                    // PROTOTYPE
+                    var citizenRole = citizenRoles.Count > 0
+                                   ? (Role)citizenRoles[random.Next(citizenRoles.Count)].Clone()
+                                   : (Role)originalCitizenRoles[random.Next(originalCitizenRoles.Count)].Clone();
+                    // BUILDER
+                    var citizenBuilder = new PlayerBuilder(_currentPlayers[playerIndex].WebSocket);
+                    var citizenPlayer = citizenBuilder.SetName(_currentPlayers[playerIndex].Name)
+                                                      .SetRole(citizenRole)
+                                                      .SetAlive(true)
+                                                      .SetHost(_currentPlayers[playerIndex].IsHost)
+                                                      .Build();
 
-            _currentPlayers[playerIndex] = citizenPlayer;
-            citizenRoles.Remove(citizenRole);
-        }
+                    _currentPlayers[playerIndex] = citizenPlayer;
+                    citizenRoles.Remove(citizenRole);
+                }
 
-        _logger.Log(LogLevel.Debug, "Built Citizen");
-        foreach (var player in _currentPlayers)
-        {
-            _logger.Log(LogLevel.Debug, $"{player.Name} | {player.Role}");
-        }
-        */
+                _logger.Log(LogLevel.Debug, "Built Citizen");
+                foreach (var player in _currentPlayers)
+                {
+                    _logger.Log(LogLevel.Debug, $"{player.Name} | {player.Role}");
+                }
+                */
 
         _logger.Log(LogLevel.Debug, "Finished building roles");
         // ADDED FLYWEIGHT

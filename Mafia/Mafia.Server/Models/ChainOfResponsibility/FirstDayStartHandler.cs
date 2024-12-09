@@ -7,7 +7,7 @@ namespace Mafia.Server.Models.ChainOfResponsibility
         public override async Task HandleRequest(HandlerContext context)
         {
             Console.WriteLine("CHAIN OF RESPONSIBILITY | FirstDayStartHandler");
-            if (context._isDayPhase && context._phaseCounter == 1) // On the first day, notify evil players of all the evil team members.
+            if (context._isDayPhase && context._phaseCounter == 1 && !context._isItPhaseEnd) // On the first day, notify evil players of all the evil team members.
             {
                 List<ChatMessage> evilTeamMessages = new List<ChatMessage>();
                 // Create Concrete Aggregator

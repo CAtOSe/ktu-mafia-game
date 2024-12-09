@@ -19,6 +19,8 @@ public class Player(WebSocket webSocket)
     public bool IsPoisoned { get; set; } = false;
 
     public Player CurrentVote;
+
+    public int Score;
     
     public WebSocket WebSocket
     {

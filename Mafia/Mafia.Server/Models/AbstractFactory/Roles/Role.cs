@@ -2,6 +2,7 @@
 using Mafia.Server.Models.Prototype;
 using Mafia.Server.Models.Strategy;
 using Mafia.Server.Models.Composite;
+using Mafia.Server.Models.Visitor;
 
 namespace Mafia.Server.Models.AbstractFactory.Roles
 {
@@ -77,6 +78,11 @@ namespace Mafia.Server.Models.AbstractFactory.Roles
             {
                 player.Role = (Role)this.MemberwiseClone();
             }
+        }
+
+        // Visitor
+        public virtual void Accept(IScoreVisitor visitor, Player player)
+        {
         }
     }
 }

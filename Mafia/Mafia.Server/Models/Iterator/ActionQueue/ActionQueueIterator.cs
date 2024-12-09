@@ -11,9 +11,11 @@
 
         public ActionQueueIterator(IEnumerable<ActionQueueEntry> entries, List<string> actionOrder)
         {
+
             // Sort entries based on the custom action order
             _entries = entries
                 .OrderBy(entry => actionOrder.IndexOf(entry.User.RoleName))
+                .ThenBy(entry => entry.User.Name)
                 .ToList();
         }
 
