@@ -53,7 +53,7 @@ public class GameService : IGameService
     private List<ChatMessage> _dayStartAnnouncements = [];
     private List<Player> _playersWhoDiedInTheNight = [];
     private MorningAnnouncer _morningAnnouncer; // DECORATOR
-    private DayEndHandler phaseHandler; // CHAIN OF RESPONSIBILITY
+    private DayEndHandler _phaseHandler; // CHAIN OF RESPONSIBILITY
     private IScoreVisitor scoreForSurvivingVisitor; // VISITOR
     private IScoreVisitor scoreForVotingVisitor; // VISITOR
 
@@ -382,7 +382,7 @@ public class GameService : IGameService
         }
     }*/
 
-    private async Task ExecuteNightActions()
+    public async Task ExecuteNightActions()
     {
         // Create Concrete Aggregator
         var actionQueue = new ActionQueue(_actionQueue);
@@ -411,6 +411,7 @@ public class GameService : IGameService
         // Start executing night actions in the queue, using Iterator
         for (var nightAction = iterator.First(); nightAction != null; nightAction = iterator.Next()) // Iterator
         {
+            Console.WriteLine(nightAction.User.RoleName);
             var user = nightAction.User;
             var target = nightAction.Target;
 
@@ -523,7 +524,7 @@ public class GameService : IGameService
     _actionQueue.Clear();
 }*/
 
-    private async Task ExecuteDayActions()
+    public async Task ExecuteDayActions()
     {
 
         // VISITOR
@@ -647,7 +648,7 @@ public class GameService : IGameService
                 var elapsedPhaseTime = totalPhaseTime - remainingPhaseTime;
                 _lastPhaseChange = _timeProvider.GetUtcNow().Subtract(TimeSpan.FromMilliseconds(elapsedPhaseTime));
             }
-
+            /*
             try
             {
                 if (_isDayPhase)
@@ -663,6 +664,24 @@ public class GameService : IGameService
                     _phaseCounter = _phaseCounter + 1;
                     await ExecuteNightActions();
                 }
+            }*/
+            try
+            {
+                var duration = _isDayPhase
+                    ? _gameConfiguration.DayPhaseDuration
+                    : _gameConfiguration.NightPhaseDuration;
+
+                await Task.Delay(remainingPhaseTime == 0 ? duration : remainingPhaseTime, token);
+
+                // CHAIN OF RESPONSIBILITY
+
+                var handlerContext = new HandlerContext(
+                    _isDayPhase, _phaseCounter, _currentPlayers, _playersWhoDiedInTheNight,
+                    _dayStartAnnouncements, _morningAnnouncer, _chatAdapter, this, true);
+
+                await _phaseHandler.HandleRequest(handlerContext);
+
+                _phaseCounter = _phaseCounter + 1;
             }
             catch (TaskCanceledException)
             {
@@ -677,8 +696,8 @@ public class GameService : IGameService
     private async Task AnnounceNightDeaths()
     {
         HandlerContext handlerContext = new HandlerContext(_isDayPhase, _phaseCounter, _currentPlayers, _playersWhoDiedInTheNight,
-            _dayStartAnnouncements, _morningAnnouncer, _chatAdapter);
-        await phaseHandler.HandleRequest(handlerContext);
+            _dayStartAnnouncements, _morningAnnouncer, _chatAdapter, this, false);
+        await _phaseHandler.HandleRequest(handlerContext);
 
         /*
         if (_isDayPhase)
@@ -786,15 +805,22 @@ public class GameService : IGameService
         // DECORATOR
         _morningAnnouncer = roleFactory.GetAnnouncer();
         // CHAIN OF RESPONSIBILITY
-        phaseHandler = new DayEndHandler();
+        _phaseHandler = new DayEndHandler();
         var dayStartHandler = new DayStartHandler();
         var firstDayStartHandler = new FirstDayStartHandler();
+        var nightEndHandler = new NightEndHandler();
+        var defaultHandler = new DefaultHandler();
+
+
+
+        _phaseHandler.SetNext(dayStartHandler);  // DayEndHandler -> DayStartHandler
+        dayStartHandler.SetNext(nightEndHandler); // DayStartHandler -> NightEndHandler
+        nightEndHandler.SetNext(firstDayStartHandler); // NightEndHandler -> FirstDayStartHandler
+        firstDayStartHandler.SetNext(defaultHandler); // FirstDayStartHandler -> DefaultHandler
+
         // VISITOR
         scoreForSurvivingVisitor = new ScoreForSurvivingVisitor();
         scoreForVotingVisitor = new ScoreForVotingVisitor();
-
-        phaseHandler.SetNext(dayStartHandler);  // DayEndHandler -> DayStartHandler
-        dayStartHandler.SetNext(firstDayStartHandler); // DayStartHandler -> FirstDayStartHandler
 
 
         var accompliceCount = GetAccompliceCount(_currentPlayers.Count);
