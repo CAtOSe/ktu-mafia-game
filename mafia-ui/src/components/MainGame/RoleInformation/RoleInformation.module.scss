@@ -14,18 +14,18 @@
 }
 
 .info-section {
-  display: flex; 
-  max-width: 400px; 
+  display: flex;
+  max-width: 400px;
   justify-content: space-between;
-  align-items: flex-start; 
+  align-items: flex-start;
   padding: 5px;
-  width: auto; 
+  width: auto;
   margin: 5px;
   font-size: 12px;
 }
 
 .info-list {
-  flex: 1; 
+  flex: 1;
   display: grid;
   grid-template-columns: auto 1fr;
   gap: 5px 10px;
@@ -36,8 +36,8 @@
 
 .role-image-container {
   display: flex;
-  align-items: center; 
-  margin-left: 10px; 
+  align-items: center;
+  margin-left: 10px;
 }
 
 .role-image {

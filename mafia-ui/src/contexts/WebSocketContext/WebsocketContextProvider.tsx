@@ -7,7 +7,7 @@ import {
 import { Message } from '../../types.ts';
 import WebsocketContext from './WebsocketContext.ts';
 
-const socketUrl = 'ws://localhost:5141/ws';
+const socketUrl = `${import.meta.env.VITE_HOST_WS}/ws`;
 
 const WebsocketContextProvider = ({ children }: WebsocketContextProps) => {
   const websocket = useRef<WebSocket | null>(null);

@@ -7,6 +7,7 @@ import * as path from 'path';
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [react()],
+  envDir: './',
   css: {
     postcss: {},
     preprocessorOptions: {

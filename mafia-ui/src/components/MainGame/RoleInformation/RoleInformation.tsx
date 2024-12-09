@@ -15,7 +15,7 @@ const RoleInformation: React.FC = () => {
     if (gameState?.role) {
       setRoleName(gameState.role);
     } else {
-      fetch('http://localhost:5141/api/gamecontrol/playerRole')
+      fetch(`${import.meta.env.VITE_HOST_HTTP}/api/gamecontrol/playerRole`)
         .then((res) => res.json())
         .then((data) => setRoleName(data.role))
         .catch((err) => console.error('Failed to fetch role:', err));
@@ -43,7 +43,11 @@ const RoleInformation: React.FC = () => {
           </li>
         </ul>
         <div className={cn('role-image-container')}>
-          {roleName ? <RoleImage roleName={roleName} /> : <p>Loading role...</p>}
+          {roleName ? (
+            <RoleImage roleName={roleName} />
+          ) : (
+            <p>Loading role...</p>
+          )}
         </div>
       </div>
     </div>

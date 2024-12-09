@@ -11,7 +11,9 @@ const RoleImage: React.FC<RoleImageProps> = ({ roleName }) => {
   useEffect(() => {
     const fetchRoleImage = async () => {
       try {
-        const response = await fetch(`http://localhost:5141/api/gamecontrol/${roleName}`);
+        const response = await fetch(
+          `${import.meta.env.VITE_HOST_HTTP}/api/gamecontrol/${roleName}`,
+        );
         if (response.ok) {
           const blob = await response.blob();
           const imageUrl = URL.createObjectURL(blob);
@@ -28,18 +30,20 @@ const RoleImage: React.FC<RoleImageProps> = ({ roleName }) => {
   }, [roleName]);
 
   console.log(`Fetching image for role: ${roleName}`);
-  console.log(`Fetching from URL: http://localhost:5141/api/gamecontrol/${roleName}`);
+  console.log(`Fetching from URL: /api/gamecontrol/${roleName}`);
 
   if (!imageSrc) {
     return <p>Loading image...</p>;
   }
 
-  return <img
-    className="role-image"
-    src={imageSrc}
-    alt={`${roleName} role`}
-    style={{width: '200px', height: '200px'}} 
-  />;
+  return (
+    <img
+      className="role-image"
+      src={imageSrc}
+      alt={`${roleName} role`}
+      style={{ width: '200px', height: '200px' }}
+    />
+  );
 };
 
 export default RoleImage;
