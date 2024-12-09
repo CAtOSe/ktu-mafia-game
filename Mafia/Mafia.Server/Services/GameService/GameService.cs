@@ -23,6 +23,7 @@ using Mafia.Server.Models.Iterator;
 using Mafia.Server.Models.Iterator.ActionQueue;
 using Mafia.Server.Models.State;
 using Mafia.Server.Models.ChainOfResponsibility;
+using Mafia.Server.Models.Composite;
 using Mafia.Server.Models.Mediator;
 using Mafia.Server.Models.Memento;
 
@@ -776,13 +777,19 @@ public class GameService : IGameService
         dayStartHandler.SetNext(firstDayStartHandler); // DayStartHandler -> FirstDayStartHandler
 
 
-        // PROTOTYPE
-        var originalCitizenRoles = new List<Role>(citizenRoles);
-
         var accompliceCount = GetAccompliceCount(_currentPlayers.Count);
 
         var random = new Random();
+        var bystanderCount = random.Next(3);
 
+        var roleAssigner = new RoleAssignmentComposite();
+        roleAssigner.Add(new AlignmentComposite([..killerRoles]), 1);
+        roleAssigner.Add(new AlignmentComposite([..accompliceRoles]), accompliceCount);
+        roleAssigner.Add(new AlignmentComposite([new Bystander()]), bystanderCount);
+        roleAssigner.Add(new AlignmentComposite([..citizenRoles]), _currentPlayers.Count);
+        roleAssigner.AssignRole(_currentPlayers);
+
+        /*
         // Create a list to track unassigned players by index
         var unassignedIndexes = Enumerable.Range(0, _currentPlayers.Count).ToList();
 
@@ -859,7 +866,7 @@ public class GameService : IGameService
             Console.WriteLine("Deep BYSTANDER copy: " + bystanderPlayerRoleCopy.GetHashCode().ToString());
             Console.WriteLine("Is same reference: " + Object.ReferenceEquals(bystanderPlayerRole, bystanderPlayerRoleCopy));
             */
-
+/*
             // BUILDER
             var citizenBuilder = new PlayerBuilder(_currentPlayers[bystanderIndex].WebSocket);
             var bystanderPlayer = citizenBuilder.SetName(_currentPlayers[bystanderIndex].Name)
@@ -908,6 +915,7 @@ public class GameService : IGameService
         {
             _logger.Log(LogLevel.Debug, $"{player.Name} | {player.Role}");
         }
+        */
 
         _logger.Log(LogLevel.Debug, "Finished building roles");
         // ADDED FLYWEIGHT
