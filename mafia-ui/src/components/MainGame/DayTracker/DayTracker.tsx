@@ -7,8 +7,15 @@ import { GameStateContext } from '../../../contexts/GameStateContext/GameStateCo
 const cn = classNames.bind(styles);
 
 const DayTracker: React.FC = () => {
-  const { isDay, timeRemaining, phase, isPaused: contextPaused } = useDayNight();
-  const { gameState: { isHost } } = useContext(GameStateContext);
+  const {
+    isDay,
+    timeRemaining,
+    phase,
+    isPaused: contextPaused,
+  } = useDayNight();
+  const {
+    gameState: { isHost },
+  } = useContext(GameStateContext);
   const [isPaused, setIsPaused] = useState(contextPaused);
   const displayTime = Math.trunc(timeRemaining / 1000);
 
@@ -17,13 +24,16 @@ const DayTracker: React.FC = () => {
     setIsPaused(!isPaused); // Changing local button status
 
     try {
-      const response = await fetch('http://localhost:5141/api/gamecontrol/toggle', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
+      const response = await fetch(
+        `${import.meta.env.VITE_HOST_HTTP}/api/gamecontrol/toggle`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ pause: !contextPaused }), // Sending status change
         },
-        body: JSON.stringify({ pause: !contextPaused }), // Sending status change
-      });
+      );
 
       if (response.ok) {
         const result = await response.text();

@@ -1,11 +1,11 @@
 ﻿using Mafia.Server.Models.Bridge;
 using Mafia.Server.Models.Prototype;
 using Mafia.Server.Models.Strategy;
-using System.Reflection.Metadata.Ecma335;
+using Mafia.Server.Models.Composite;
 
 namespace Mafia.Server.Models.AbstractFactory.Roles
 {
-    public abstract class Role : IRolePrototype
+    public abstract class Role : RoleComponent, IRolePrototype
     {
         public string Name { get; set; }
         public string RoleType { get; set; }
@@ -69,6 +69,14 @@ namespace Mafia.Server.Models.AbstractFactory.Roles
         public virtual IRolePrototype Clone()
         {
             return (IRolePrototype)this.MemberwiseClone(); 
+        }
+
+        public override void AssignRole(List<Player> players)
+        {
+            foreach (var player in players)
+            {
+                player.Role = (Role)this.MemberwiseClone();
+            }
         }
     }
 }
