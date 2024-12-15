@@ -50,7 +50,7 @@ namespace Mafia.Server.Models.AbstractFactory.Roles
                     // Delegate to the assigned executor (Strategy pattern)
                     _actionExecutor.ExecuteAction(user, target, context, nightMessages);
 
-                    ShowSuccessMessage(user, target, nightMessages); // perform template
+                    //ShowSuccessMessage(user, target, nightMessages); // perform template
                 }              
             }
             else
