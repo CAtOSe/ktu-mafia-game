@@ -6,8 +6,8 @@ namespace Mafia.Server.Models.Iterator.ActionQueue
     {
         ActionQueueEntry First();
         ActionQueueEntry Next();
-        bool HasMore();
-        ActionQueueEntry Current { get; }
+        bool IsDone();
+        ActionQueueEntry Current();
     }
 
 }

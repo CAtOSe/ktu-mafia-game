@@ -11,8 +11,7 @@
 
         public ActionQueueIterator(IEnumerable<ActionQueueEntry> entries, List<string> actionOrder)
         {
-
-            // Sort entries based on the custom action order
+            // Sort entries based on the custom action order and then by player name
             _entries = entries
                 .OrderBy(entry => actionOrder.IndexOf(entry.User.RoleName))
                 .ThenBy(entry => entry.User.Name)
@@ -28,15 +27,18 @@
         public ActionQueueEntry Next()
         {
             _currentIndex++;
-            return HasMore() ? _entries[_currentIndex] : null;
+            return IsDone() ? null : _entries[_currentIndex];
         }
 
-        public bool HasMore()
+        public bool IsDone()
         {
-            return _currentIndex < _entries.Count - 1;
+            return _currentIndex >= _entries.Count;
         }
 
-        public ActionQueueEntry Current => _currentIndex >= 0 && _currentIndex < _entries.Count ? _entries[_currentIndex] : null;
+        public ActionQueueEntry Current()
+        {
+            return _currentIndex >= 0 && _currentIndex < _entries.Count ? _entries[_currentIndex] : null;
+        }
     }
 
 }

@@ -384,6 +384,11 @@ public class GameService : IGameService
 
     public async Task ExecuteNightActions()
     {
+
+        foreach(var x in _actionQueue)
+        {
+            Console.WriteLine(x.User.Name + " action queue " + x.Target.Name);
+        }
         // Create Concrete Aggregator
         var actionQueue = new ActionQueue(_actionQueue);
 
