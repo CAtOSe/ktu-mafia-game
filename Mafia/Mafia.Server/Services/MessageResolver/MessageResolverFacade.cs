@@ -1,4 +1,5 @@
 using System.Net.WebSockets;
+using Mafia.Server.Models.Interpreter;
 using Mafia.Server.Models.Messages;
 using Mafia.Server.Services.ChatService;
 using Mafia.Server.Services.GameService;
@@ -7,10 +8,12 @@ namespace Mafia.Server.Services.MessageResolver;
 
 public class MessageResolverFacade(IGameService gameService, IChatService chatService) : IMessageResolverFacade
 {
+    private readonly IAbstractCommandExpression _commandInterpreter = CommandInterpreter.GetInterpreter();
+    
     public async Task HandleMessage(WebSocket webSocket, string message)
     {
         var player = gameService.GetPlayers().FirstOrDefault(x => x.WebSocket == webSocket);
-        var command = CommandMessage.FromString(message);
+        var command = InterpretMessage(message);
         switch (command.Base)
         {
             case RequestCommands.Login when command.Arguments.Count == 1:
@@ -52,5 +55,18 @@ public class MessageResolverFacade(IGameService gameService, IChatService chatSe
                 return;
             }
         }
+    }
+
+    private CommandMessage InterpretMessage(string message)
+    {
+        var context = new CommandInterpretContext
+        {
+            Input = message,
+            Result = new CommandMessage()
+        };
+        
+        _commandInterpreter.Interpret(context);
+        
+        return context.Result;
     }
 }

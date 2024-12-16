@@ -4,9 +4,9 @@ namespace Mafia.Server.Models.Messages;
 
 public record CommandMessage
 {
-    public string Base { get; init; }
-    public string Error { get; init; }
-    public IList<string> Arguments { get; init; }
+    public string Base { get; set; }
+    public string Error { get; set; }
+    public IList<string> Arguments { get; set; }
 
     public static CommandMessage FromString(string message)
     {
@@ -54,6 +54,7 @@ public record CommandMessage
 
     private string SanitizeString(string input)
     {
+        if (string.IsNullOrWhiteSpace(input)) return string.Empty;
         return input.Replace(":", "").Replace(";", "");
     }
 }

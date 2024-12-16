@@ -49,11 +49,11 @@ public class ChatTests
     }
 
     [Fact]
-    public void ChatService_ShouldResetChat()
+    public async Task ChatService_ShouldResetChat()
     {
         // Arrange
-        _sut.SendChatMessage("Sender", "Message 1", "everyone", ChatCategory.server.ToString()).Wait();
-        _sut.SendChatMessage("Sender", "Message 2", "everyone", ChatCategory.server.ToString()).Wait();
+        await _sut.SendChatMessage("Sender", "Message 1", "everyone", ChatCategory.server.ToString());
+        await _sut.SendChatMessage("Sender", "Message 2", "everyone", ChatCategory.server.ToString());
         
         // Act
         _sut.ResetChat();
@@ -67,7 +67,7 @@ public class ChatTests
     {
         // Arrange
         var testMessage = new ChatMessage("Tester", "Test message content", "everyone", "server", 0);
-        _sut.SendChatMessage(testMessage).Wait();
+        await _sut.SendChatMessage(testMessage);
 
         // Act
         var filteredMessages = _sut.FilterMessagesForPlayer(_alivePlayer);
@@ -88,14 +88,14 @@ public class ChatTests
     }
     
     [Fact]
-    public void ChatService_AlivePlayerShouldOnlySeeAliveMessages()
+    public async Task ChatService_AlivePlayerShouldOnlySeeAliveMessages()
     {
         // Arrange
         var aliveMessage = new ChatMessage("Sender", "Message for alive players", "everyone", "player", 0);
         var deadMessage = new ChatMessage("Sender", "Message for dead players", "everyone", "deadPlayer", 1);
 
-        _sut.SendChatMessage(aliveMessage).Wait();
-        _sut.SendChatMessage(deadMessage).Wait();
+        await _sut.SendChatMessage(aliveMessage);
+        await _sut.SendChatMessage(deadMessage);
 
         // Act
         var alivePlayerMessages = _sut.FilterMessagesForPlayer(_alivePlayer);
@@ -106,14 +106,14 @@ public class ChatTests
     }
     
     [Fact]
-    public void ChatService_DeadPlayerShouldSeeBothAliveAndDeadMessages()
+    public async Task ChatService_DeadPlayerShouldSeeBothAliveAndDeadMessages()
     {
         // Arrange
         var aliveMessage = new ChatMessage("Sender", "Message for alive players", "everyone", "player", 0);
         var deadMessage = new ChatMessage("Sender", "Message for dead players", "everyone", "deadPlayer", 1);
 
-        _sut.SendChatMessage(aliveMessage).Wait();
-        _sut.SendChatMessage(deadMessage).Wait();
+        await _sut.SendChatMessage(aliveMessage);
+        await _sut.SendChatMessage(deadMessage);
 
         // Act
         var deadPlayerMessages = _sut.FilterMessagesForPlayer(_deadPlayer);
@@ -124,12 +124,12 @@ public class ChatTests
     }
     
     [Fact]
-    public void ChatService_ShouldShowSpecificRecipientMessageToIntendedPlayerOnly()
+    public async Task ChatService_ShouldShowSpecificRecipientMessageToIntendedPlayerOnly()
     {
         // Arrange
         var specificRecipientMessage = new ChatMessage("Sender", "Message for AlivePlayer only", "AlivePlayer", "server", 2);
 
-        _sut.SendChatMessage(specificRecipientMessage).Wait();
+        await _sut.SendChatMessage(specificRecipientMessage);
 
         // Act
         var alivePlayerMessages = _sut.FilterMessagesForPlayer(_alivePlayer);
