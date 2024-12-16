@@ -94,7 +94,11 @@ const WaitingLobbyV2 = () => {
       )}
       {isHost &&
         (hasEnoughPlayers ? (
-          <Button style={ButtonStyle.Glow} onClick={startGame}>
+          <Button
+            style={ButtonStyle.Glow}
+            onClick={startGame}
+            data-test-id="start-game-button"
+          >
             Start Game
           </Button>
         ) : (

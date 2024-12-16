@@ -98,9 +98,14 @@ const Chatbox: React.FC = () => {
           }
           className={cn('chat-input')}
           disabled={!isDay}
+          data-test-id="chatbox-input"
           {...register('message')}
         />
-        <Button className={cn('send-button')} disabled={!isDay}>
+        <Button
+          className={cn('send-button')}
+          disabled={!isDay}
+          data-test-id="chatbox-button"
+        >
           Send
         </Button>
       </form>
