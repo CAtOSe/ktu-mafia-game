@@ -21,6 +21,8 @@ const HeaderV2 = () => {
         return 'Lobby';
       case GameStage.Running:
         return 'Game';
+      case GameStage.End:
+        return 'End';
       default:
         return 'Error';
     }

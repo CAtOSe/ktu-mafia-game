@@ -19,12 +19,14 @@ const Button = ({
   onClick,
   disabled = false,
   className,
+  ...rest
 }: ButtonProps) => {
   return (
     <button
       className={cn('button', `button--${style}`, className)}
       onClick={onClick}
       disabled={disabled}
+      {...rest}
     >
       {children}
     </button>

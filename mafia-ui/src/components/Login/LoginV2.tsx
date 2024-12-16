@@ -31,11 +31,17 @@ const Login = () => {
     <form className={cn('login')} onSubmit={handleSubmit(onSubmit)}>
       <h3 className={cn('login__heading')}>Login</h3>
       <p className={cn('login__info')}>Please enter your username.</p>
-      <input className={cn('login__input')} {...register('username')} />
+      <input
+        className={cn('login__input')}
+        {...register('username')}
+        data-test-id="username-field"
+      />
       <p className={cn('login__error')}>
         Username cannot be shorter than 4 characters
       </p>
-      <Button style={ButtonStyle.Glow}>Login</Button>
+      <Button style={ButtonStyle.Glow} data-test-id="login-button">
+        Login
+      </Button>
     </form>
   );
 };

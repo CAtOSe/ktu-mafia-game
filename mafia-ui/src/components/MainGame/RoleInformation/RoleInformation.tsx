@@ -30,7 +30,7 @@ const RoleInformation: React.FC = () => {
             <strong>Username:</strong> {username}
           </li>
           <li>
-            <strong>Role:</strong> {role}
+            <strong>Role:</strong> <span data-test-id="role-name">{role}</span>
           </li>
           <li>
             <strong>Alignment:</strong> {roleAlignment}

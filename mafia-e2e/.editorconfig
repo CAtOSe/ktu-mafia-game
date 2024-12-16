@@ -1,0 +1,17 @@
+root = true
+
+[*.{js,ts,jsx,tsx}]
+end_of_line = lf
+charset = utf-8
+indent_style = space
+indent_size = 2
+
+[*.json]
+end_of_line = lf
+indent_style = space
+indent_size = 2
+
+[*.{css,scss}]
+end_of_line = lf
+indent_style = space
+indent_size = 2
