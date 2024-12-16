@@ -8,7 +8,7 @@ namespace Mafia.Server.Models.Strategy
 
         public Task Execute(Player user, Player target, RoleActionContext context, List<ChatMessage> messages)
         {
-            user.IsAlive = true;
+            user.IsAlive = false;
 
             var goodPlayersList = new GoodPlayerList(context.Players);
             var iterator = goodPlayersList.GetIterator();

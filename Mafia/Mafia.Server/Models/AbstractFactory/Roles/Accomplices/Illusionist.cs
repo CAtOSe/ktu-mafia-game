@@ -10,8 +10,8 @@ namespace Mafia.Server.Models.AbstractFactory.Roles.Accomplices
             Name = "Illusionist";
             Ability = "At night, you may choose to die and poison every good player for that night";
             AbilityUsesLeft = abilityUses;
-            RoleAlgorithm = new SpyAction();
-            RoleAlgorithmPoisoned = new SpyAction();
+            RoleAlgorithm = new IllusionistAction();
+            RoleAlgorithmPoisoned = new IllusionistAction();
         }
 
         // TEMPLATE METHOD hook

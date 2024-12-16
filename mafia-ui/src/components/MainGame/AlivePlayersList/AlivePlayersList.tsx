@@ -58,7 +58,7 @@ const AlivePlayersList: React.FC = () => {
 
               {!isDay &&
                 isAlive &&
-                role === 'Assassin' &&
+                (role === 'Assassin' || role === 'Phantom') &&
                 player !== username && (
                   <Button
                     className={cn('action-button', 'night-action-button')}
@@ -122,6 +122,30 @@ const AlivePlayersList: React.FC = () => {
                     onClick={() => handleActionClick(player, 'protect')}
                   >
                     Use Shield
+                  </Button>
+                )}
+
+              {!isDay &&
+                isAlive &&
+                role === 'Oracle' &&
+                player === username && (
+                  <Button
+                    className={cn('action-button', 'night-action-button')}
+                    onClick={() => handleActionClick(player, 'information')}
+                  >
+                    Foresee
+                  </Button>
+                )}
+
+               {!isDay &&
+                isAlive &&
+                role === 'Illusionist' &&
+                player === username && (
+                  <Button
+                    className={cn('action-button', 'night-action-button')}
+                    onClick={() => handleActionClick(player, 'kill')}
+                  >
+                    Start Performance
                   </Button>
                 )}
 
