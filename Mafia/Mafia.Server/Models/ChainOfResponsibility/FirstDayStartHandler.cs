@@ -14,8 +14,8 @@ namespace Mafia.Server.Models.ChainOfResponsibility
                 var evilPlayersList = new EvilPlayerList(context._currentPlayers);
 
                 // Get the iterator from the ActionQueue
-                var recipientsIterator = evilPlayersList.CreateIterator();
-                var evilTeamIterator = evilPlayersList.CreateIterator();
+                var recipientsIterator = evilPlayersList.GetIterator();
+                var evilTeamIterator = evilPlayersList.GetIterator();
 
                 for (var evilPlayerToSendTo = recipientsIterator.First(); evilPlayerToSendTo != null; evilPlayerToSendTo = recipientsIterator.Next()) // Iterator
                 {
@@ -26,8 +26,6 @@ namespace Mafia.Server.Models.ChainOfResponsibility
                         evilTeamMessages.Add(new ChatMessage("", evilPlayerOnTeam.Name + " is " + evilPlayerOnTeam.RoleName, evilPlayerToSendTo.Name, "dayNotification"));
                     }
                 }
-                //evilTeamMessages.Add(new ChatMessage("", "Your evil team consists of these players:", ))
-
                 foreach (ChatMessage announcement in evilTeamMessages)
                 {
                     await context._chatAdapter.SendMessage(announcement);

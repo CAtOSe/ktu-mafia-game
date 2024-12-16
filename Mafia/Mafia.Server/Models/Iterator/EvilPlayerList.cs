@@ -11,7 +11,7 @@ namespace Mafia.Server.Models.Iterator
             _entries = entries.ToList();
         }
 
-        public IPlayerIterator CreateIterator()
+        public IPlayerIterator GetIterator()
         {
             return new EvilPlayerIterator(_entries);
         }

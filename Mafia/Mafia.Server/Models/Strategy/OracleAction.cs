@@ -10,7 +10,7 @@ namespace Mafia.Server.Models.Strategy
         public Task Execute(Player user, Player target, RoleActionContext context, List<ChatMessage> messages)
         {
             var deadPlayersList = new DeadPlayerList(context.Players);
-            var iterator = deadPlayersList.CreateIterator();
+            var iterator = deadPlayersList.GetIterator();
 
             int evilCount = 0;
 

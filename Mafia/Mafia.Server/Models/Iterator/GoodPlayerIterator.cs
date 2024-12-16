@@ -11,7 +11,6 @@
 
         public GoodPlayerIterator(IEnumerable<Player> entries)
         {
-            // Filter players by alignment "Good"
             _entries = entries.Where(player => player.Role.Alignment == "Good").ToList();
 
         }

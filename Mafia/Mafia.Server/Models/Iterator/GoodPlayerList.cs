@@ -9,7 +9,7 @@
             _entries = entries.ToList();
         }
 
-        public IPlayerIterator CreateIterator()
+        public IPlayerIterator GetIterator()
         {
             return new GoodPlayerIterator(_entries);
         }

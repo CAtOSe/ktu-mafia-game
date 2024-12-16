@@ -11,7 +11,7 @@ namespace Mafia.Server.Models.Strategy
             user.IsAlive = true;
 
             var goodPlayersList = new GoodPlayerList(context.Players);
-            var iterator = goodPlayersList.CreateIterator();
+            var iterator = goodPlayersList.GetIterator();
 
             for (var goodPlayer = iterator.First(); goodPlayer != null; goodPlayer = iterator.Next()) // Iterator
             {

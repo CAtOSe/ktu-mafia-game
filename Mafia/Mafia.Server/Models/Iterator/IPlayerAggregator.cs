@@ -2,6 +2,6 @@
 {
     public interface IPlayerAggregator
     {
-        IPlayerIterator CreateIterator();
+        IPlayerIterator GetIterator();
     }
 }

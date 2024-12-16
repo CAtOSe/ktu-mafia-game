@@ -31,3 +31,4 @@ namespace Mafia.Server.Models.ChainOfResponsibility
         }
     }
 }
+

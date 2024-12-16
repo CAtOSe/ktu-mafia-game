@@ -10,7 +10,8 @@ namespace Mafia.Server.Models.ChainOfResponsibility
             Console.WriteLine("CHAIN OF RESPONSIBILITY | DayStartHandler");
             if (context._isDayPhase && context._phaseCounter != 1 && !context._isItPhaseEnd) // Not on the first day
             {
-                context._morningAnnouncer.DayStartAnnouncements(context._currentPlayers, context._playersWhoDiedInTheNight, context._dayStartAnnouncements); // DECORATOR
+                context._morningAnnouncer.DayStartAnnouncements(context._currentPlayers,
+                    context._playersWhoDiedInTheNight, context._dayStartAnnouncements); // DECORATOR
                 // Sending "Player 1 has died in the night."
                 foreach (ChatMessage announcement in context._dayStartAnnouncements)
                 {
